@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import './App.css';
+// import './App.css';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
+import { ref, set } from 'firebase/database';
+import { db } from './firebase';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -17,6 +19,29 @@ function App() {
       const result =  await signInWithPopup(auth, googleProvider);
       setUser(result.user);
       setShowAuth(false);
+      const user = result.user;  // ✅ Get the user object
+      const uid = user.uid;      // ✅ Correctly get UID
+
+      // Store user data in Realtime Database
+      await set(ref(db, 'users/' + uid), {
+        Name: "",
+        OtherData: {},
+        Gender: "",
+        Age: "",
+        Height : "",
+        Weight : "",
+        BestStreak: 0,
+        PreviousStreak: [],
+        UserType: "Normal",
+        UserName: email.split('@')[0],
+        Achievements: [],
+        Hobby : "",
+        City: "",
+        Religion : "",
+        PhoneNumber : "",
+      });
+
+      console.log("✅ User registered and stored in database:", uid);
       console.log('User: ',result.user);
     }
     catch(error){
@@ -28,16 +53,36 @@ function App() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError('');
-    try{
-      const result = await createUserWithEmailAndPassword(auth,email,password);
-      setUser(result.user);
+
+    try {
+      // Create user with email and password
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;  // ✅ Get the user object
+      const uid = user.uid;      // ✅ Correctly get UID
+
+      setUser(user);
       setShowAuth(false);
-    }
-    catch(error){
+
+      // Store user data in Realtime Database
+      await set(ref(db, 'users/' + uid), {
+        Name: "",
+        OtherData: {},
+        gender: "",
+        age: "",
+        BestStreak: 0,
+        PreviousStreak: [],
+        UserType: "Normal",
+        UserName: email.split('@')[0],
+        Achievements: []
+      });
+
+      console.log("✅ User registered and stored in database:", uid);
+    } catch (error) {
       setError(error.message);
-      console.log(error)
+      console.error("❌ Error while signing up:", error);
     }
-  }
+  };
+
 
   const handleSignIn = async (e) => {
     e.preventDefault();
