@@ -78,14 +78,18 @@ header{
 }
 .card{
   width: 900px;
-  height: 650px;
+  max-height: 620px;
   background-color: white;
   border-radius: 15px;
   position: relative;
-  padding: 40px;
   box-sizing: border-box;
+  margin: 0px 15px;
+  overflow: scroll;
+  padding: 40px;
 }
-
+.card::-webkit-scrollbar {
+    display: none;
+}
 .close-btn{
   position: absolute;
   top: 15px;
