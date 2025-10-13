@@ -13,9 +13,9 @@
   --color-info: #17a2b8;
 
   /* Neutral & Text Colors */
-  --color-text-primary: #303943; /* For headings and primary text */
-  --color-text-secondary: #7460E3; /* For body text, subtitles */
-  --color-text-tertiary: #6C747E; /* For less prominent text */
+  --color-text-primary: #303943;
+  --color-text-secondary: #7460E3;
+  --color-text-tertiary: #6C747E;
   --color-text-primary: #272d35;
   --color-white: #FFFFFF;
   --color-black: #000000;
@@ -39,13 +39,13 @@
   --font-weight-bold: 700;
 
   /* Font Sizes */
-  --font-size-xs: 0.75rem;   /* 12px */
-  --font-size-sm: 0.875rem;  /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-md: 1.125rem;  /* 18px */
-  --font-size-lg: 1.5rem;    /* 24px */
-  --font-size-xl: 2rem;      /* 32px */
-  --font-size-xxl: 3rem;     /* 48px */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-md: 18px;
+  --font-size-lg: 24px;
+  --font-size-xl: 32px;
+  --font-size-xxl: 48px;
 
   /* Line Heights */
   --line-height-condensed: 1.25;
@@ -53,12 +53,12 @@
   --line-height-loose: 1.75;
 
   /* ## 3. Spacing System  */
-  --spacing-xs: 0.25rem;  /* 4px */
-  --spacing-sm: 0.5rem;   /* 8px */
-  --spacing-md: 1rem;     /* 16px */
-  --spacing-lg: 1.5rem;   /* 24px */
-  --spacing-xl: 2rem;     /* 32px */
-  --spacing-xxl: 4rem;    /* 64px */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 64px;
 
   /* ## 4. Borders & Shadows */
   --border-radius-sm: 4px;
@@ -84,14 +84,13 @@
 
   /* ## 7. Buttons  */
   --button-color-primary: #6E57FF;
-  --button-color-primary-hover: #9CC4F1;
   --button-color-secondary: #EFF6FE;
   --button-color-secondary-stroke: #AAB4BF;
-  --button-color-secondary-hover: #8c9ba6;
+  --button-color-secondary-hover: #9CC4F1;
 }
 
 *, *::before, *::after {
-  box-sizing: border-box; /* A sensible default reset */
+  box-sizing: border-box;
 }
 
 body {

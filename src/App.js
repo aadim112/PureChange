@@ -6,6 +6,7 @@ import { ref, set, child,get} from 'firebase/database';
 import { db } from './firebase';
 import {Route, useNavigate, Routes } from 'react-router-dom';
 import ProfileSetup from './Components/ProfileSetup';
+import TestPage from './Components/TestPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -260,8 +261,14 @@ function App() {
             </div>
           </div>
         )}
+        <div>
+          <button className='testPage' onClick={() => navigate('/testpage')}>
+              Test Page
+          </button>
+        </div>
       </div>} />
       <Route path="/profile-setup" element={<ProfileSetup />} />
+      <Route path="/testpage" element={<TestPage />} />
     </Routes>
   );
 }
