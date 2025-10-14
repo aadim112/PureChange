@@ -2,10 +2,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
+  padding: 10px 20px;
   font-family: var(--font-family-poppins);
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
   border-radius: var(--border-radius-md);
   border: 2px solid transparent;
   cursor: pointer;
@@ -15,16 +15,15 @@
 
 /* --primary variant */
 .btn--primary {
-  background-color: var(--button-color-primary);
+  background: var(--button-color-primary);
   color: #FBF8FF;
-  border-color: var(--button-color-primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 /* --secondary variant */
 .btn--secondary {
-  background-color: var(--button-color-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--button-color-secondary-stroke);
+  background : transparent;
+  color: var(--color-text-tertiary);
 }
 .btn--secondary:hover {
   background-color: var(--button-color-secondary-hover);
@@ -49,6 +48,17 @@
   border-color: var(--danger-color);
 }
 .btn--common-black:hover {
+  background-color: var(--danger-hover-color);
+  border-color: var(--danger-hover-color);
+}
+
+/* --verify button variant */
+.btn--verify-button {
+  background-color: var(--danger-color); /* e.g., #dc3545 */
+  color: #000000;
+  border-color: var(--danger-color);
+}
+.btn--verify-button:hover {
   background-color: var(--danger-hover-color);
   border-color: var(--danger-hover-color);
 }

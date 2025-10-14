@@ -10,6 +10,7 @@ import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
 import MyPage from './Components/EditProfile';
 import './Components/EditProfile.css'
+import ActivityPage from './Components/ActivityPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -365,6 +366,7 @@ function App() {
       <Route path='/testpage' element={<TestPage/>} />
       <Route path="/question" element={<Question/>} />
       <Route path='/mypage' element={<MyPage/>} />
+      <Route path="/activity" element={<ActivityPage/>} />
     </Routes>
   );
 }
