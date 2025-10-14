@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ref, update, get } from 'firebase/database';
 import { db } from '../firebase';
 import './ProfileSetup.css';
+import Button from './Button';
 
 function ProfileSetup() {
   const navigate = useNavigate();
@@ -251,14 +252,14 @@ function ProfileSetup() {
         </div>
 
         <div className="button-group">
-          <button onClick={handleClear} className="btn btn-clear" disabled={isSaving}>Clear</button>
-          <button 
+          <Button onClick={handleClear} variant='secondary'>Clear</Button>
+          <Button 
             onClick={handleNext} 
             disabled={!isFormValid() || isSaving} 
             className={`btn btn-next ${(!isFormValid() || isSaving) ? 'disabled-btn' : ''}`}
           >
             {isSaving ? 'Saving...' : 'Next'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

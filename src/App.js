@@ -8,6 +8,8 @@ import { Route, useNavigate, Routes } from 'react-router-dom';
 import ProfileSetup from './Components/ProfileSetup';
 import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
+import MyPage from './Components/EditProfile';
+import './Components/EditProfile.css'
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -227,7 +229,7 @@ function App() {
         if (isProfileComplete) {
           localStorage.setItem('profileCompleted', 'true');
           localStorage.setItem('UserName', userData.UserName);
-          navigate('/home');
+          navigate('/activity');
         } else {
           localStorage.setItem('signupMethod', 'email');
           localStorage.removeItem('profileCompleted');
@@ -362,6 +364,7 @@ function App() {
       <Route path="/profile-setup" element={<ProfileSetup />} />
       <Route path='/testpage' element={<TestPage/>} />
       <Route path="/question" element={<Question/>} />
+      <Route path='/mypage' element={<MyPage/>} />
     </Routes>
   );
 }

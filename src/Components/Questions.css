@@ -8,7 +8,7 @@
 
 .question-form {
     width: 80%;
-    height: 550px;
+    /* height: 550px; */
     display: flex;
     flex-direction: column;
     align-items: left;
@@ -132,17 +132,36 @@
     cursor: not-allowed;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .question-form {
-        width: 90%;
-    }
+@media screen and (max-width: 500px) {
+  .question {
+    height: auto;            /* Allow content to expand */
+    min-height: 100vh;       /* Still fill the viewport if needed */
+    align-items: flex-start; /* Start from top */
+    padding: 20px 0;
+  }
 
-    .question-label {
-        font-size: 24px;
-    }
+  .question-form {
+           /* Remove fixed height */
+    
+  }
 
-    .optionsContainer {
-        grid-template-columns: 1fr;
-    }
+  .optionsContainer {
+    margin-bottom: 10px;     /* Reduce spacing for smaller height */
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;         /* Buttons wrap to next line if needed */
+    justify-content: center; /* Center align buttons */
+    gap: 8px;
+  }
+
+  .action-buttons button {
+    width: 300px;
+    font-size: 13px;
+  }
+
+  .question-label {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
 }

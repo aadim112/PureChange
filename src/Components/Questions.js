@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ref, update } from 'firebase/database';
 import { db } from '../firebase';
 import './Questions.css';
+import Button from './Button';
+
 
 const QUESTIONS = [
   {
@@ -137,7 +139,7 @@ const Question = () => {
       localStorage.setItem('questionnaireCompleted', 'true');
       
       alert('Questionnaire complete!');
-      navigate('/home', { replace: true });
+      navigate('/mypage', { replace: true });
     } catch (error) {
       console.error('Error saving questionnaire:', error);
       alert(`Error saving questionnaire: ${error.message}`);
@@ -188,14 +190,15 @@ const Question = () => {
               Back
             </button>
           )}
-          <button
+          <Button
             type="button"
+            variant='secondary'
             onClick={handleClear}
-            className="btn-clear"
+            
             disabled={isSaving}
           >
             Clear
-          </button>
+          </Button>
           <button
             type="button"
             onClick={handleNext}
@@ -205,6 +208,7 @@ const Question = () => {
             {isSaving ? 'Saving...' : isLastQuestion ? 'Submit' : 'Next'}
           </button>
         </div>
+        <br></br>
       </form>
     </div>
   );
