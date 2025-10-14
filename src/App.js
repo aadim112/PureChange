@@ -8,6 +8,7 @@ import { Route, useNavigate, Routes } from 'react-router-dom';
 import ProfileSetup from './Components/ProfileSetup';
 import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
+import ActivityPage from './Components/ActivityPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -362,6 +363,7 @@ function App() {
       <Route path="/profile-setup" element={<ProfileSetup />} />
       <Route path='/testpage' element={<TestPage/>} />
       <Route path="/question" element={<Question/>} />
+      <Route path="/activity" element={<ActivityPage/>} />
     </Routes>
   );
 }
