@@ -3,9 +3,11 @@ import './ActivityPage.css';
 import Button from './Button';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 import { Calendar, Zap, CheckCircle2, BookOpen, Star, Video } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ActivityPage() {
   const [activeTab, setActiveTab] = useState('activity');
+  const navigate = useNavigate();
   const [checklist, setChecklist] = useState({
     drinkWater: false,
     yoga: false,
@@ -29,25 +31,25 @@ export default function ActivityPage() {
         <div className="navigation-buttons">
           <Button 
             variant='secondary'
-            onClick={() => setActiveTab('ranking')}
+            onClick={() => navigate('ranking')}
           >
             Ranking
           </Button>
           <Button 
             variant='secondary'
-            onClick={() => setActiveTab('routine')}
+            onClick={() => navigate('routine')}
           >
             My Routine
           </Button>
           <Button 
             variant='primary'
-            onClick={() => setActiveTab('activity')}
+            onClick={() => navigate('activity')}
           >
             Activity
           </Button>
           <Button 
             variant='secondary'
-            onClick={() => setActiveTab('page')}
+            onClick={() => navigate('/edit-profile')}
           >
             My Page
           </Button>

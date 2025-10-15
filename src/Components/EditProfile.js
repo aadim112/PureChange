@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ref, get, update } from 'firebase/database';
+import { ref, get, update, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from '../firebase';
+import { ReactComponent as EditProfileIcon } from "../assets/EditProfile.svg"
 import './EditProfile.css';
 import { getAuth, linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import Button from './Button';
 
-const MyPage = () => {
+const EditProfile = () => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [hasChanges, setHasChanges] = useState(false);
     const [authProviders, setAuthProviders] = useState({
         google: false,
         microsoft: false
@@ -28,21 +31,42 @@ const MyPage = () => {
         Hobby: '',
         UserName: ''
     });
+    const [originalData, setOriginalData] = useState({});
+    const [verifiedEmail, setVerifiedEmail] = useState('');
+    const [verifiedPhone, setVerifiedPhone] = useState('');
+    const [emailCheckStatus, setEmailCheckStatus] = useState(''); // 'checking', 'available', 'taken'
+
+    const handleLogout = async () => {
+        try {
+            const auth = getAuth();
+            await auth.signOut();
+            
+            // Clear localStorage
+            localStorage.removeItem('userId');
+            localStorage.removeItem('UserName');
+            
+            // Navigate to login/home page
+            navigate('/');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            alert('Error logging out. Please try again.');
+        }
+    };
 
     const checkAuthProviders = async () => {
-    try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-        
-        if (user) {
-            const providers = user.providerData.map(provider => provider.providerId);
-            setAuthProviders({
-                google: providers.includes('google.com'),
-                microsoft: providers.includes('microsoft.com'),
-                email: providers.includes('password') // This means email/password registration
-            });
-        }
-    } catch (error) {
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            
+            if (user) {
+                const providers = user.providerData.map(provider => provider.providerId);
+                setAuthProviders({
+                    google: providers.includes('google.com'),
+                    microsoft: providers.includes('microsoft.com'),
+                    email: providers.includes('password')
+                });
+            }
+        } catch (error) {
             console.error('Error checking auth providers:', error);
         }
     };
@@ -57,6 +81,56 @@ const MyPage = () => {
         } catch (error) {
             console.error('Error linking Google account:', error);
             alert('Error linking Google account. Please try again.');
+        }
+    };
+
+    // Check if email exists in database for another user
+    const checkEmailExists = async (email) => {
+        if (!email || email === verifiedEmail) {
+            setEmailCheckStatus('');
+            return false;
+        }
+
+        setEmailCheckStatus('checking');
+        
+        try {
+            const userId = localStorage.getItem('userId');
+            const usersRef = ref(db, 'users');
+            const emailQuery = query(usersRef, orderByChild('Email'), equalTo(email));
+            const snapshot = await get(emailQuery);
+
+            if (snapshot.exists()) {
+                // Check if the email belongs to another user
+                const users = snapshot.val();
+                const userIds = Object.keys(users);
+                const belongsToAnotherUser = userIds.some(id => id !== userId);
+                
+                if (belongsToAnotherUser) {
+                    setEmailCheckStatus('taken');
+                    return true;
+                } else {
+                    setEmailCheckStatus('available');
+                    return false;
+                }
+            } else {
+                setEmailCheckStatus('available');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error checking email:', error);
+            setEmailCheckStatus('');
+            return false;
+        }
+    };
+
+    const handleEmailVerify = async () => {
+        const emailTaken = await checkEmailExists(userData.Email);
+        
+        if (emailTaken) {
+            alert('This email is already registered to another user. Please use a different email.');
+        } else {
+            alert('Email verification initiated. Please check your email for verification link.');
+            // Add your email verification logic here
         }
     };
 
@@ -79,7 +153,7 @@ const MyPage = () => {
 
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                setUserData({
+                const formattedData = {
                     Name: data.Name || '',
                     Bio: data.Bio || '',
                     Email: data.Email || '',
@@ -92,7 +166,12 @@ const MyPage = () => {
                     City: data.City || '',
                     Hobby: data.Hobby || '',
                     UserName: data.UserName || ''
-                });
+                };
+                setUserData(formattedData);
+                setOriginalData(formattedData);
+                // Store verified email and phone from database
+                setVerifiedEmail(data.Email || '');
+                setVerifiedPhone(data.PhoneNumber || '');
             }
             setLoading(false);
         } catch (error) {
@@ -103,19 +182,45 @@ const MyPage = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserData(prev => ({
-            ...prev,
+        const newUserData = {
+            ...userData,
             [name]: value
-        }));
+        };
+        setUserData(newUserData);
+        
+        // Reset email check status when email changes
+        if (name === 'Email') {
+            setEmailCheckStatus('');
+        }
+        
+        // Check if any field has changed
+        const isChanged = Object.keys(newUserData).some(
+            key => newUserData[key] !== originalData[key]
+        );
+        setHasChanges(isChanged);
     };
 
     const handleSave = async () => {
+        // Check if email is taken before saving
+        if (userData.Email !== verifiedEmail) {
+            const emailTaken = await checkEmailExists(userData.Email);
+            if (emailTaken) {
+                alert('This email is already registered to another user. Please use a different email.');
+                return;
+            }
+        }
+
         setIsSaving(true);
         try {
             const userId = localStorage.getItem('userId');
             const userRef = ref(db, `users/${userId}`);
             await update(userRef, userData);
-            setIsEditing(false);
+            setOriginalData(userData);
+            setHasChanges(false);
+            // Update verified email and phone after save
+            setVerifiedEmail(userData.Email);
+            setVerifiedPhone(userData.PhoneNumber);
+            setEmailCheckStatus('');
             alert('Profile updated successfully!');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -123,6 +228,12 @@ const MyPage = () => {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleCancel = () => {
+        setUserData(originalData);
+        setHasChanges(false);
+        setEmailCheckStatus('');
     };
 
     const getInitials = () => {
@@ -134,6 +245,25 @@ const MyPage = () => {
         }
         return userData.UserName ? userData.UserName.substring(0, 2).toUpperCase() : 'U';
     };
+
+    // Check if email matches the verified email
+    const isEmailVerified = userData.Email && userData.Email === verifiedEmail;
+    
+    // Check if phone matches the verified phone
+    const isPhoneVerified = userData.PhoneNumber && userData.PhoneNumber === verifiedPhone;
+
+    // Determine verify button text and state for email
+    const getEmailVerifyButtonText = () => {
+        if (isEmailVerified) return 'Verified';
+        if (emailCheckStatus === 'checking') return 'Checking...';
+        if (emailCheckStatus === 'taken') return 'Email Taken';
+        return 'Verify';
+    };
+
+    const isEmailVerifyDisabled = isEmailVerified || 
+                                   emailCheckStatus === 'checking' || 
+                                   emailCheckStatus === 'taken' ||
+                                   !userData.Email;
 
     if (loading) {
         return (
@@ -148,36 +278,37 @@ const MyPage = () => {
     return (
         <div className="mypage-container">
             {/* Header */}
-            <header className="mypage-header">
-                <div className="header-left">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                    </svg>
-                    <h1 className="header-title">Edit Profile</h1>
+            <div className="navbar">
+                <div className="logo-section">
+                    <EditProfileIcon style={{width : 20 , height: 20}}></EditProfileIcon>
+                    <p className="page-name">Edit Profile</p>
                 </div>
-                <button
+                <div className="navigation-buttons">
+                    <Button
                     onClick={() => navigate('/activity')}
-                    className="activity-button"
-                >
-                    Activity
-                </button>
-            </header>
+                    variant='secondary'
+                    >
+                        Activity
+                    </Button>
+                </div>
+            </div>
 
             {/* Main Content */}
             <div className="main-content">
-                <div className="content-grid">
+                <div className="content-grid-profile">
                     {/* Left Section - Avatar */}
                     <div className="avatar-section">
                         <div className="avatar-circle">
                             {getInitials()}
                         </div>
-                        <button
+                        <p style={{fontWeight:'600',margin:'10px',fontSize:'16px'}}>{localStorage.getItem('UserName')}</p>
+                        <Button
+                        variant='secondary'
                             onClick={() => setIsEditing(!isEditing)}
                             className="edit-profile-button"
                         >
-                            <span>✎</span>
-                            <span>edit</span>
-                        </button>
+                            <span>Edit</span>
+                        </Button>
                     </div>
 
                     {/* Right Section - Form */}
@@ -197,7 +328,6 @@ const MyPage = () => {
                                         name="Name"
                                         value={userData.Name}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
                                 </div>
@@ -210,7 +340,6 @@ const MyPage = () => {
                                         name="Bio"
                                         value={userData.Bio}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
                                 </div>
@@ -223,11 +352,17 @@ const MyPage = () => {
                                         name="Email"
                                         value={userData.Email}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
-                                    <button className="verify-button">
-                                        Verify
+                                    <button 
+                                        className={`verify-button ${
+                                            isEmailVerified ? 'verified' : 
+                                            emailCheckStatus === 'taken' ? 'email-taken' : ''
+                                        }`}
+                                        disabled={isEmailVerifyDisabled}
+                                        onClick={handleEmailVerify}
+                                    >
+                                        {getEmailVerifyButtonText()}
                                     </button>
                                 </div>
 
@@ -239,11 +374,13 @@ const MyPage = () => {
                                         name="PhoneNumber"
                                         value={userData.PhoneNumber}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
-                                    <button className="verify-button">
-                                        Verify
+                                    <button 
+                                        className={`verify-button ${isPhoneVerified ? 'verified' : ''}`}
+                                        disabled={isPhoneVerified}
+                                    >
+                                        {isPhoneVerified ? 'Verified' : 'Verify'}
                                     </button>
                                 </div>
 
@@ -254,7 +391,6 @@ const MyPage = () => {
                                         name="Gender"
                                         value={userData.Gender}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     >
                                         <option value="">Select Gender</option>
@@ -271,7 +407,6 @@ const MyPage = () => {
                                         name="Religion"
                                         value={userData.Religion}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     >
                                         <option value="">Select religion</option>
@@ -290,7 +425,6 @@ const MyPage = () => {
                                         name="Weight"
                                         value={userData.Weight}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         placeholder="kg"
                                         className="field-input"
                                     />
@@ -304,7 +438,6 @@ const MyPage = () => {
                                         name="Height"
                                         value={userData.Height}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         placeholder="cm"
                                         className="field-input"
                                     />
@@ -318,7 +451,6 @@ const MyPage = () => {
                                         name="Age"
                                         value={userData.Age}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
                                 </div>
@@ -331,7 +463,6 @@ const MyPage = () => {
                                         name="City"
                                         value={userData.City}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
                                 </div>
@@ -344,7 +475,6 @@ const MyPage = () => {
                                         name="Hobby"
                                         value={userData.Hobby}
                                         onChange={handleInputChange}
-                                        disabled={!isEditing}
                                         className="field-input"
                                     />
                                 </div>
@@ -370,7 +500,7 @@ const MyPage = () => {
                                     <input
                                         type="text"
                                         disabled
-                                        value={authProviders.google ? userData.Email : ''}
+                                        value={authProviders.google ? verifiedEmail : ''}
                                         placeholder={authProviders.google ? '' : 'Not connected'}
                                         className="field-input disabled-input"
                                     />
@@ -404,33 +534,33 @@ const MyPage = () => {
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        {isEditing && (
-                            <div className="action-buttons">
-                                <button
-                                    onClick={() => {
-                                        setIsEditing(false);
-                                        fetchUserData();
-                                    }}
-                                    disabled={isSaving}
-                                    className="cancel-button"
+                        {/* Action Buttons - Always visible but conditionally enabled */}
+                        <div className="action-buttons">
+                            <div>
+                                <Button
+                                    onClick={handleCancel}
+                                    disabled={!hasChanges || isSaving}
+                                    variant='secondary'
                                 >
                                     Cancel
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleSave}
-                                    disabled={isSaving}
-                                    className="save-button"
+                                    disabled={!hasChanges || isSaving}
+                                    variant='primary'
+                                    className='saveButton'
                                 >
                                     {isSaving ? 'Saving...' : 'Save Changes'}
-                                </button>
+                                </Button>
                             </div>
-                        )}
+                            <Button className='LogOut' variant='primary' onClick={handleLogout}>Logout</Button>
+                        </div>
                     </div>
                 </div>
             </div>
+            <br></br>
         </div>
     );
 };
 
-export default MyPage;
+export default EditProfile;
