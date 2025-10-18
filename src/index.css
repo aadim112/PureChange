@@ -16,6 +16,7 @@
   --color-text-primary: #303943;
   --color-text-secondary: #7460E3;
   --color-text-tertiary: #6C747E;
+  --color-text-tertiary-dark: #5a616a;
   --color-white: #FFFFFF;
   --color-black: #000000;
 
@@ -67,6 +68,7 @@
   --border-radius-pill: 9999px;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 

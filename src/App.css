@@ -3,6 +3,11 @@
   padding: 0px;
   font-family: poppins;
 }
+
+body::-webkit-scrollbar{
+  display: none;
+}
+
 .App{
   font-family: poppins;
 }

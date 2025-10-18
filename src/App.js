@@ -9,6 +9,8 @@ import ProfileSetup from './Components/ProfileSetup';
 import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
 import MyPage from './Components/EditProfile';
+import ContentPage from './Components/ContentPage';
+import LeaderboardPage from './Components/LeaderboardPage';
 import './Components/EditProfile.css'
 import ActivityPage from './Components/ActivityPage';
 
@@ -367,6 +369,8 @@ function App() {
       <Route path="/question" element={<Question/>} />
       <Route path='/mypage' element={<MyPage/>} />
       <Route path="/activity" element={<ActivityPage/>} />
+      <Route path="/content" element={<ContentPage/>} />
+      <Route path="/leaderboard" element={<LeaderboardPage/>} />
     </Routes>
   );
 }

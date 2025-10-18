@@ -17,7 +17,10 @@
   gap: 10px;
   background: white;
   padding: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-base);
+  position: sticky;
+  top: 0;
+  z-index: 1000; 
 }
 
 .logo-section {
@@ -31,12 +34,6 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
-}
-
-.logo{
-    width: 20px;
-    height: 20px;
-    color: red;
 }
 
 .navigation-buttons {
@@ -57,7 +54,7 @@
   border-radius: 12px;
   text-align: center;
   margin-bottom: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-base);
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
 }
@@ -71,23 +68,28 @@
 }
 
 .stat-card {
+  display: flex;
+  flex-direction: column;
   background: white;
+  height: 230px;
   padding: 24px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-base);
+  min-height: 0;
 }
 
 .stat-card h3 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 20px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 /* Tab Streak */
 .streak-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  padding: 0px 20px;
   gap: 20px;
 }
 
@@ -95,37 +97,43 @@
   padding: 12px;
   background: #f9f9f9;
   border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.streak-item:hover {
+  transform: translateY(-1px);
+  background: var(--color-bg-secondary);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.streak-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0px 0px 12px 6px;
 }
 
 .no-streak {
   font-size: 14px;
-  color: #666;
-  margin-bottom: 12px;
-}
-
-.daily-streak {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 12px;
-}
-
-.daily-streak .icon {
-  color: #fbbf24;
+  color: var(--color-text-primary);
 }
 
 .days {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-left: 20px;
+}
+
+.day-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .day-count {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .day-info {
@@ -136,14 +144,24 @@
 
 .day-info .small {
   font-size: 12px;
-  color: #999;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
 }
 
 /* Checklist */
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  padding: 0px 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.checklist-items::-webkit-scrollbar {
+  display: none;
 }
 
 .checkbox-item {
@@ -151,50 +169,100 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  font-size: 14px;
-  color: #333;
-  transition: all 0.2s ease;
-}
-
-.checkbox-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #6366f1;
+  font-size: var(--font-size-base);
+  font-weight: 450;
+  color: var(--color-text-tertiary-dark);
+  padding: 12px 20px;
+  background: transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .checkbox-item:hover {
-  color: #6366f1;
+  background: linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 100%);
+  color: var(--color-text-primary);
 }
+
+.checkbox-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.checkbox-item input[type="checkbox"]:hover {
+  background: #8b2aec;
+  border-color: #8b2aec;
+}
+
+/* Checked state */
+.checkbox-item input[type="checkbox"]:checked {
+  background: #b06df3;
+  border-color: #b06df3;
+}
+
+/* Checkmark */
+.checkbox-item input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #f5eaff;
+  font-weight: bold;
+}
+
 
 .checkbox-item input[type="checkbox"]:checked + span {
   text-decoration: line-through;
-  color: #999;
+  color: #4c1d95;
+  font-weight: 500;
+}
+
+/* Fallback for browsers that don't support :has() */
+@supports not selector(:has(*)) {
+  .checkbox-item.checked {
+    background: linear-gradient(135deg, #c084fc 0%, #a78bfa 100%);
+  }
+  
+  .checkbox-item.checked span {
+    text-decoration: line-through;
+    color: #4c1d95;
+    font-weight: 500;
+  }
 }
 
 /* Content Section */
 .content-section {
-  margin-top: 40px;
+  margin-top: 30px;
 }
 
 .content-section h2 {
   font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #333;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 30px;
+  color: var(--color-text-primary);
 }
 
 .content-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .content-card {
   background: white;
   border-radius: 12px;
+  height: 300px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-base);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -212,29 +280,20 @@
   border-bottom: 2px solid #f0f0f0;
 }
 
-.card-image.pro {
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-}
-
-.card-image.elite {
-  background: linear-gradient(135deg, #fce7f3 0%, #fae8ff 100%);
-}
-
-.card-image.quote {
-  background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 100%);
-}
-
 .content-card h4 {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-tertiary-dark);
   padding: 16px 16px 8px;
 }
 
 .content-card p {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: #999;
   padding: 0 16px 12px;
+  flex: 1;
+  display: flex;
+  align-items: start;
 }
 
 .explore-btn {
@@ -257,7 +316,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .activity-page {
+  .navbar {
+    height: 50px;
+    padding: 5px 0px;
+    overflow: hidden;
+  }
+
+  .body {
     padding: 16px;
   }
 
@@ -265,16 +330,12 @@
     grid-template-columns: 1fr;
   }
 
+  .stat-card {
+    height: auto;
+  }
+
   .streak-content {
     grid-template-columns: 1fr;
-  }
-
-  .tabs {
-    flex-direction: column;
-  }
-
-  .tab {
-    width: 100%;
   }
 
   .content-grid {

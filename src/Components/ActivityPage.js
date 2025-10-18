@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import './ActivityPage.css';
 import Button from './Button';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
-import { Calendar, Zap, CheckCircle2, BookOpen, Star, Video } from 'lucide-react';
+import { ReactComponent as NoSign } from "../assets/NoSign.svg"
+import { ReactComponent as Sun } from "../assets/Sun.svg"
 
 export default function ActivityPage() {
   const [activeTab, setActiveTab] = useState('activity');
@@ -24,7 +25,7 @@ export default function ActivityPage() {
       <div className="navbar">
         <div className="logo-section">
           <Flame style={{width : 20 , height: 20}}></Flame>
-          <p className="page-name">PureChange</p>
+          <p className="page-name">Activity</p>
         </div>
         <div className="navigation-buttons">
           <Button 
@@ -67,25 +68,34 @@ export default function ActivityPage() {
             <h3>Tab Streak</h3>
             <div className="streak-content">
               <div className="streak-item">
-                <p className="no-streak">🔥 No Tab Streak</p>
+                <div className="streak-name">
+                  <NoSign style={{width : 16 , height: 16}}></NoSign>
+                  <p className="no-streak">No Fap Streak</p>
+                </div>
                 <div className="days">
-                  <span className="day-count">5 Days</span>
+                  <div className='day-name'>
+                    <Flame style={{width : 18 , height: 18}}></Flame>
+                    <span className="day-count">5 Days</span>
+                  </div>
                   <div className="day-info">
                     <span className="small">Best: 11</span>
-                    <span className="small">This week: 3</span>
+                    <span className="small">This month: 3</span>
                   </div>
                 </div>
               </div>
               <div className="streak-item">
-                <div className="daily-streak">
-                  <Zap className="icon" size={20} />
-                  <span>Daily Streak</span>
+                <div className="streak-name">
+                  <Sun style={{width : 16 , height: 16}}></Sun>
+                  <p className='no-streak'>Daily Streak</p>
                 </div>
                 <div className="days">
-                  <span className="day-count">16 Days</span>
+                  <div className='day-name'>
+                    <Flame style={{width : 18 , height: 18}}></Flame>
+                    <span className="day-count">16 Days</span>
+                  </div>
                   <div className="day-info">
                     <span className="small">Best: 14</span>
-                    <span className="small">This week: 3</span>
+                    <span className="small">This month: 3</span>
                   </div>
                 </div>
               </div>
