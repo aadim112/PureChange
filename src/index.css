@@ -23,6 +23,7 @@
   /* Background & Borders */
   --color-bg-primary: #FFFFFF;
   --color-bg-secondary: linear-gradient(135deg, #FBF8FF 0%, #f0e9f9 100%);
+  --color-bg-tertiary:#9333ea;
   --color-nav-border: #AAB4BF;
   --color-border: #DFE6EE;
   --color-dark-border: #DCD5FF;

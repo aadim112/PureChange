@@ -23,7 +23,7 @@
 /* --secondary variant */
 .btn--secondary {
   background : transparent;
-  color: var(--color-text-tertiary);
+  color: rgb(52, 52, 52);
 }
 .btn--secondary:hover {
   background-color: var(--button-color-secondary-hover);

@@ -3,7 +3,7 @@
 /* Container Styles */
 .mypage-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background: var(--color-bg-secondary);
 }
 
 .loading-container {
@@ -59,11 +59,11 @@
 /* Main Content Styles */
 .main-content {
   max-width: 1200px;
-  margin: 40px auto;
+  margin: 20px auto;
   padding: 0 40px;
 }
 
-.content-grid {
+.content-grid-profile {
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 40px;
@@ -72,13 +72,11 @@
 
 /* Avatar Section */
 .avatar-section {
-  background-color: white;
   border-radius: 16px;
   padding: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-circle {
@@ -92,12 +90,12 @@
   font-size: 48px;
   font-weight: 600;
   color: #9333ea;
-  margin-bottom: 16px;
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.173);
 }
 
 .edit-profile-button {
   padding: 6px 16px;
-  background-color: #f3f4f6;
+  background-color: white;
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -140,7 +138,10 @@
   flex-direction: column;
   gap: 20px;
 }
-
+.LogOut{
+  width: 150px;
+  background: rgb(255, 55, 55);
+}
 .form-field {
   display: flex;
   align-items: center;
@@ -213,8 +214,11 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
+}
+.saveButton{
+  margin-left: 20px;
 }
 
 .cancel-button {
@@ -265,7 +269,7 @@
     padding: 0 20px;
   }
   
-  .content-grid {
+  .content-grid-profile {
     grid-template-columns: 1fr;
     gap: 20px;
   }
@@ -291,4 +295,9 @@
   .action-buttons {
     flex-direction: column;
   }
+  .saveButton{
+    margin-top: 10px;
+    margin-left: 0px;
+}
+
 }
