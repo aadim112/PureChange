@@ -237,3 +237,62 @@ header{
 .toggle-link:hover{
   text-decoration: underline;
 }
+.HeroInformation{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 40px;
+  align-items: center;
+}
+.HeroInformation h2{
+  font-size: 40px;
+  font-weight: 600;
+}
+.HeroInformation p{
+  margin-top: 12px;
+  font-size: 20px;
+  width: 900px;
+  text-align: center;
+}
+.startTrackingButton{
+  margin-top: 20px;
+}
+.FistInformationSection{
+  padding: 40px;
+}
+.headerInformation{
+
+}
+.FeaturesCards{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+  gap: 20px;
+}
+.streakCard{
+  width: 400px;
+  height: 160px;
+  border: 2px solid rgb(212, 212, 212);
+  border-radius: 8px;
+  background-color: #d7d1ff;
+}
+.checklistCard{
+  width: 400px;
+  height: 160px;
+  border: 2px solid rgb(212, 212, 212);
+  border-radius: 8px;
+  background-color: #d7d1ff;
+}
+.positiveContentCard{
+  width: 400px;
+  height: 160px;
+  border: 2px solid rgb(212, 212, 212);
+  border-radius: 8px;
+  background-color: #d7d1ff;
+}
+.FistInformationStats{
+  
+}
