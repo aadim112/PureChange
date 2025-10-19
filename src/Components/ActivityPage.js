@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import styles from './ActivityPage.module.css';
-import Button from './Button';
+import Navbar from './Navbar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 import { ReactComponent as NoSign } from "../assets/NoSign.svg"
 import { ReactComponent as Sun } from "../assets/Sun.svg"
-import { ReactComponent as Menu } from "../assets/Menu.svg"
 import { useNavigate } from 'react-router-dom';
 
 export default function ActivityPage() {
   const [activeTab, setActiveTab] = useState('activity');
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const [checklist, setChecklist] = useState({
     drinkWater: false,
@@ -27,49 +25,16 @@ export default function ActivityPage() {
 
   return (
     <div className={styles["activity-page"]}>
-      <div className={styles["navbar"]}>
-        <div className={styles["logo-section"]}>
-          <Flame style={{width : 20 , height: 20}}></Flame>
-          <p className={styles["page-name"]}>Activity</p>
-        </div>
-
-        {/* Hamburger button visible on small screens */}
-        <div 
-          className={styles["menu-icon"]} 
-          onClick={() => setMenuOpen((prev) => !prev)}>
-          <Menu style={{width : 20, height: 20 }} ></Menu>
-        </div>
-
-        {/* Navigation buttons (conditionally visible) */}
-        <div 
-          className={`${styles["navigation-buttons"]} 
-          ${menuOpen ? styles["active"] : ""}`}>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/leaderboard')}
-          >
-            Ranking
-          </Button>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/routine')}
-          >
-            My Routine
-          </Button>
-          <Button 
-            variant='primary'
-            onClick={() => navigate('/activity')}
-          >
-            Activity
-          </Button>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/mypage')}
-          >
-            My Page
-          </Button>
-        </div>
-      </div>
+      <Navbar
+        pageName="Activity"
+        Icon={Flame}
+        buttons={[
+          { label: "Ranking", variant: "secondary", route: "/leaderboard" },
+          { label: "My Routine", variant: "secondary", route: "/routine" },
+          { label: "Activity", variant: "primary", route: "/activity" },
+          { label: "My Page", variant: "secondary", route: "/mypage" },
+        ]}
+      />
 
       <div className={styles["body"]}>
         {/* Daily Question */}

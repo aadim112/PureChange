@@ -1,61 +1,26 @@
 import React, { useState } from 'react';
 import styles from './ContentPage.module.css';
-import Button from './Button';
-import { ReactComponent as Flame } from "../assets/Flame.svg"
-import { ReactComponent as Menu } from "../assets/Menu.svg"
+import Navbar from './Navbar';
+import { ReactComponent as ContentIcon } from "../assets/Content.svg"
 import { useNavigate } from 'react-router-dom';
 
 export default function ContentPage() {
   const [activeTab, setActiveTab] = useState('content');
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className={styles["content-page"]}>
       {/* Navbar */}
-      <div className={styles["navbar"]}>
-        <div className={styles["logo-section"]}>
-          <Flame style={{width : 20 , height: 20}}></Flame>
-          <p className={styles["page-name"]}>Activity</p>
-        </div>
-
-        {/* Hamburger button visible on small screens */}
-        <div 
-          className={styles["menu-icon"]} 
-          onClick={() => setMenuOpen((prev) => !prev)}>
-          <Menu style={{width : 20, height: 20 }} ></Menu>
-        </div>
-
-        {/* Navigation buttons (conditionally visible) */}
-        <div 
-          className={`${styles["navigation-buttons"]} 
-          ${menuOpen ? styles["active"] : ""}`}>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/leaderboard')}
-          >
-            Ranking
-          </Button>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/routine')}
-          >
-            My Routine
-          </Button>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/activity')}
-          >
-            Activity
-          </Button>
-          <Button 
-            variant='secondary'
-            onClick={() => navigate('/mypage')}
-          >
-            My Page
-          </Button>
-        </div>
-      </div>
+      <Navbar
+        pageName="Content"
+        Icon={ContentIcon}
+        buttons={[
+          { label: "Ranking", variant: "secondary", route: "/leaderboard" },
+          { label: "My Routine", variant: "secondary", route: "/routine" },
+          { label: "Activity", variant: "secondary", route: "/activity" },
+          { label: "My Page", variant: "secondary", route: "/mypage" },
+        ]}
+      />
 
       {/* Main Content */}
       <div className={styles["main-content"]}>
