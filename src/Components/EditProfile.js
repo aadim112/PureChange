@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ref, get, update, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from '../firebase';
 import { ReactComponent as EditProfileIcon } from "../assets/EditProfile.svg"
-import './EditProfile.css';
-import { getAuth, linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import styles from './EditProfile.module.css';
+import Navbar from './Navbar';
 import Button from './Button';
+import { getAuth, linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const EditProfile = () => {
     const navigate = useNavigate();
@@ -276,290 +277,291 @@ const EditProfile = () => {
     }
 
     return (
-        <div className="mypage-container">
-            {/* Header */}
-            <div className="navbar">
-                <div className="logo-section">
-                    <EditProfileIcon style={{width : 20 , height: 20}}></EditProfileIcon>
-                    <p className="page-name">Edit Profile</p>
+        <div className={styles["mypage-container"]}>
+        {/* Header */}
+        <Navbar
+            pageName="Edit Profile"
+            Icon={EditProfileIcon}
+            buttons={[{ label: "Activity", variant: "primary", route: "/activity" }]}
+        />
+
+        {/* Main Content */}
+        <div className={styles["main-content"]}>
+            <div className={styles["content-grid-profile"]}>
+            {/* Left Section - Avatar */}
+            <div className={styles["avatar-section"]}>
+                <div className={styles["avatar-circle"]}>
+                {getInitials()}
                 </div>
-                <div className="navigation-buttons">
-                    <Button
-                    onClick={() => navigate('/activity')}
-                    variant='secondary'
+                <p style={{ fontWeight: '600', margin: '10px', fontSize: '16px' }}>
+                {localStorage.getItem('UserName')}
+                </p>
+                <Button
+                variant='secondary'
+                onClick={() => setIsEditing(!isEditing)}
+                className={styles["edit-profile-button"]}
+                >
+                <span>Edit</span>
+                </Button>
+            </div>
+
+            {/* Right Section - Form */}
+            <div className={styles["form-section"]}>
+                {/* Personal Information */}
+                <div className={styles["form-card"]}>
+                <h2 className={styles["form-title"]}>Personal Information</h2>
+
+                <div className={styles["form-fields"]}>
+                    {/* Name */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Name :</label>
+                    <input
+                        type="text"
+                        name="Name"
+                        value={userData.Name}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* Bio */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Bio :</label>
+                    <input
+                        type="text"
+                        name="Bio"
+                        value={userData.Bio}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* Email */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Email :</label>
+                    <input
+                        type="email"
+                        name="Email"
+                        value={userData.Email}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    <button
+                        className={`${styles["verify-button"]} ${
+                        isEmailVerified
+                            ? styles["verified"]
+                            : emailCheckStatus === "taken"
+                            ? styles["email-taken"]
+                            : ""
+                        }`}
+                        disabled={isEmailVerifyDisabled}
+                        onClick={handleEmailVerify}
                     >
-                        Activity
+                        {getEmailVerifyButtonText()}
+                    </button>
+                    </div>
+
+                    {/* Phone No */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Phone No :</label>
+                    <input
+                        type="tel"
+                        name="PhoneNumber"
+                        value={userData.PhoneNumber}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    <button
+                        className={`${styles["verify-button"]} ${
+                        isPhoneVerified ? styles["verified"] : ""
+                        }`}
+                        disabled={isPhoneVerified}
+                    >
+                        {isPhoneVerified ? "Verified" : "Verify"}
+                    </button>
+                    </div>
+
+                    {/* Gender */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Gender :</label>
+                    <select
+                        name="Gender"
+                        value={userData.Gender}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    </div>
+
+                    {/* Religion */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Religion :</label>
+                    <select
+                        name="Religion"
+                        value={userData.Religion}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    >
+                        <option value="">Select religion</option>
+                        <option value="hinduism">Hinduism</option>
+                        <option value="islam">Islam</option>
+                        <option value="christianity">Christianity</option>
+                        <option value="other">Other</option>
+                    </select>
+                    </div>
+
+                    {/* Weight */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Weight :</label>
+                    <input
+                        type="text"
+                        name="Weight"
+                        value={userData.Weight}
+                        onChange={handleInputChange}
+                        placeholder="kg"
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* Height */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Height :</label>
+                    <input
+                        type="text"
+                        name="Height"
+                        value={userData.Height}
+                        onChange={handleInputChange}
+                        placeholder="cm"
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* Age */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Age :</label>
+                    <input
+                        type="number"
+                        name="Age"
+                        value={userData.Age}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* City */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>City :</label>
+                    <input
+                        type="text"
+                        name="City"
+                        value={userData.City}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    </div>
+
+                    {/* Hobby */}
+                    <div className={styles["form-field"]}>
+                    <label className={styles["field-label"]}>Hobby :</label>
+                    <input
+                        type="text"
+                        name="Hobby"
+                        value={userData.Hobby}
+                        onChange={handleInputChange}
+                        className={styles["field-input"]}
+                    />
+                    </div>
+                </div>
+                </div>
+
+                {/* Accounts */}
+                <div className={styles["form-card"]}>
+                <h2 className={styles["form-title"]}>Accounts</h2>
+
+                <div className={styles["form-fields"]}>
+                    {/* Google */}
+                    <div className={styles["form-field"]}>
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <label className={styles["field-label"]}>Google :</label>
+                    <input
+                        type="text"
+                        disabled
+                        value={authProviders.google ? verifiedEmail : ""}
+                        placeholder={authProviders.google ? "" : "Not connected"}
+                        className={`${styles["field-input"]} ${styles["disabled-input"]}`}
+                    />
+                    <button
+                        className={`${styles["verify-button"]} ${
+                        authProviders.google ? styles["connected"] : ""
+                        }`}
+                        disabled={authProviders.google}
+                    >
+                        {authProviders.google ? "Connected" : "Not Connected"}
+                    </button>
+                    </div>
+
+                    {/* Microsoft */}
+                    <div className={styles["form-field"]}>
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#F25022" d="M0 0h11.377v11.372H0z"/>
+                        <path fill="#7FBA00" d="M12.623 0H24v11.372H12.623z"/>
+                        <path fill="#00A4EF" d="M0 12.628h11.377V24H0z"/>
+                        <path fill="#FFB900" d="M12.623 12.628H24V24H12.623z"/>
+                    </svg>
+                    <label className={styles["field-label"]}>Microsoft :</label>
+                    <input
+                        type="text"
+                        disabled
+                        placeholder="Not connected"
+                        className={`${styles["field-input"]} ${styles["disabled-input"]}`}
+                    />
+                    <button className={styles["verify-button"]}>Verify</button>
+                    </div>
+                </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className={styles["action-buttons"]}>
+                <div>
+                    <Button
+                        onClick={handleCancel}
+                        disabled={!hasChanges || isSaving}
+                        variant="secondary"
+                    >
+                    Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSave}
+                        disabled={!hasChanges || isSaving}
+                        variant="primary"
+                        className={styles["saveButton"]}
+                    >
+                    {isSaving ? "Saving..." : "Save Changes"}
                     </Button>
                 </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                <div className="content-grid-profile">
-                    {/* Left Section - Avatar */}
-                    <div className="avatar-section">
-                        <div className="avatar-circle">
-                            {getInitials()}
-                        </div>
-                        <p style={{fontWeight:'600',margin:'10px',fontSize:'16px'}}>{localStorage.getItem('UserName')}</p>
-                        <Button
-                        variant='secondary'
-                            onClick={() => setIsEditing(!isEditing)}
-                            className="edit-profile-button"
-                        >
-                            <span>Edit</span>
-                        </Button>
-                    </div>
-
-                    {/* Right Section - Form */}
-                    <div className="form-section">
-                        {/* Personal Information */}
-                        <div className="form-card">
-                            <h2 className="form-title">
-                                Personal Information
-                            </h2>
-
-                            <div className="form-fields">
-                                {/* Name */}
-                                <div className="form-field">
-                                    <label className="field-label">Name :</label>
-                                    <input
-                                        type="text"
-                                        name="Name"
-                                        value={userData.Name}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* Bio */}
-                                <div className="form-field">
-                                    <label className="field-label">Bio :</label>
-                                    <input
-                                        type="text"
-                                        name="Bio"
-                                        value={userData.Bio}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* Email */}
-                                <div className="form-field">
-                                    <label className="field-label">Email :</label>
-                                    <input
-                                        type="email"
-                                        name="Email"
-                                        value={userData.Email}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                    <button 
-                                        className={`verify-button ${
-                                            isEmailVerified ? 'verified' : 
-                                            emailCheckStatus === 'taken' ? 'email-taken' : ''
-                                        }`}
-                                        disabled={isEmailVerifyDisabled}
-                                        onClick={handleEmailVerify}
-                                    >
-                                        {getEmailVerifyButtonText()}
-                                    </button>
-                                </div>
-
-                                {/* Phone No */}
-                                <div className="form-field">
-                                    <label className="field-label">Phone No :</label>
-                                    <input
-                                        type="tel"
-                                        name="PhoneNumber"
-                                        value={userData.PhoneNumber}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                    <button 
-                                        className={`verify-button ${isPhoneVerified ? 'verified' : ''}`}
-                                        disabled={isPhoneVerified}
-                                    >
-                                        {isPhoneVerified ? 'Verified' : 'Verify'}
-                                    </button>
-                                </div>
-
-                                {/* Gender */}
-                                <div className="form-field">
-                                    <label className="field-label">Gender :</label>
-                                    <select
-                                        name="Gender"
-                                        value={userData.Gender}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    >
-                                        <option value="">Select Gender</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-
-                                {/* Religion */}
-                                <div className="form-field">
-                                    <label className="field-label">Religion :</label>
-                                    <select
-                                        name="Religion"
-                                        value={userData.Religion}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    >
-                                        <option value="">Select religion</option>
-                                        <option value="hinduism">Hinduism</option>
-                                        <option value="islam">Islam</option>
-                                        <option value="christianity">Christianity</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-
-                                {/* Weight */}
-                                <div className="form-field">
-                                    <label className="field-label">Weight :</label>
-                                    <input
-                                        type="text"
-                                        name="Weight"
-                                        value={userData.Weight}
-                                        onChange={handleInputChange}
-                                        placeholder="kg"
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* Height */}
-                                <div className="form-field">
-                                    <label className="field-label">Height :</label>
-                                    <input
-                                        type="text"
-                                        name="Height"
-                                        value={userData.Height}
-                                        onChange={handleInputChange}
-                                        placeholder="cm"
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* Age */}
-                                <div className="form-field">
-                                    <label className="field-label">Age :</label>
-                                    <input
-                                        type="number"
-                                        name="Age"
-                                        value={userData.Age}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* City */}
-                                <div className="form-field">
-                                    <label className="field-label">City :</label>
-                                    <input
-                                        type="text"
-                                        name="City"
-                                        value={userData.City}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                </div>
-
-                                {/* Hobby */}
-                                <div className="form-field">
-                                    <label className="field-label">Hobby :</label>
-                                    <input
-                                        type="text"
-                                        name="Hobby"
-                                        value={userData.Hobby}
-                                        onChange={handleInputChange}
-                                        className="field-input"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Accounts */}
-                        <div className="form-card">
-                            <h2 className="form-title">
-                                Accounts
-                            </h2>
-
-                            <div className="form-fields">
-                                {/* Google */}
-                                <div className="form-field">
-                                    <svg width="20" height="20" viewBox="0 0 24 24">
-                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                                    </svg>
-                                    <label className="field-label">Google :</label>
-                                    <input
-                                        type="text"
-                                        disabled
-                                        value={authProviders.google ? verifiedEmail : ''}
-                                        placeholder={authProviders.google ? '' : 'Not connected'}
-                                        className="field-input disabled-input"
-                                    />
-                                    <button 
-                                        className={`verify-button ${authProviders.google ? 'connected' : ''}`}
-                                        disabled={authProviders.google}
-                                    >
-                                        {authProviders.google ? 'Connected' : 'Not Connected'}
-                                    </button>
-                                </div>
-
-                                {/* Microsoft */}
-                                <div className="form-field">
-                                    <svg width="20" height="20" viewBox="0 0 24 24">
-                                        <path fill="#F25022" d="M0 0h11.377v11.372H0z"/>
-                                        <path fill="#7FBA00" d="M12.623 0H24v11.372H12.623z"/>
-                                        <path fill="#00A4EF" d="M0 12.628h11.377V24H0z"/>
-                                        <path fill="#FFB900" d="M12.623 12.628H24V24H12.623z"/>
-                                    </svg>
-                                    <label className="field-label">Microsoft :</label>
-                                    <input
-                                        type="text"
-                                        disabled
-                                        placeholder="Not connected"
-                                        className="field-input disabled-input"
-                                    />
-                                    <button className="verify-button">
-                                        Verify
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons - Always visible but conditionally enabled */}
-                        <div className="action-buttons">
-                            <div>
-                                <Button
-                                    onClick={handleCancel}
-                                    disabled={!hasChanges || isSaving}
-                                    variant='secondary'
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={!hasChanges || isSaving}
-                                    variant='primary'
-                                    className='saveButton'
-                                >
-                                    {isSaving ? 'Saving...' : 'Save Changes'}
-                                </Button>
-                            </div>
-                            <Button className='LogOut' variant='primary' onClick={handleLogout}>Logout</Button>
-                        </div>
-                    </div>
+                <Button
+                    className={styles["LogOut"]}
+                    variant="primary"
+                    onClick={handleLogout}
+                >
+                    Logout
+                </Button>
                 </div>
             </div>
-            <br></br>
+            </div>
         </div>
+        <br />
+        </div>
+
     );
 };
 
