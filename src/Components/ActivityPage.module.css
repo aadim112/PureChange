@@ -14,6 +14,7 @@
 .navbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 10px;
   background: white;
   padding: 10px;
@@ -39,6 +40,12 @@
 .navigation-buttons {
   display: flex;
   gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.menu-icon {
+  display: none;
+  cursor: pointer;
 }
 
 .body {
@@ -318,10 +325,28 @@
 @media (max-width: 768px) {
   .navbar {
     height: 50px;
-    padding: 5px 0px;
-    overflow: hidden;
   }
 
+  .menu-icon {
+    display: block;
+  }
+
+  .navigation-buttons {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    background: white;
+    box-shadow: var(--shadow-base);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .navigation-buttons.active {
+    display: flex;
+  }
+  
   .body {
     padding: 16px;
   }

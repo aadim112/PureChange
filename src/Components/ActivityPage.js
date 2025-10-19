@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import './ActivityPage.css';
+import styles from './ActivityPage.module.css';
 import Button from './Button';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 import { ReactComponent as NoSign } from "../assets/NoSign.svg"
 import { ReactComponent as Sun } from "../assets/Sun.svg"
+import { ReactComponent as Menu } from "../assets/Menu.svg"
 import { useNavigate } from 'react-router-dom';
 
 export default function ActivityPage() {
   const [activeTab, setActiveTab] = useState('activity');
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const [checklist, setChecklist] = useState({
     drinkWater: false,
     yoga: false,
@@ -23,81 +26,92 @@ export default function ActivityPage() {
   };
 
   return (
-    <div className="activity-page">
-      <div className="navbar">
-        <div className="logo-section">
+    <div className={styles["activity-page"]}>
+      <div className={styles["navbar"]}>
+        <div className={styles["logo-section"]}>
           <Flame style={{width : 20 , height: 20}}></Flame>
-          <p className="page-name">Activity</p>
+          <p className={styles["page-name"]}>Activity</p>
         </div>
-        <div className="navigation-buttons">
+
+        {/* Hamburger button visible on small screens */}
+        <div 
+          className={styles["menu-icon"]} 
+          onClick={() => setMenuOpen((prev) => !prev)}>
+          <Menu style={{width : 20, height: 20 }} ></Menu>
+        </div>
+
+        {/* Navigation buttons (conditionally visible) */}
+        <div 
+          className={`${styles["navigation-buttons"]} 
+          ${menuOpen ? styles["active"] : ""}`}>
           <Button 
             variant='secondary'
-            onClick={() => navigate('ranking')}
+            onClick={() => navigate('/leaderboard')}
           >
             Ranking
           </Button>
           <Button 
             variant='secondary'
-            onClick={() => navigate('routine')}
+            onClick={() => navigate('/routine')}
           >
             My Routine
           </Button>
           <Button 
             variant='primary'
-            onClick={() => navigate('activity')}
+            onClick={() => navigate('/activity')}
           >
             Activity
           </Button>
           <Button 
             variant='secondary'
-            onClick={() => navigate('/edit-profile')}
+            onClick={() => navigate('/mypage')}
           >
             My Page
           </Button>
         </div>
       </div>
 
-      <div className="body">
+      <div className={styles["body"]}>
         {/* Daily Question */}
-        <div className="daily-question-card">
+        <div className={styles["daily-question-card"]}>
           <p>&lt;Daily Question&gt;</p>
         </div>
 
         {/* Stats Section */}
-        <div className="stats-section">
+        <div className={styles["stats-section"]}>
           {/* Tab Streak */}
-          <div className="stat-card">
+          <div className={styles["stat-card"]}>
             <h3>Tab Streak</h3>
-            <div className="streak-content">
-              <div className="streak-item">
-                <div className="streak-name">
+            <div className={styles["streak-content"]}>
+              <div className={styles["streak-item"]}>
+                <div className={styles["streak-name"]}>
                   <NoSign style={{width : 16 , height: 16}}></NoSign>
-                  <p className="no-streak">No Fap Streak</p>
+                  <p className={styles["no-streak"]}>No Fap Streak</p>
                 </div>
-                <div className="days">
-                  <div className='day-name'>
+                <div className={styles["days"]}>
+                  <div className={styles["day-name"]}>
                     <Flame style={{width : 18 , height: 18}}></Flame>
-                    <span className="day-count">5 Days</span>
+                    <span className={styles["day-count"]}>5 Days</span>
                   </div>
-                  <div className="day-info">
-                    <span className="small">Best: 11</span>
-                    <span className="small">This month: 3</span>
+                  <div className={styles["day-info"]}>
+                    <span className={styles["small"]}>Best: 11</span>
+                    <span className={styles["small"]}>This month: 3</span>
                   </div>
                 </div>
               </div>
-              <div className="streak-item">
-                <div className="streak-name">
+              <div className={styles["streak-item"]}>
+                <div className={styles["streak-name"]}>
                   <Sun style={{width : 16 , height: 16}}></Sun>
-                  <p className='no-streak'>Daily Streak</p>
+                  <p className={styles["no-streak"]}>Daily Streak</p>
                 </div>
-                <div className="days">
-                  <div className='day-name'>
+                <div className={styles["days"]}>
+                  <div className={styles["day-name"]}>
                     <Flame style={{width : 18 , height: 18}}></Flame>
-                    <span className="day-count">16 Days</span>
+                    <span className={styles["day-count"]}>16 Days</span>
                   </div>
-                  <div className="day-info">
-                    <span className="small">Best: 14</span>
-                    <span className="small">This month: 3</span>
+                  <div className={styles["day-info"]}>
+                    <span className={styles["small"]}>Best: 14</span>
+                    <span className={styles["small"]}>This month: 3</span>
                   </div>
                 </div>
               </div>
@@ -105,10 +119,10 @@ export default function ActivityPage() {
           </div>
 
           {/* Checklist */}
-          <div className="stat-card checklist">
+          <div className={styles["stat-card"]}>
             <h3>Checklist</h3>
-            <div className="checklist-items">
-              <label className="checkbox-item">
+            <div className={styles["checklist-items"]}>
+              <label className={styles["checkbox-item"]}>
                 <input 
                   type="checkbox" 
                   checked={checklist.drinkWater}
@@ -116,7 +130,7 @@ export default function ActivityPage() {
                 />
                 <span>Drink Water (2 liters)</span>
               </label>
-              <label className="checkbox-item">
+              <label className={styles["checkbox-item"]}>
                 <input 
                   type="checkbox"
                   checked={checklist.yoga}
@@ -124,7 +138,7 @@ export default function ActivityPage() {
                 />
                 <span>10 minutes Yoga</span>
               </label>
-              <label className="checkbox-item">
+              <label className={styles["checkbox-item"]}>
                 <input 
                   type="checkbox"
                   checked={checklist.readMinutes}
@@ -137,39 +151,39 @@ export default function ActivityPage() {
         </div>
 
         {/* Content Section */}
-        <div className="content-section">
+        <div className={styles["content-section"]}>
           <h2>Content</h2>
-          <div className="content-grid">
+          <div className={styles["content-grid"]}>
             {/* General Content */}
-            <div className="content-card">
-              <div className="card-image general"></div>
+            <div className={styles["content-card"]}>
+              <div className={styles["card-image"]}></div>
               <h4>General Content</h4>
               <p>Articles, tips, lessons</p>
-              <button className="explore-btn">Browse</button>
+              <button className={styles["explore-btn"]}>Browse</button>
             </div>
 
             {/* Pro Content */}
-            <div className="content-card">
-              <div className="card-image pro"></div>
+            <div className={styles["content-card"]}>
+              <div className={styles["card-image"]}></div>
               <h4>Pro Content</h4>
               <p>Personalized routines, live videos</p>
-              <button className="explore-btn">Explore</button>
+              <button className={styles["explore-btn"]}>Explore</button>
             </div>
 
             {/* Elite Content */}
-            <div className="content-card">
-              <div className="card-image elite"></div>
+            <div className={styles["content-card"]}>
+              <div className={styles["card-image"]}></div>
               <h4>Elite Content</h4>
               <p>Personal calls, Creator videos</p>
-              <button className="explore-btn">Explore</button>
+              <button className={styles["explore-btn"]}>Explore</button>
             </div>
 
             {/* Daily Quote */}
-            <div className="content-card">
-              <div className="card-image quote"></div>
+            <div className={styles["content-card"]}>
+              <div className={styles["card-image"]}></div>
               <h4>Daily Quote</h4>
               <p>oh ! have a look</p>
-              <button className="explore-btn">More Quotes</button>
+              <button className={styles["explore-btn"]}>More Quotes</button>
             </div>
           </div>
         </div>

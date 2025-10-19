@@ -1,5 +1,5 @@
 import React from 'react';
-import './Button.css';
+import styles from './Button.module.css';
 import clsx from 'clsx';
 
 /**
@@ -15,9 +15,9 @@ import clsx from 'clsx';
 
 function Button({ children, onClick, variant = 'primary', disabled = false, className = '', type = 'button' }) {
   const buttonClassName = clsx(
-    'btn',
-    `btn--${variant}`,
-    className
+    styles.btn,
+    styles[`btn--${variant}`],
+    className && styles[className]
   );
 
   return (

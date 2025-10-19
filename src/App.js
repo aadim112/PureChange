@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './App.css';
+import styles from './App.module.css';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, sendEmailVerification, applyActionCode } from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
 import { ref, set, child, get } from 'firebase/database';
@@ -352,15 +352,15 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="App">
-          <div className='Offers'>
+        <div className={styles["App"]}>
+          <div className={styles["Offers"]}>
             <p>Offer Information will be over here</p>
           </div>
           <header>
-            <div className='logo'>Pure Change</div>
-            <div className='options'>
-              <button className='homebutton'>Home</button>
-              <button className='startbutton' onClick={() => {
+            <div className={styles["logo"]}>Pure Change</div>
+            <div className={styles["options"]}>
+              <button className={styles["homebutton"]}>Home</button>
+              <button className={styles["startbutton"]} onClick={() => {
                 setShowAuth(true);
                 setShowEmailVerification(false);
                 setIsLogin(true);
@@ -372,27 +372,27 @@ function App() {
           </header>
 
           {showAuth && (
-            <div className='authentication'>
-              <div className='card'>
-                <button className='close-btn' onClick={() => {
+            <div className={styles["authentication"]}>
+              <div className={styles["card"]}>
+                <button className={styles["close-btn"]} onClick={() => {
                   setShowAuth(false);
                   setShowEmailVerification(false);
                   setError('');
                 }}>
                   ×
                 </button>
-                <div className='card-content'>
+                <div className={styles["card-content"]}>
                   {showEmailVerification ? (
                     // Email Verification Screen
                     <>
                       <h2>Verify Your Email</h2>
-                      <p className='subtitle'>We've sent a verification email to {pendingUserData?.email}</p>
+                      <p className={styles["subtitle"]}>We've sent a verification email to {pendingUserData?.email}</p>
 
-                      <div className='auth-form'>
+                      <div className={styles["auth-form"]}>
                         <div style={{ textAlign: 'center', padding: '20px' }}>
                           <p style={{ marginBottom: '20px' }}>Click the verification link in your email to continue</p>
                           <button
-                            className='signin-btn'
+                            className={styles["signin-btn"]}
                             onClick={completeSignUp}
                             style={{ marginBottom: '15px' }}
                           >
@@ -403,13 +403,13 @@ function App() {
                           </p>
                         </div>
 
-                        {error && <div className='error-message' style={{ color: 'red' }}>{error}</div>}
+                        {error && <div className={styles["error-message"]} style={{ color: 'red' }}>{error}</div>}
                       </div>
 
-                      <p className='toggle-text'>
+                      <p className={styles["toggle-text"]}>
                         Didn't receive email?{' '}
                         <span
-                          className='toggle-link'
+                          className={styles["toggle-link"]}
                           onClick={handleResendEmail}
                           style={{ cursor: verificationTimer > 0 ? 'not-allowed' : 'pointer', opacity: verificationTimer > 0 ? 0.5 : 1 }}
                         >
@@ -417,9 +417,9 @@ function App() {
                         </span>
                       </p>
 
-                      <p className='toggle-text'>
+                      <p className={styles["toggle-text"]}>
                         <span
-                          className='toggle-link'
+                          className={styles["toggle-link"]}
                           onClick={() => {
                             setShowEmailVerification(false);
                             setPendingUserData(null);
@@ -436,10 +436,10 @@ function App() {
                     // Sign In/Sign Up Screen
                     <>
                       <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-                      <p className='subtitle'>{isLogin ? 'Sign in to continue your journey' : 'Sign up to get started with Pure Change'}</p>
+                      <p className={styles["subtitle"]}>{isLogin ? 'Sign in to continue your journey' : 'Sign up to get started with Pure Change'}</p>
 
-                      <button className='google-btn' onClick={handleGoogleAuth}>
-                        <svg className='google-icon' viewBox="0 0 24 24" width="20" height="20">
+                      <button className={styles["google-btn"]} onClick={handleGoogleAuth}>
+                        <svg className={styles["google-icon"]} viewBox="0 0 24 24" width="20" height="20">
                           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -448,13 +448,13 @@ function App() {
                         {isLogin ? 'Continue with Google' : 'Sign up with Google'}
                       </button>
 
-                      <div className='divider'>
+                      <div className={styles["divider"]}>
                         <span>or</span>
                       </div>
 
-                      <div className='auth-form'>
+                      <div className={styles["auth-form"]}>
                         {!isLogin && (
-                          <div className='input-group'>
+                          <div className={styles["input-group"]}>
                             <label>UserName</label>
                             <input
                               type="text"
@@ -470,7 +470,7 @@ function App() {
                           </div>
                         )}
 
-                        <div className='input-group'>
+                        <div className={styles["input-group"]}>
                           <label>Email</label>
                           <input
                             type="email"
@@ -481,7 +481,7 @@ function App() {
                           />
                         </div>
 
-                        <div className='input-group'>
+                        <div className={styles["input-group"]}>
                           <label>Password</label>
                           <input
                             type="password"
@@ -492,9 +492,9 @@ function App() {
                           />
                         </div>
 
-                        {error && <div className='error-message' style={{ color: 'red' }}>{error}</div>}
+                        {error && <div className={styles["error-message"]} style={{ color: 'red' }}>{error}</div>}
                         <button
-                          className='signin-btn'
+                          className={styles["signin-btn"]}
                           onClick={handleSubmit}
                           disabled={!isLogin && isCheckingUsername}
                         >
@@ -502,9 +502,9 @@ function App() {
                         </button>
                       </div>
 
-                      <p className='toggle-text'>
+                      <p className={styles["toggle-text"]}>
                         {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <span className='toggle-link' onClick={() => {
+                        <span className={styles["toggle-link"]} onClick={() => {
                           setIsLogin(!isLogin);
                           setError('');
                           setEmail('');
@@ -522,7 +522,7 @@ function App() {
             </div>
           )}
           <div>
-            <button className='testPage' onClick={() => navigate('/testpage')}>
+            <button className={styles["testPage"]} onClick={() => navigate('/testpage')}>
               Test Page
             </button>
           </div>
