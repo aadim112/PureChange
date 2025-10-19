@@ -12,6 +12,8 @@ import EditProfile from './Components/EditProfile';
 import ContentPage from './Components/ContentPage';
 import LeaderboardPage from './Components/LeaderboardPage';
 import ActivityPage from './Components/ActivityPage';
+import LLM from './Components/LLM';
+import Button from './Components/Button';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -521,6 +523,30 @@ function App() {
               </div>
             </div>
           )}
+
+          <div className='HeroInformation'>
+            <h2>Build Decscipline, Keep your Streak, Stay Motivated</h2>
+            <p>Track your progress, check off healthy habits, and consume uplifiting content design to strengthen self control and focus. Simple tools, real momentum.</p>
+            <Button variant='primary' onClick={{}} className='startTrackingButton'>Start Tracking</Button>
+          </div>
+
+          <div className='FistInformationSection'>
+            <div className='headerInformation'>
+              <h2>What You Get</h2>
+              <p>Everything you need to stay consistent and motivated </p>
+            </div>
+            <div className='FeaturesCards'>
+              <div className='streakCard'></div>
+              <div className='checklistCard'></div>
+              <div className='positiveContentCard'></div>
+            </div>
+            <div className='FistInformationStats'>
+              <div className='FistInformationStatsCard'></div>
+              <div className='FistInformationStatsCard'></div>
+              <div className='FistInformationStatsCard'></div>
+            </div>
+          </div>
+
           <div>
             <button className={styles["testPage"]} onClick={() => navigate('/testpage')}>
               Test Page
@@ -535,6 +561,7 @@ function App() {
       <Route path="/content" element={<ContentPage/>} />
       <Route path="/leaderboard" element={<LeaderboardPage/>} />
       <Route path='/edit-profile' element={<EditProfile />} />
+      <Route path='/LLM' element={<LLM/>}/>
     </Routes>
   );
 }
