@@ -524,26 +524,26 @@ function App() {
             </div>
           )}
 
-          <div className='HeroInformation'>
+          <div className={styles['HeroInformation']}>
             <h2>Build Decscipline, Keep your Streak, Stay Motivated</h2>
             <p>Track your progress, check off healthy habits, and consume uplifiting content design to strengthen self control and focus. Simple tools, real momentum.</p>
-            <Button variant='primary' onClick={{}} className='startTrackingButton'>Start Tracking</Button>
+            <Button variant='primary' onClick={{}} className={styles['startTrackingButton']}>Start Tracking</Button>
           </div>
 
-          <div className='FistInformationSection'>
-            <div className='headerInformation'>
+          <div className={styles['FistInformationSection']}>
+            <div className={styles['headerInformation']}>
               <h2>What You Get</h2>
               <p>Everything you need to stay consistent and motivated </p>
             </div>
-            <div className='FeaturesCards'>
-              <div className='streakCard'></div>
-              <div className='checklistCard'></div>
-              <div className='positiveContentCard'></div>
+            <div className={styles['FeaturesCards']}>
+              <div className={styles['streakCard']}></div>
+              <div className={styles['checklistCard']}></div>
+              <div className={styles['positiveContentCard']}></div>
             </div>
-            <div className='FistInformationStats'>
-              <div className='FistInformationStatsCard'></div>
-              <div className='FistInformationStatsCard'></div>
-              <div className='FistInformationStatsCard'></div>
+            <div className={styles['FistInformationStats']}>
+              <div className={styles['FistInformationStatsCard']}></div>
+              <div className={styles['FistInformationStatsCard']}></div>
+              <div className={styles['FistInformationStatsCard']}></div>
             </div>
           </div>
 
