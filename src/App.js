@@ -12,7 +12,6 @@ import EditProfile from './Components/EditProfile';
 import ContentPage from './Components/ContentPage';
 import LeaderboardPage from './Components/LeaderboardPage';
 import ActivityPage from './Components/ActivityPage';
-import LLM from './Components/LLM';
 import Button from './Components/Button';
 
 function App() {
@@ -561,7 +560,6 @@ function App() {
       <Route path="/content" element={<ContentPage/>} />
       <Route path="/leaderboard" element={<LeaderboardPage/>} />
       <Route path='/edit-profile' element={<EditProfile />} />
-      <Route path='/LLM' element={<LLM/>}/>
     </Routes>
   );
 }

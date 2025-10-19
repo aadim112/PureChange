@@ -38,7 +38,10 @@ export default function ActivityPage() {
 
       <div className={styles["body"]}>
         {/* Daily Question */}
-        <div className={styles["daily-question-card"]}>
+        <div 
+        className={styles["daily-question-card"]}
+        onClick={() => navigate('/content')}
+        >
           <p>&lt;Daily Question&gt;</p>
         </div>
 

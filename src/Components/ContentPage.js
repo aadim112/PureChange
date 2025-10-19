@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import styles from './ContentPage.module.css';
 import Navbar from './Navbar';
+import Button from './Button';
 import { ReactComponent as ContentIcon } from "../assets/Content.svg"
+import { ReactComponent as ScriptureIcon } from "../assets/ScriptureIcon.svg"
 import { useNavigate } from 'react-router-dom';
 
 export default function ContentPage() {
@@ -29,29 +31,32 @@ export default function ContentPage() {
           <div className={styles["question-title"]}>&lt;Daily Question&gt;</div>
           
           <div className={styles["scroll-container"]}>
-            <div className={styles["scroll-paper"]}>
-              <div className={styles["peacock-feather"]}></div>
-              <div className={styles["ink-bottle"]}></div>
-              <div className={styles["script-text"]}>&lt;Script&gt;</div>
+            <ScriptureIcon className={styles["scroll-paper"]} />
+            <div className={styles["script-text"]}>&lt;Script&gt;</div>
+          </div>
+          
+          {/* Info Card */}
+          <div className={styles["info-card"]}>
+            <div className={styles["info-content"]}>
+              <div className={styles["info-label"]}>&lt;Translation&gt;</div>
+              <div>&</div>
+              <div className={styles["info-label"]}>&lt;Explanation&gt;</div>
             </div>
           </div>
-        </div>
-
-        {/* Info Card */}
-        <div className={styles["info-card"]}>
-          <div className={styles["info-content"]}>
-            <div className={styles["info-label"]}>&lt;Translation&gt;</div>
-            <div>&</div>
-            <div className={styles["info-label"]}>&lt;Explanation&gt;</div>
+          
+          {/* More Content Button */}
+          <div className={styles["more-content-btn"]}>
+            <Button
+              onClick={() => navigate('/more-content')}
+              variant="primary"
+              className={styles["more-content"]}
+            >
+              More <br/>
+              Content
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* More Content Button */}
-      <button className={styles["more-content-btn"]}>
-        <span className={styles["btn-text-main"]}>More</span>
-        <span className={styles["btn-text-sub"]}>Content</span>
-      </button>
     </div>
   );
 }

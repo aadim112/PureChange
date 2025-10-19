@@ -138,10 +138,7 @@
   flex-direction: column;
   gap: 20px;
 }
-.LogOut{
-  width: 150px;
-  background: rgb(255, 55, 55);
-}
+
 .form-field {
   display: flex;
   align-items: center;
@@ -218,50 +215,13 @@
   gap: 12px;
 }
 
-.saveButton{
+.saveButton {
   margin-left: 20px;
 }
 
-.cancel-button {
-  padding: 10px 24px;
-  background-color: white;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.cancel-button:hover:not(:disabled) {
-  background-color: #f9fafb;
-}
-
-.cancel-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.save-button {
-  padding: 10px 24px;
-  background-color: #4f46e5;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.save-button:hover:not(:disabled) {
-  background-color: #4338ca;
-}
-
-.save-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.LogOut{
+  width: 150px;
+  background: rgb(255, 55, 55);
 }
 
 /* Responsive Design */
