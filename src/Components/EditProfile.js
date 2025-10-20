@@ -6,6 +6,7 @@ import { ReactComponent as EditProfileIcon } from "../assets/EditProfile.svg"
 import styles from './EditProfile.module.css';
 import Navbar from './Navbar';
 import Button from './Button';
+import Avatar from './Avatar';
 import { getAuth, linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const EditProfile = () => {
@@ -290,9 +291,7 @@ const EditProfile = () => {
             <div className={styles["content-grid-profile"]}>
             {/* Left Section - Avatar */}
             <div className={styles["avatar-section"]}>
-                <div className={styles["avatar-circle"]}>
-                {getInitials()}
-                </div>
+                <Avatar initials={getInitials()} />
                 <p style={{ fontWeight: '600', margin: '10px', fontSize: '16px' }}>
                 {localStorage.getItem('UserName')}
                 </p>

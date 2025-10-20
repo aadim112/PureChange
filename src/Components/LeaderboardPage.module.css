@@ -1,0 +1,362 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.leaderboard-page {
+  background: var(--color-bg-secondary);
+  min-height: 100vh;
+  font-family: var(--font-family-poppins);
+}
+
+/* Main Content */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* User Stats Card */
+.user-stats-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: 1.75fr 1.5fr 1.5fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.user-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-font-primary);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value-group{
+  display: flex;
+  align-items: end;
+  gap: 6px;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.stat-subvalue {
+  font-size: 14px;
+  font-weight: 600;;
+  color: var(--color-text-secondary);
+}
+
+/* Leaderboard Card */
+.leaderboard-card {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 40px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0px 20px 12px 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.leaderboard-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Leaderboard List */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0px 130px;
+}
+
+.leaderboard-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-item:hover {
+  background: #f0f0f0;
+  transform: translateX(4px);
+}
+
+/* Top 3 Rankings */
+.leaderboard-item.rank1 {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+}
+
+.leaderboard-item.rank2 {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  border: 2px solid #9ca3af;
+}
+
+.leaderboard-item.rank3 {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border: 2px solid #fb923c;
+}
+
+.leaderboard-item.highlight {
+  box-shadow: 0 6px 12px rgba(251, 191, 36, 0.4);
+}
+
+/* Rank Section */
+.rank-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  padding: 8px 8px;
+}
+
+.rank-number-plain {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+}
+
+/* User Section */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usersAvatar{
+  box-shadow: none;
+  pointer-events: none;
+  border: 1px solid var(--color-bg-tertiary);
+}
+.usersAvatar.small{
+  margin-left: 13px;
+  margin-right: 13px;
+}
+
+.user-name-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Stats Section */
+.stats-section {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 16px;
+  margin-right: 10px;
+}
+.stats-section.small {
+  font-size: 14px;
+}
+
+.streak{
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+}
+.streak.small{
+  font-weight: 400;
+  color: #888;
+}
+
+.streak-value {
+  font-weight: 700;
+  color: var(--color-bg-tertiary);
+}
+.streak-value.small {
+  font-weight: 600;
+  color: var(--color-bg-tertiary);
+}
+
+.gblrank{
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.gblrank.small{
+  font-weight: 400;
+  color: #333;
+}
+
+.gblrank-value {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.gblrank-value.small {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .leaderboard-list{
+    padding: 0px 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-stats-card {
+    grid-template-columns: 1.5fr 1.5fr 1fr;
+    padding: 18px 24px;
+  }
+  .user-stats-card > :nth-child(1) {
+    grid-column: 1 / -1;
+  }
+  .user-stats-card > :nth-child(n+2) {
+    grid-column: auto;
+  }
+
+  .stat-item {
+    align-items: center;
+  }
+
+  .stat-value-group{
+    gap: 4px;
+  }
+
+  .stat-value {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .flame {
+    width: 16px;
+    height: auto;
+  }
+
+  .stat-subvalue {
+    font-size: 12px;
+    font-weight: 600;;
+    color: var(--color-text-secondary);
+  }
+  
+  .leaderboard-card {
+    padding: 24px;
+  }
+  
+  .leaderboard-list{
+    padding: 0px 30px;
+  }
+
+  .stats-section {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .stats-section.small {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 20px 12px;
+  }
+  .user-stats-card {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 18px;
+    padding: 12px 20px;
+  }
+  .user-stats-card > :nth-child(1) {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .user-stats-card > :nth-child(4) {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .user-stats-card > :nth-child(2) {
+   grid-row: 2;
+    grid-column: 1;
+  }
+  .user-stats-card > :nth-child(3) {
+    grid-row: 2;
+    grid-column: 2;
+  }
+  
+  /* .user-stats-card{
+    grid-template-columns: 1fr;
+
+  } */
+
+  .leaderboard-header{
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .leaderboard-list{
+    padding: 0px 5px;
+  }
+
+  .leaderboard-item {
+    padding: 5px 10px;
+    grid-template-columns: 30px 1fr auto;
+  }
+
+  .rank-number {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  .rank-number-plain {
+    font-size: 13px;
+  }
+
+  .user-name-text{
+    font-size: 14px;
+  }
+
+  .stats-section {
+    font-size: 12px;
+  }
+  .stats-section.small {
+    font-size: 11px;
+  }
+}

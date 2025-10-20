@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Button from './Button';
 import Navbar from './Navbar';
+import Avatar from './Avatar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 
 // TestPage Component - Ready to integrate with React Router
@@ -43,6 +44,22 @@ function TestPage() {
     <div>
       <Navbar pageName="Activity" Icon={Flame} buttons={buttons} />
       <Navbar />
+    </div>
+    <div style={{display: "flex", flexDirection: "column" , gap: "20px", alignItems: "center", margin: "100px"}}>
+      // Default large
+      <Avatar initials="RS" />
+
+      // Preset sizes
+      <Avatar initials="RS" size="large" />
+      <Avatar initials="RS" size="medium" />
+      <Avatar initials="RS" size="small" />
+
+      // Custom numeric size (auto-calculates font)
+      <Avatar initials="RS" size={100} />
+
+      // Custom object (manual font)
+      <Avatar initials="RS" size={{ size: 80, font: 28 }} />
+
     </div>
     </>
   );
