@@ -529,11 +529,11 @@ const EditProfile = () => {
                     >
                     Cancel
                     </Button>
-                    <Button
-                        onClick={handleSave}
+                    <Button                        
                         disabled={!hasChanges || isSaving}
-                        variant="primary"
                         className={styles["saveButton"]}
+                        variant="primary"
+                        onClick={handleSave}
                     >
                     {isSaving ? "Saving..." : "Save Changes"}
                     </Button>

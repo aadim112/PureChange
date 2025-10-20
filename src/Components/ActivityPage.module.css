@@ -10,44 +10,6 @@
   font-family: var(--font-family-poppins);
 }
 
-/* Header & Tabs */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  background: white;
-  padding: 10px;
-  box-shadow: var(--shadow-base);
-  position: sticky;
-  top: 0;
-  z-index: 1000; 
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 10px;
-}
-
-.page-name{
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-}
-
-.navigation-buttons {
-  display: flex;
-  gap: 10px;
-  transition: all 0.3s ease;
-}
-
-.menu-icon {
-  display: none;
-  cursor: pointer;
-}
-
 .body {
   padding: 24px;
   max-width: 1200px;
