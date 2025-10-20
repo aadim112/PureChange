@@ -237,16 +237,6 @@ const EditProfile = () => {
         setEmailCheckStatus('');
     };
 
-    const getInitials = () => {
-        if (userData.Name) {
-            const names = userData.Name.split(' ');
-            return names.length > 1
-                ? `${names[0][0]}${names[1][0]}`.toUpperCase()
-                : names[0].substring(0, 2).toUpperCase();
-        }
-        return userData.UserName ? userData.UserName.substring(0, 2).toUpperCase() : 'U';
-    };
-
     // Check if email matches the verified email
     const isEmailVerified = userData.Email && userData.Email === verifiedEmail;
     
@@ -291,7 +281,7 @@ const EditProfile = () => {
             {/* Left Section - Avatar */}
             <div className={styles["avatar-section"]}>
                 <div className={styles["avatar-circle"]}>
-                {getInitials()}
+                    <img src={localStorage.getItem("imgUrl")} className={styles["avatar-circle"]}/>
                 </div>
                 <p style={{ fontWeight: '600', margin: '10px', fontSize: '16px' }}>
                 {localStorage.getItem('UserName')}

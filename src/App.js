@@ -14,6 +14,7 @@ import LeaderboardPage from './Components/LeaderboardPage';
 import ActivityPage from './Components/ActivityPage';
 import LLM from './Components/LLM';
 import Button from './Components/Button';
+import MyPage from './Components/MyPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -189,6 +190,7 @@ function App() {
       const user = result.user;
       const uid = user.uid;
       const email = user.email;
+      const imgurl = user.photoURL;
 
       setUser(user);
       setShowAuth(false);
@@ -207,6 +209,8 @@ function App() {
         if (isProfileComplete) {
           localStorage.setItem('profileCompleted', 'true');
           localStorage.setItem('UserName', userData.UserName);
+          localStorage.setItem('imgUrl',imgurl);
+          console.log("Image Url",imgurl);
           navigate('/activity');
         } else {
           localStorage.setItem('signupMethod', 'google');
@@ -541,9 +545,18 @@ function App() {
               <div className={styles['positiveContentCard']}></div>
             </div>
             <div className={styles['FistInformationStats']}>
-              <div className={styles['FistInformationStatsCard']}></div>
-              <div className={styles['FistInformationStatsCard']}></div>
-              <div className={styles['FistInformationStatsCard']}></div>
+              <div className={styles['FistInformationStatsCard']}>
+                <h2>25k+</h2>
+                <p>Daily Check-ins</p>
+              </div>
+              <div className={styles['FistInformationStatsCard']}>
+                <h2>92%</h2>
+                <p>Feel More Focused</p>
+              </div>
+              <div className={styles['FistInformationStatsCard']}>
+                <h2>4.5/5</h2>
+                <p>Community Rating</p>
+              </div>
             </div>
           </div>
 
@@ -554,6 +567,7 @@ function App() {
           </div>
         </div>
       } />
+      <Route path='/mypage' element={<MyPage/>} />
       <Route path="/profile-setup" element={<ProfileSetup />} />
       <Route path='/testpage' element={<TestPage/>} />
       <Route path="/question" element={<Question/>} />

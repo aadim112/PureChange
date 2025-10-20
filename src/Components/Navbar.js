@@ -10,6 +10,7 @@ const defaultButtons = [
   { label: "About", variant: "secondary", route: "/about" },
 ];
 
+
 function Navbar({ 
   pageName = "Home",
   Icon = Flame,

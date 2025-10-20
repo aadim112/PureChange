@@ -260,6 +260,7 @@ header{
   margin-top: 20px;
 }
 .FistInformationSection{
+  margin-top: 50px;
   padding: 40px;
 }
 
@@ -295,5 +296,26 @@ header{
   background-color: #d7d1ff;
 }
 .FistInformationStats{
-  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 20px;
+}
+.FistInformationStatsCard{
+  border: 1.5px solid rgb(183, 183, 183);
+  width: 400px;
+  border-radius: 8px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 10px;
+  cursor: pointer;
+  gap: 10px;
+}
+.FistInformationStatsCard:hover{
+  background-color: #ebe8ff;
+  color: #6E57FD;
+  border: 0px;
 }
