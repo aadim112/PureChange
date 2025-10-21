@@ -3,7 +3,7 @@ import styles from "./Avatar.module.css";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 
-function Avatar({ initials = "N/A", size = "large", className = "" }) {
+function Avatar({ initials = "N/A", size = "large", imgSrc = null, className = "" }) {
   const navigate = useNavigate();
 
   const sizeMap = {
@@ -30,9 +30,16 @@ function Avatar({ initials = "N/A", size = "large", className = "" }) {
     width: `${selectedSize.size}px`,
     height: `${selectedSize.size}px`,
     fontSize: `${selectedSize.font}px`,
+    overflow: "hidden",
   };
 
   const avatarClassName = clsx(styles["avatar-circle"], className);
+
+  const isValidImage =
+    imgSrc &&
+    typeof imgSrc === "string" &&
+    imgSrc.trim() !== "" &&
+    (imgSrc.startsWith("http") || imgSrc.startsWith("data:image") || imgSrc.startsWith("blob:"));
 
   return (
     <div
@@ -40,7 +47,24 @@ function Avatar({ initials = "N/A", size = "large", className = "" }) {
       style={avatarStyle}
       onClick={() => navigate("/mypage")}
     >
-      {initials}
+      {isValidImage ? (
+        <img
+          src={imgSrc}
+          alt="Avatar"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "50%",
+          }}
+          onError={(e) => {
+            e.target.style.display = "none";
+            e.target.parentNode.textContent = initials || "N/A";
+          }}
+        />
+      ) : (
+        initials
+      )}
     </div>
   );
 }

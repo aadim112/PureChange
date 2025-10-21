@@ -291,7 +291,7 @@ const EditProfile = () => {
             <div className={styles["content-grid-profile"]}>
             {/* Left Section - Avatar */}
             <div className={styles["avatar-section"]}>
-                <Avatar initials={getInitials()} />
+                <Avatar initials={getInitials()}/>
                 <p style={{ fontWeight: '600', margin: '10px', fontSize: '16px' }}>
                 {localStorage.getItem('UserName')}
                 </p>
