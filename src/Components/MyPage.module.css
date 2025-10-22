@@ -308,6 +308,7 @@
         align-items: center;
         justify-content: center;
         height: auto;
+        padding: 20px;
     }
     .seperator{
         width: 80%;
@@ -327,6 +328,7 @@
     }
     .extraInformation{
         margin-left: 0px;
+        padding-left: 30pxA;
     }
     .linkedAcc{
         margin-left: 0px;
