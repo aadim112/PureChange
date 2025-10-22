@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ref, update } from 'firebase/database';
 import { db } from '../firebase';
-import './Questions.css';
+import styles from './Questions.module.css';
 import Button from './Button';
-
+import clsx from 'clsx';
 
 const QUESTIONS = [
   {
@@ -149,64 +149,65 @@ const Question = () => {
   };
 
   return (
-    <div className="question">
-      <form className="question-form" onSubmit={(e) => e.preventDefault()}>
+    <div className={styles["question"]}>
+      <form className={styles["question-form"]} onSubmit={(e) => e.preventDefault()}>
         <h2>Hello,{localStorage.getItem('UserName')}!</h2>
         <br></br>
-        <div className="progress-indicator">
-          <p className="progress-text">
+        <div className={styles["progress-indicator"]}>
+          <p className={styles["progress-text"]}>
             Question {currentQuestionIndex + 1} of {QUESTIONS.length}
           </p>
-          <div className="progress-bar">
+          <div className={styles["progress-bar"]}>
             <div 
-              className="progress-fill" 
+              className={styles["progress-fill"]} 
               style={{ width: `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%` }}
             />
           </div>
         </div>
 
-        <p className="question-label">{currentQuestion.question}</p>
+        <p className={styles["question-label"]}>{currentQuestion.question}</p>
 
-        <div className="optionsContainer">
+        <div className={styles["optionsContainer"]}>
           {currentQuestion.options.map((option, index) => (
             <div
               key={index}
-              className={`option-card ${selectedOption === option ? 'selected' : ''}`}
+              className={clsx(
+                styles['option-card'],
+                selectedOption === option && styles.selected
+              )}
+
               onClick={() => handleOptionSelect(option)}
             >
-              <span className="option-text">{option}</span>
+              <span className={styles["option-text"]}>{option}</span>
             </div>
           ))}
         </div>
 
-        <div className="action-buttons">
+        <div className={styles["action-buttons"]}>
           {currentQuestionIndex > 0 && (
-            <button
-              type="button"
+            <Button
               onClick={handleBack}
-              className="btn-back"
+              className={styles["btn-back"]}
               disabled={isSaving}
             >
               Back
-            </button>
+            </Button>
           )}
           <Button
-            type="button"
             variant='secondary'
             onClick={handleClear}
-            
             disabled={isSaving}
           >
             Clear
           </Button>
-          <button
-            type="button"
+          <Button
+            variant='primary'
             onClick={handleNext}
-            className="btn-next"
+            className={styles["btn-next"]}
             disabled={!selectedOption || isSaving}
           >
             {isSaving ? 'Saving...' : isLastQuestion ? 'Submit' : 'Next'}
-          </button>
+          </Button>
         </div>
         <br></br>
       </form>

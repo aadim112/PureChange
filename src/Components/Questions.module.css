@@ -91,15 +91,6 @@
     margin-top: 20px;
 }
 
-.action-buttons button {
-    padding: 8px 20px;
-    border: 0px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-}
-
 .btn-back {
     background: #718096;
     color: white;
@@ -109,40 +100,12 @@
     background: #4a5568;
 }
 
-.btn-clear {
-    background: #2d3748;
-    color: white;
-}
-
-.btn-clear:hover:not(:disabled) {
-    background: #1a202c;
-}
-
-.btn-next {
-    background: #6E57FD;
-    color: white;
-}
-
-.btn-next:hover:not(:disabled) {
-    background: #5a45d1;
-}
-
-.action-buttons button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 @media screen and (max-width: 500px) {
   .question {
     height: auto;            /* Allow content to expand */
     min-height: 100vh;       /* Still fill the viewport if needed */
     align-items: flex-start; /* Start from top */
     padding: 20px 0;
-  }
-
-  .question-form {
-           /* Remove fixed height */
-    
   }
 
   .optionsContainer {

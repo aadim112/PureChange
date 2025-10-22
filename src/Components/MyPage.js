@@ -8,6 +8,7 @@ import { auth } from "../firebase";
 import { getAuth } from "firebase/auth";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
+import Avatar from "./Avatar";
 
 const MyProfile = [
   {label : "Ranking", variant : "secondary", route: '/leaderboard'},
@@ -114,6 +115,15 @@ export default function MyPage(){
         }
     };
 
+    const getInitials = () => {
+        if (userData.Name) {
+            const names = userData.Name.split(' ');
+            return names.length > 1
+                ? `${names[0][0]}${names[1][0]}`.toUpperCase()
+                : names[0].substring(0, 2).toUpperCase();
+        }
+        return userData.UserName ? userData.UserName.substring(0, 2).toUpperCase() : 'U';
+    };
 
     const handleLogout = async () => {
         try {
@@ -136,9 +146,7 @@ export default function MyPage(){
             <Navbar pageName="Profile" buttons={MyProfile} Icon={User}/>
             <div className={styles["infoContainer"]}>
                 <div className={styles["profilepanel"]}>
-                    <div className={styles["profilePic"]}>
-                        <img src={localStorage.getItem("imgUrl")}/>
-                    </div>
+                    <Avatar initials={getInitials()} size="medium"/>
                     <div className={styles["OverviewInformation"]}>
                         <h2 style={{fontWeight: "600"}}>{userData.Name}</h2>
                         <p style={{fontWeight: "500", fontSize:'12px'}}>{userData.UserName}</p>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ref, update, get } from 'firebase/database';
 import { db } from '../firebase';
-import './ProfileSetup.css';
+import styles from './ProfileSetup.module.css';
 import Button from './Button';
 
 function ProfileSetup() {
@@ -159,20 +159,20 @@ function ProfileSetup() {
   };
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <h2 className="profile-title">Complete Your Profile</h2>
-        <p className="profile-subtitle">Help us personalize your experience</p>
+    <div className={styles["profile-container"]}>
+      <div className={styles["profile-card"]}>
+        <h2 className={styles["profile-title"]}>Complete Your Profile</h2>
+        <p className={styles["profile-subtitle"]}>Help us personalize your experience</p>
 
-        <div className="form-grid">
+        <div className={styles["form-grid"]}>
           {/* Row 1: Name & Username */}
-          <div className="grid-2">
-            <div className="input-group">
+          <div className={styles["grid-2"]}>
+            <div className={styles["input-group"]}>
               <label>Name *</label>
               <input type="text" name="Name" value={formData.Name}
                 onChange={handleInputChange} placeholder="Enter your full name" />
             </div>
-            <div className="input-group">
+            <div className={styles["input-group"]}>
               <label>Username *</label>
               <input
                 type="text"
@@ -182,17 +182,17 @@ function ProfileSetup() {
                 onBlur={handleUsernameBlur}
                 placeholder="Enter unique username"
                 disabled={isUsernameDisabled}
-                className={isUsernameDisabled ? 'disabled' : ''}
+                className={isUsernameDisabled ? styles['disabled'] : ''}
               />
-              {!isUsernameDisabled && isCheckingUsername && <p className="info-text">Checking availability...</p>}
-              {!isUsernameDisabled && isUsernameAvailable === false && <p className="error-text">Username already taken</p>}
-              {!isUsernameDisabled && isUsernameAvailable === true && <p className="success-text">Username available!</p>}
+              {!isUsernameDisabled && isCheckingUsername && <p className={styles["info-text"]}>Checking availability...</p>}
+              {!isUsernameDisabled && isUsernameAvailable === false && <p className={styles["error-text"]}>Username already taken</p>}
+              {!isUsernameDisabled && isUsernameAvailable === true && <p className={styles["success-text"]}>Username available!</p>}
             </div>
           </div>
 
           {/* Row 2: Gender & Religion */}
-          <div className="grid-2">
-            <div className="input-group">
+          <div className={styles["grid-2"]}>
+            <div className={styles["input-group"]}>
               <label>Gender</label>
               <select name="Gender" value={formData.Gender} onChange={handleInputChange}>
                 <option value="">Select gender</option>
@@ -202,7 +202,7 @@ function ProfileSetup() {
                 <option value="prefer-not-to-say">Prefer not to say</option>
               </select>
             </div>
-            <div className="input-group">
+            <div className={styles["input-group"]}>
               <label>Religion</label>
               <select name="Religion" value={formData.Religion} onChange={handleInputChange}>
                 <option value="">Select religion</option>
@@ -215,48 +215,48 @@ function ProfileSetup() {
           </div>
 
           {/* Row 3: Age, Height, Weight */}
-          <div className="grid-3">
-            <div className="input-group">
+          <div className={styles["grid-3"]}>
+            <div className={styles["input-group"]}>
               <label>Age *</label>
               <input type="number" name="Age" value={formData.Age} onChange={handleInputChange} placeholder="Age" />
             </div>
-            <div className="input-group">
+            <div className={styles["input-group"]}>
               <label>Height (cm) *</label>
               <input type="number" name="Height" value={formData.Height} onChange={handleInputChange} placeholder="Height" />
             </div>
-            <div className="input-group">
+            <div className={styles["input-group"]}>
               <label>Weight (kg) *</label>
               <input type="number" name="Weight" value={formData.Weight} onChange={handleInputChange} placeholder="Weight" />
             </div>
           </div>
 
           {/* Row 4: Hobby & City */}
-          <div className="grid-2">
-            <div className="input-group">
+          <div className={styles["grid-2"]}>
+            <div className={styles["input-group"]}>
               <label>Hobby *</label>
               <input type="text" name="Hobby" value={formData.Hobby} onChange={handleInputChange} placeholder="e.g., Reading, Sports, Music" />
             </div>
-            <div className="input-group">
+            <div className={styles["input-group"]}>
               <label>City *</label>
               <input type="text" name="City" value={formData.City} onChange={handleInputChange} placeholder="Enter your city" />
             </div>
           </div>
 
           {/* Row 5: Phone Number */}
-          <div className="grid-1">
-            <div className="input-group">
+          <div className={styles["grid-1"]}>
+            <div className={styles["input-group"]}>
               <label>Phone Number *</label>
               <input type="tel" name="PhoneNumber" value={formData.PhoneNumber} onChange={handleInputChange} placeholder="Enter your phone number" />
             </div>
           </div>
         </div>
 
-        <div className="button-group">
+        <div className={styles["button-group"]}>
           <Button onClick={handleClear} variant='secondary'>Clear</Button>
           <Button 
             onClick={handleNext} 
-            disabled={!isFormValid() || isSaving} 
-            className={`btn btn-next ${(!isFormValid() || isSaving) ? 'disabled-btn' : ''}`}
+            disabled={!isFormValid() || isSaving}
+            variant='primary'
           >
             {isSaving ? 'Saving...' : 'Next'}
           </Button>

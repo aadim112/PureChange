@@ -65,8 +65,8 @@
 
 /* Disabled State (applies to all variants) */
 .btn:disabled {
-  background-color: #cccccc;
-  border-color: #cccccc;
-  color: #666666;
+  background: #e4e3e3;
+  color: #757275;
   cursor: not-allowed;
+  box-shadow: none;
 }

@@ -14,6 +14,8 @@ import LeaderboardPage from './Components/LeaderboardPage';
 import ActivityPage from './Components/ActivityPage';
 import Button from './Components/Button';
 import MyPage from './Components/MyPage';
+import MoreContentPage from './Components/MoreContentPage';
+import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -581,6 +583,8 @@ function App() {
       <Route path="/content" element={<ContentPage/>} />
       <Route path="/leaderboard" element={<LeaderboardPage/>} />
       <Route path='/edit-profile' element={<EditProfile />} />
+      <Route path='/more-content' element={<MoreContentPage />} />
+      <Route path='/routine' element={<PersonalisedRoutinePage />} />
     </Routes>
   );
 }

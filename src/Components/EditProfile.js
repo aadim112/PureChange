@@ -6,6 +6,7 @@ import { ReactComponent as EditProfileIcon } from "../assets/EditProfile.svg"
 import styles from './EditProfile.module.css';
 import Navbar from './Navbar';
 import Button from './Button';
+import Avatar from './Avatar';
 import { getAuth, linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const EditProfile = () => {
@@ -237,6 +238,16 @@ const EditProfile = () => {
         setEmailCheckStatus('');
     };
 
+    const getInitials = () => {
+        if (userData.Name) {
+            const names = userData.Name.split(' ');
+            return names.length > 1
+                ? `${names[0][0]}${names[1][0]}`.toUpperCase()
+                : names[0].substring(0, 2).toUpperCase();
+        }
+        return userData.UserName ? userData.UserName.substring(0, 2).toUpperCase() : 'U';
+    };
+
     // Check if email matches the verified email
     const isEmailVerified = userData.Email && userData.Email === verifiedEmail;
     
@@ -280,9 +291,7 @@ const EditProfile = () => {
             <div className={styles["content-grid-profile"]}>
             {/* Left Section - Avatar */}
             <div className={styles["avatar-section"]}>
-                <div className={styles["avatar-circle"]}>
-                    <img src={localStorage.getItem("imgUrl")} className={styles["avatar-circle"]}/>
-                </div>
+                <Avatar initials={getInitials()}/>
                 <p style={{ fontWeight: '600', margin: '10px', fontSize: '16px' }}>
                 {localStorage.getItem('UserName')}
                 </p>
