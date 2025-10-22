@@ -37,6 +37,22 @@ const AchievementsBadges = ({}) => {
         </div>
     )
 }
+const CircularScoreBar= ({value}) => {
+    const normalizedValue = Math.min(Math.max(value, 0), 100); // Clamp 0–100
+    const radius = 30;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (normalizedValue / 100) * circumference;
+
+    return (
+        <div className="circular-score">
+            <svg className={styles["circle"]} width="80" height="80">
+                <circle className={styles["bg"]} cx="40"cy="40" r={radius} strokeWidth="10" fill="none"/>
+                <circle className={styles["progress"]} cx="40" cy="40" r={radius} strokeWidth="10" fill="none" strokeDasharray={circumference} strokeDashoffset={offset}/>
+                <text x="50%" y="50%" textAnchor="middle" dy=".3em" className={styles["text"]}> {normalizedValue}%</text>
+            </svg>
+        </div>
+    );
+};
 
 export default function MyPage(){
     const navigate = useNavigate();
@@ -98,6 +114,7 @@ export default function MyPage(){
         }
     };
 
+
     const handleLogout = async () => {
         try {
             const auth = getAuth();
@@ -124,29 +141,29 @@ export default function MyPage(){
                     </div>
                     <div className={styles["OverviewInformation"]}>
                         <h2 style={{fontWeight: "600"}}>{userData.Name}</h2>
-                        <p style={{fontWeight: "500", fontSize:'16px'}}>{userData.UserName}</p>
-                        <p style={{fontWeight: "400", fontSize:'14px'}}>{userData.Bio}</p>
+                        <p style={{fontWeight: "500", fontSize:'12px'}}>{userData.UserName}</p>
+                        <p style={{fontWeight: "400", fontSize:'12px'}}>{userData.Bio}</p>
                     </div>
 
                     <div className={styles["seperator"]}></div>
 
                     <div className={styles["extraInformation"]}>
-                        <p>Email: {userData.Email}</p>
-                        <p>Phone No: {userData.PhoneNumber}</p>
-                        <p>Religion: {userData.Religion}</p>
-                        <p>Gender: {userData.Gender}</p>
+                        <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'40px',fontWeight:'600'}}>Email: </p><p>{userData.Email}</p></span>
+                        <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'40px',fontWeight:'600'}}>Phone No: </p><p>{userData.PhoneNumber}</p></span>
+                        <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'40px',fontWeight:'600'}}>Religion: </p><p>{userData.Religion}</p></span>
+                        <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'40px',fontWeight:'600'}}>Gender: </p><p>{userData.Gender}</p></span>
                     </div>
 
                     <div className={styles["seperator"]}></div>
 
                     <div className={styles["linkedAcc"]}>
-                        <p>Linked Account</p>
+                        <p style={{fontWeight:'500',fontSize:'12px'}}>Linked Account</p>
                         <div></div>
                     </div>
 
 
                     <div className={styles["actionButtons"]}>
-                        <button style={{backgroundColor:'#9240FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
+                        <button style={{backgroundColor:'#6E57FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
                         <button style={{backgroundColor:'red'}} onClick={handleLogout}>Logout</button>
                     </div>
                 </div>
@@ -183,7 +200,7 @@ export default function MyPage(){
                                 <div className={styles["fitPlot"]}>
                                     <p style={{fontWeight:'600'}}>Fitness Score</p>
                                     <div className={styles["scoreGraph"]}>
-
+                                        <CircularScoreBar value={90}/>
                                     </div>
                                     <p style={{color:'grey'}}>Good! 75% Fit</p>
                                 </div>
@@ -194,7 +211,7 @@ export default function MyPage(){
                                 <div className={styles["fitPlot"]}>
                                     <p style={{fontWeight:'600'}}>Consistency Score</p>
                                     <div className={styles["scoreGraph"]}>
-
+                                        <CircularScoreBar value={90}/>
                                     </div>
                                     <p style={{color:'grey',textAlign:'center'}}>88% Consistent last 80 days</p>
                                 </div>

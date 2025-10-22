@@ -4,7 +4,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #F3EAFF;
+    background-color: #FBF8FF;
 }
 .profileContainer{
     width: 100%;
@@ -43,7 +43,7 @@
     border-radius: 50%;
 }
 .OverviewInformation{
-    width: 250px;
+    width: 200px;
     height: 100px;
     margin-left: 30px;
     font-size: 14px;
@@ -57,10 +57,10 @@
     background-color: #9240FF;
 }
 .extraInformation{
-    width: 250px;
+    width: 300px;
     height: 100px;
     margin-left: 10px;
-    font-size: 14px;
+    font-size: 12px;
     justify-content: center;
     display: flex;
     flex-direction: column;
@@ -69,6 +69,10 @@
     width: 250px;
     height: 100px;
     margin-left: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
 }
 .actionButtons{
     width: 250px;
@@ -85,7 +89,7 @@
     width:100px;
     border:0px;
     padding:8px;
-    border-radius:6px;
+    border-radius:20px;
     color:white;
     font-weight:500;
     cursor:pointer;
@@ -147,7 +151,8 @@
   grid-template-rows: repeat(2, auto);    /* 3 rows */
   column-gap: 5px;
   row-gap: 5px;
-  margin-top: 20px;
+  margin-top: 10px;
+  margin-left: 10px;
   overflow-x: scroll;
 }
 .streakHolderContainer::-webkit-scrollbar{
@@ -179,7 +184,8 @@
     row-gap: 5px;
     grid-template-columns: repeat(5, auto); /* 2 columns */
     grid-template-rows: repeat(2, auto);    /* 3 rows */
-    margin-top: 20px;
+    margin-top: 10px;
+    margin-left: 10px;
     overflow-x: scroll;
 }
 .AchievementHolder::-webkit-scrollbar{
@@ -210,6 +216,8 @@
 .scoreGraph{
     width: 100px;
     height: 150px;
+    display: flex;
+    align-items: center;
 }
 .fitSummary{
     width: 200px;
@@ -217,6 +225,32 @@
     background-color: #F3EAFF;
     border-radius: 8px;
 }
+
+.circular-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle {
+  transform: rotate(-90deg);
+}
+
+.bg {
+  stroke: #e6e6e6;
+}
+
+.progress {
+  stroke: #9240FF;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.text {
+  font-size: 10px;
+  fill: #333;
+  transform: rotate(90deg);
+}
+
 @media screen and (max-width: 500px) {
     .profilepanel{
         display: flex;
@@ -279,5 +313,14 @@
     .AchievementHolder{
         grid-template-columns: repeat(2, auto); /* 2 columns */
         grid-template-rows: repeat(2, auto);    /* 3 rows */
+    }
+    .fitScore{
+        height: auto;
+        flex-direction: column;
+        align-items: center;
+    }
+    .fitSummary{
+        width: 100%;
+        height: 200px;
     }
 }

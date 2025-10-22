@@ -39,6 +39,13 @@ function App() {
         setVerificationTimer(prev => prev - 1);
       }, 1000);
     }
+
+    if(localStorage.getItem('userId')){
+      navigate('/activity');
+    }
+    else{
+      navigate('/');
+    }
     return () => clearInterval(interval);
   }, [verificationTimer]);
 
