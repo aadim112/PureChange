@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import styles from './LeaderboardPage.module.css';
 import { Trophy, Award, Medal } from 'lucide-react';
 import clsx from 'clsx';
@@ -10,6 +10,28 @@ import { ReactComponent as RankGold } from "../assets/Rank-Gold.svg"
 
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState('ranking');
+
+  const [profileBig, setProfileBig] = useState(55);
+  const [profileSmall, setProfileSmall] = useState(40);
+  useEffect(() => {
+    // Function to determine avatar size based on window width
+    const updateProfileSize = () => {
+      const width = window.innerWidth;
+      if (width < 480) {
+        setProfileBig(48);
+        setProfileSmall(40);
+      }
+      else {
+        setProfileBig(55);
+        setProfileSmall(40);
+      }
+    };
+
+    updateProfileSize(); // Initial call
+    window.addEventListener("resize", updateProfileSize);
+
+    return () => window.removeEventListener("resize", updateProfileSize);
+  }, []);
 
   // Sample leaderboard data
   const leaderboardData = [
@@ -103,7 +125,7 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
                 <div className={styles["user-section"]}>
-                  <Avatar size={55} initials={user.initials} className={styles['usersAvatar']} />
+                  <Avatar size={profileBig} initials={user.initials} className={styles['usersAvatar']} />
                   <span className={styles["user-name-text"]}>{user.name}</span>
                 </div>
                 <div className={styles["stats-section"]}>
@@ -121,7 +143,7 @@ export default function LeaderboardPage() {
                   <div className={styles["rank-number-plain"]}>{user.rank}</div>
                 </div>
                 <div className={styles["user-section"]}>
-                  <Avatar size={40} initials={user.initials} className={clsx(styles['usersAvatar'],styles["small"])} />
+                  <Avatar size={profileSmall} initials={user.initials} className={clsx(styles['usersAvatar'],styles["small"])} />
                   <span className={styles["user-name-text"]}>{user.name}</span>
                 </div>
                 <div className={clsx(styles["stats-section"],styles["small"])}>
