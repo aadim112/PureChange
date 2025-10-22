@@ -4,7 +4,6 @@ import styles from './MyPage.module.css';
 import {ReactComponent as Calender} from '../assets/Calender.svg'
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { auth } from "../firebase";
 import { getAuth } from "firebase/auth";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
@@ -21,27 +20,62 @@ const StreakHolderBox  = ({NoFapDays,TotalDays}) =>{
     return(
         <div className={styles["streakHolder"]}>
             <div className={styles['StreakHolderheader']}>
-                <Calender/><p>Month</p>
+                <Calender/><p style={{fontSize:'18px'}}>Month</p>
             </div>
             <div className={styles["StreakHolderInfo"]}>
-                <p>No Fap:{NoFapDays}</p>
-                <p>Daily: {TotalDays}</p>
+                <p style={{fontSize:'14px'}}>No Fap:{NoFapDays}</p>
+                <p style={{fontSize:'14px'}}>Daily: {TotalDays}</p>
             </div>  
         </div>
     )
 }
 
-const AchievementsBadges = ({}) => {
-    return(
-        <div className={styles["badge"]}>
+const AchievementsBadges = ({ names = [] }) => {
+  const [failedImages, setFailedImages] = useState(new Set());
 
+  const handleImageError = (name) => {
+    setFailedImages(prev => new Set([...prev, name]));
+  };
+
+  return (
+    <div className={styles["badgeContainer"]}>
+      {names.length > 0 ? (
+        names.map((name, index) => (
+          <div key={index} className={styles["badge"]}>
+            {!failedImages.has(name) ? (
+              <img src={`/achivement/${name}.svg`} alt={name} className={styles["badgeImage"]} onError={() => handleImageError(name)} /> ) : (
+              <div className={styles["badgePlaceholder"]}>🏆</div>
+            )}
+          </div>
+        ))
+      ) : (
+        <p className={styles["noBadgeText"]}>No Achievements Yet</p>
+      )}
+    </div>
+  );
+};
+
+
+const CircularScoreBar= ({value}) => {
+    const normalizedValue = Math.min(Math.max(value, 0), 100); // Clamp 0–100
+    const radius = 30;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (normalizedValue / 100) * circumference;
+
+    return (
+        <div className="circular-score">
+            <svg className={styles["circle"]} width="80" height="80">
+                <circle className={styles["bg"]} cx="40"cy="40" r={radius} strokeWidth="10" fill="none"/>
+                <circle className={styles["progress"]} cx="40" cy="40" r={radius} strokeWidth="10" fill="none" strokeDasharray={circumference} strokeDashoffset={offset}/>
+                <text x="50%" y="50%" textAnchor="middle" dy=".3em" className={styles["text"]}> {normalizedValue}%</text>
+            </svg>
         </div>
-    )
-}
+    );
+};
 
 export default function MyPage(){
     const navigate = useNavigate();
-    const [userId,setUserId] = useState('');
+    const userId = ''
     const [imgUrl,setImgUrl] = useState('');
     const [userData, setUserData] = useState({
         Name: '',
@@ -129,34 +163,36 @@ export default function MyPage(){
         <div>
             <Navbar pageName="Profile" buttons={MyProfile} Icon={User}/>
             <div className={styles["infoContainer"]}>
-                <div className={styles["profilepanel"]}>
-                    <Avatar initials={getInitials()} size="medium"/>
-                    <div className={styles["OverviewInformation"]}>
-                        <h2 style={{fontWeight: "600"}}>{userData.Name}</h2>
-                        <p style={{fontWeight: "500", fontSize:'16px'}}>{userData.UserName}</p>
-                        <p style={{fontWeight: "400", fontSize:'14px'}}>{userData.Bio}</p>
-                    </div>
+                <div className={styles["profilepanelContainer"]}>
+                    <div className={styles["profilepanel"]}>
+                        <Avatar initials={getInitials()} size="medium"/>
+                        <div className={styles["OverviewInformation"]}>
+                            <h2 style={{fontWeight: "600",fontSize:'26px'}}>{userData.Name}</h2>
+                            <p style={{fontWeight: "500", fontSize:'12px'}}>{userData.UserName}</p>
+                            <p style={{fontWeight: "400", fontSize:'12px'}}>{userData.Bio}</p>
+                        </div>
 
-                    <div className={styles["seperator"]}></div>
+                        <div className={styles["seperator"]}></div>
 
-                    <div className={styles["extraInformation"]}>
-                        <p>Email: {userData.Email}</p>
-                        <p>Phone No: {userData.PhoneNumber}</p>
-                        <p>Religion: {userData.Religion}</p>
-                        <p>Gender: {userData.Gender}</p>
-                    </div>
+                        <div className={styles["extraInformation"]}>
+                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Email: </p><p>{userData.Email}</p></span>
+                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Phone No: </p><p>{userData.PhoneNumber}</p></span>
+                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Religion: </p><p>{userData.Religion}</p></span>
+                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Gender: </p><p>{userData.Gender}</p></span>
+                        </div>
 
-                    <div className={styles["seperator"]}></div>
+                        <div className={styles["seperator"]}></div>
 
-                    <div className={styles["linkedAcc"]}>
-                        <p>Linked Account</p>
-                        <div></div>
-                    </div>
+                        <div className={styles["linkedAcc"]}>
+                            <p style={{fontWeight:'500',fontSize:'12px'}}>Linked Account</p>
+                            <div></div>
+                        </div>
 
 
-                    <div className={styles["actionButtons"]}>
-                        <button style={{backgroundColor:'#9240FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
-                        <button style={{backgroundColor:'red'}} onClick={handleLogout}>Logout</button>
+                        <div className={styles["actionButtons"]}>
+                            <button style={{backgroundColor:'#6E57FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
+                            <button style={{backgroundColor:'red'}} onClick={handleLogout}>Logout</button>
+                        </div>
                     </div>
                 </div>
                 <div className={styles["OtherDetails"]}>
@@ -175,39 +211,35 @@ export default function MyPage(){
                         <div className={styles["Achievements"]}>
                             <h2>Achievements</h2>
                             <div className={styles["AchievementHolder"]}>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
-                                <AchievementsBadges/>
+                                <AchievementsBadges names={["bronze", "finisher", "firstlogin","gold","premium"]} />
                             </div>
                         </div>
                     </div>
                     <div className={styles["AnalyticsContainer"]}>
                         <div className={styles["Analytics"]}>
                             <h2>Analytics</h2>
-                            <div className={styles["fitScore"]}>
-                                <div className={styles["fitPlot"]}>
-                                    <p style={{fontWeight:'600'}}>Fitness Score</p>
-                                    <div className={styles["scoreGraph"]}>
-
+                            <div className={styles["fitScoreContainer"]}>
+                                <div className={styles["fitScore"]}>
+                                    <div className={styles["fitPlot"]}>
+                                        <p style={{fontWeight:'500',fontSize:'15px'}}>Fitness Score</p>
+                                        <div className={styles["scoreGraph"]}>
+                                            <CircularScoreBar value={90}/>
+                                        </div>
+                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! 75% Fit</p>
                                     </div>
-                                    <p style={{color:'grey'}}>Good! 75% Fit</p>
+                                    <div className={styles["fitSummary"]}></div>
                                 </div>
-                                <div className={styles["fitSummary"]}></div>
-                            </div>
 
-                            <div className={styles["fitScore"]}>
-                                <div className={styles["fitPlot"]}>
-                                    <p style={{fontWeight:'600'}}>Consistency Score</p>
-                                    <div className={styles["scoreGraph"]}>
-
+                                <div className={styles["fitScore"]}>
+                                    <div className={styles["fitPlot"]}>
+                                        <p style={{fontWeight:'500',fontSize:'15px'}}>Consistency Score</p>
+                                        <div className={styles["scoreGraph"]}>
+                                            <CircularScoreBar value={90}/>
+                                        </div>
+                                        <p style={{color:'grey',textAlign:'center',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>88% Consistent last 80 days</p>
                                     </div>
-                                    <p style={{color:'grey',textAlign:'center'}}>88% Consistent last 80 days</p>
+                                    <div className={styles["fitSummary"]}></div>
                                 </div>
-                                <div className={styles["fitSummary"]}></div>
                             </div>
                         </div>
                     </div>
