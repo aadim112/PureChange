@@ -16,6 +16,7 @@ import Button from './Components/Button';
 import MyPage from './Components/MyPage';
 import MoreContentPage from './Components/MoreContentPage';
 import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
+import AdminControlPage from './Components/AdminControlPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -578,6 +579,7 @@ function App() {
       <Route path='/edit-profile' element={<EditProfile />} />
       <Route path='/more-content' element={<MoreContentPage />} />
       <Route path='/routine' element={<PersonalisedRoutinePage />} />
+      <Route path='/admin-controls' element={<AdminControlPage />} />
     </Routes>
   );
 }
