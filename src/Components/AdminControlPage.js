@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save, FileText } from 'lucide-react';
-import { addVerse } from "../services/contentService";
+import { addVerse, getVersesByReligion } from "../services/contentService";
 import { processVerse } from "../services/llmService";
 import Navbar from "./Navbar";
 import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
 
 export default function AdminControlPage() {
+  const [viewMode, setViewMode] = useState('add'); // 'add' or 'show'
   const [selectedReligion, setSelectedReligion] = useState('');
   const [contentItems, setContentItems] = useState([{ id: 1, text: '', is_processed: false}]);
   const [nextId, setNextId] = useState(2);
   const [processedContent, setProcessedContent] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [fetchedVerses, setFetchedVerses] = useState([]);
 
   const religions = [
     { value: 'hinduism', label: 'Hinduism', contentLabel: 'Add Shlok' },
@@ -85,7 +87,6 @@ export default function AdminControlPage() {
         for (const item of validContent) {
           setLoading(true);
           const output = await processVerse(item.text, selectedReligion);
-          console.log(output)
           if (output.is_valid) {
             const result = await addVerse(selectedReligion, output.actual_content, output.question, output.translation_english, output.translation_hindi, output.motivation);
             if (!result.success) {
@@ -141,7 +142,6 @@ export default function AdminControlPage() {
     for (const item of validContent) {
       try {
         const output = await processVerse(item.text, selectedReligion);
-        console.log(output)
         results.push({ id: item.id, text: output });
         // Mark item as processed
         const index = updatedContentItems.findIndex(i => i.id === item.id);
@@ -157,6 +157,14 @@ export default function AdminControlPage() {
     setLoading(false);
   };
 
+  const handleShowContent = async (religion) => {
+    setSelectedReligion(religion);
+    setLoading(true);
+    const verses = await getVersesByReligion(religion);
+    setFetchedVerses(verses);
+    setLoading(false);
+  };
+
   return (
     <div className={styles['admin-content-page']}>
       {/* Header */}
@@ -164,101 +172,185 @@ export default function AdminControlPage() {
 
       {/* Main Content */}
       <div className={styles['admin-main-content']}>
+        <div className={styles['mode-buttons']}>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'add' ? styles.active : ''}`}
+            onClick={() => setViewMode('add')}
+          >
+            Add Content
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'show' ? styles.active : ''}`}
+            onClick={() => setViewMode('show')}
+          >
+            Show Content
+          </button>
+        </div>
         <div className={styles['admin-card']}>
-          <h2 className={styles['admin-card-title']}>Add Content</h2>
+          <div className={styles['admin-card-header']}>
+            <h2 className={styles['admin-card-title']}>
+              {viewMode === 'add' ? 'Add Content' : 'Show Content'}
+            </h2>
+          </div>
 
-          {/* Religion Selection */}
-          {/* All Visible */}
-          <div className={clsx(styles['religion-section'],styles['all-visible'])}>
-            <label className={styles['section-label']}>Choose Religion</label>
-            <div className={styles['religion-buttons']}>
-              {religions.map((religion) => (
-                <button
-                  key={religion.value}
-                  className={`${styles['religion-btn']} ${selectedReligion === religion.value ? styles.active : ''}`}
-                  onClick={() => handleReligionChange(religion.value)}
+          {/* Add Content */}
+          {viewMode === 'add' && (
+            <>
+              {/* Religion Selection */}
+              {/* All Visible */}
+              <div className={clsx(styles['religion-section'],styles['all-visible'])}>
+                <label className={styles['section-label']}>Choose Religion</label>
+                <div className={styles['religion-buttons']}>
+                  {religions.map((religion) => (
+                    <button
+                      key={religion.value}
+                      className={`${styles['religion-btn']} ${selectedReligion === religion.value ? styles.active : ''}`}
+                      onClick={() => handleReligionChange(religion.value)}
+                    >
+                      {religion.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Select Container */}
+              <div className={clsx(styles['religion-section'],styles['select-container'])}>
+                <label className={styles['section-label']}>Choose Religion</label>
+                <select
+                  className={styles['religion-select']}
+                  value={selectedReligion}
+                  onChange={(e) => handleReligionChange(e.target.value)}
                 >
-                  {religion.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Select Container */}
-          <div className={clsx(styles['religion-section'],styles['select-container'])}>
-            <label className={styles['section-label']}>Choose Religion</label>
-            <select
-              className={styles['religion-select']}
-              value={selectedReligion}
-              onChange={(e) => handleReligionChange(e.target.value)}
-            >
-              <option value="">Select Religion</option>
-              {religions.map((religion) => (
-                <option key={religion.value} value={religion.value}>
-                  {religion.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Content Input Section */}
-          {selectedReligion && (
-            <div className={styles['content-section']}>
-              <div className={styles['content-header']}>
-                <label className={styles['section-label']}>{getContentLabel()}</label>
+                  <option value="">Select Religion</option>
+                  {religions.map((religion) => (
+                    <option key={religion.value} value={religion.value}>
+                      {religion.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className={styles['content-items-list']}>
-                {contentItems.map((item, index) => (
-                  <div key={item.id} className={styles['content-item']}>
-                    <div className={styles['content-item-header']}>
-                      <span className={styles['content-number']}>#{index + 1}</span>
-                      {contentItems.length > 1 && (
-                        <button
-                          className={styles['remove-btn']}
-                          onClick={() => removeContentItem(item.id)}
-                          title="Remove this item"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                    <textarea
-                      className={styles['content-textarea']}
-                      placeholder={`${getContentLabel()} here...`}
-                      value={item.text}
-                      onChange={(e) => handleContentChange(item.id, e.target.value)}
-                      rows={4}
-                    />
+              {/* Content Input Section */}
+              {selectedReligion && (
+                <div className={styles['content-section']}>
+                  <div className={styles['content-header']}>
+                    <label className={styles['section-label']}>{getContentLabel()}</label>
                   </div>
-                ))}
-                <button className={styles['add-more-btn']} onClick={addContentItem}>
-                  <Plus size={18} />
-                  <span>Add More</span>
-                </button>
-              </div>
-            </div>
+
+                  <div className={styles['content-items-list']}>
+                    {contentItems.map((item, index) => (
+                      <div key={item.id} className={styles['content-item']}>
+                        <div className={styles['content-item-header']}>
+                          <span className={styles['content-number']}>#{index + 1}</span>
+                          {contentItems.length > 1 && (
+                            <button
+                              className={styles['remove-btn']}
+                              onClick={() => removeContentItem(item.id)}
+                              title="Remove this item"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                        <textarea
+                          className={styles['content-textarea']}
+                          placeholder={`${getContentLabel()} here...`}
+                          value={item.text}
+                          onChange={(e) => handleContentChange(item.id, e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+                    ))}
+                    <button className={styles['add-more-btn']} onClick={addContentItem}>
+                      <Plus size={18} />
+                      <span>Add More</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {selectedReligion && (
+                <div className={styles['action-buttons']}>
+                  <button className={styles['cancel-btn']} onClick={() => {
+                    setSelectedReligion('');
+                    setContentItems([{ id: 1, text: '' }]);
+                    setNextId(2);
+                  }}>
+                    Cancel
+                  </button>
+                  <button className={styles['save-btn']} onClick={handleSave}>
+                    <Save size={18} />
+                    <span>Save Content</span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Action Buttons */}
-          {selectedReligion && (
-            <div className={styles['action-buttons']}>
-              <button className={styles['cancel-btn']} onClick={() => {
-                setSelectedReligion('');
-                setContentItems([{ id: 1, text: '' }]);
-                setNextId(2);
-              }}>
-                Cancel
-              </button>
-              <button className={styles['save-btn']} onClick={handleSave}>
-                <Save size={18} />
-                <span>Save Content</span>
-              </button>
-            </div>
+          {/* Show Content */}
+          {viewMode === 'show' && (
+            <>
+              {/* All Visible */}
+              <div className={clsx(styles['religion-section'], styles['all-visible'])}>
+                <label className={styles['section-label']}>Select Religion</label>
+                <div className={styles['religion-buttons']}>
+                  {religions.map((religion) => (
+                    <button
+                      key={religion.value}
+                      className={`${styles['religion-btn']} ${selectedReligion === religion.value ? styles.active : ''}`}
+                      onClick={() => handleShowContent(religion.value)}
+                    >
+                      {religion.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Select Container */}
+              <div className={clsx(styles['religion-section'],styles['select-container'])}>
+                <label className={styles['section-label']}>Choose Religion</label>
+                <select
+                  className={styles['religion-select']}
+                  value={selectedReligion}
+                  onChange={(e) => handleShowContent(e.target.value)}
+                >
+                  <option value="">Select Religion</option>
+                  {religions.map((religion) => (
+                    <option key={religion.value} value={religion.value}>
+                      {religion.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedReligion && (
+                <div className={styles['show-content-section']}>
+                  <h3 className={styles['section-subtitle']}>
+                    Showing Verses for {religions.find(r => r.value === selectedReligion)?.label}
+                  </h3>
+                  <div className={styles['verse-list']}>
+                    {fetchedVerses.length > 0 ? (
+                      fetchedVerses.map((verse, index) => (
+                        <div key={index} className={styles['verse-card']}>
+                          <p><strong>ID:</strong> {verse.id}</p>
+                          <p><strong>Original:</strong> {verse.actual_content}</p>
+                          <p><strong>Question:</strong> {verse.question}</p>
+                          <p><strong>English:</strong> {verse.eng_translation}</p>
+                          <p><strong>Hindi:</strong> {verse.hi_translation}</p>
+                          <p><strong>Motivation:</strong> {verse.explanation}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className={styles['no-content']}>No verses found for this religion.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Preview Section */}
-        {selectedReligion && contentItems.some(item => item.text.trim() !== '') && (
+        {viewMode === 'add' && selectedReligion && contentItems.some(item => item.text.trim() !== '') && (
           <div className={styles['preview-card']}>
             <div className={styles['preview-header']}>
               <h3 className={styles['preview-title']}>Preview</h3>
