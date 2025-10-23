@@ -4,8 +4,32 @@ import { db } from "../firebase";
 // Add a new verse/shlok
 export async function addVerse(religion, actualContent, question, englishTranslation, hindiTranslation, explanation) {
   try {
-    const contentRef = ref(db, `content/${religion}`);
-    const newVerseRef = push(contentRef);
+    const religionRef = ref(db, `content/${religion}`);
+    const uniqueId = push(religionRef).key;
+
+    let nextVerseNum = 1;
+    try {
+      const snapshot = await get(religionRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const verseKeys = Object.keys(data);
+        
+        const verseNumbers = verseKeys
+          .filter(key => key.startsWith('Verse_'))
+          .map(key => parseInt(key.split('_')[1], 10))
+          .filter(num => !isNaN(num));
+
+        if (verseNumbers.length > 0) {
+          const maxNum = Math.max(...verseNumbers);
+          nextVerseNum = maxNum + 1;
+        }
+      }
+    } catch (getCountError) {
+      console.error("❌ Error getting verse count:", getCountError);
+    }
+
+    const newVerseKey = `Verse_${nextVerseNum}`;
+    const newVerseRef = ref(db, `content/${religion}/${newVerseKey}`);
 
     const verseData = {
       actual_content: actualContent,
@@ -14,12 +38,14 @@ export async function addVerse(religion, actualContent, question, englishTransla
       hi_translation: hindiTranslation,
       explanation: explanation,
       timestamp: new Date().toISOString(),
-      id: newVerseRef.key,
+      id: uniqueId, 
     };
 
     await set(newVerseRef, verseData);
-    console.log("✅ Verse added successfully:", verseData);
-    return { success: true, data: verseData };
+
+    console.log(`✅ Verse added successfully at ${newVerseKey}:`, verseData);
+    return { success: true, data: verseData, path: newVerseRef.toString() };
+
   } catch (error) {
     console.error("❌ Error adding verse:", error);
     return { success: false, error };
@@ -33,7 +59,7 @@ export async function getVersesByReligion(religion) {
     const snapshot = await get(contentRef);
 
     if (snapshot.exists()) {
-      return Object.values(snapshot.val());
+      return snapshot.val();
     } else {
       return [];
     }
