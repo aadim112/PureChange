@@ -3,6 +3,9 @@ import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save, FileText } from 'lucide-react';
 import { addVerse } from "../services/contentService";
 import { processVerse } from "../services/llmService";
+import Navbar from "./Navbar";
+import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
+import clsx from 'clsx';
 
 export default function AdminControlPage() {
   const [selectedReligion, setSelectedReligion] = useState('');
@@ -16,8 +19,17 @@ export default function AdminControlPage() {
     { value: 'islam', label: 'Islam', contentLabel: 'Add Verse' },
     { value: 'christianity', label: 'Christianity', contentLabel: 'Add Verse' },
     { value: 'buddhism', label: 'Buddhism', contentLabel: 'Add Teaching' },
-    { value: 'sikhism', label: 'Sikhism', contentLabel: 'Add Shabad' }
+    { value: 'sikhism', label: 'Sikhism', contentLabel: 'Add Shabad' },
+    { value: 'judaism', label: 'Judaism', contentLabel: 'Add Verse' },
+    { value: 'taoism', label: 'Taoism', contentLabel: 'Add Saying' },
+    { value: 'jainism', label: 'Jainism', contentLabel: 'Add Sutra' },
+    { value: 'zoroastrianism', label: 'Zoroastrianism', contentLabel: 'Add Verse' },
+    { value: 'bahai', label: 'Baha’i Faith', contentLabel: 'Add Teaching' },
+    { value: 'shinto', label: 'Shinto', contentLabel: 'Add Proverb' },
+    { value: 'confucianism', label: 'Confucianism', contentLabel: 'Add Saying' },
+    { value: 'zen', label: 'Zen (Chan Buddhism)', contentLabel: 'Add Saying' }
   ];
+
 
   const getContentLabel = () => {
     const religion = religions.find(r => r.value === selectedReligion);
@@ -75,7 +87,7 @@ export default function AdminControlPage() {
           const output = await processVerse(item.text, selectedReligion);
           console.log(output)
           if (output.is_valid) {
-            const result = await addVerse(selectedReligion, output.actual_content, output.translation_english, output.translation_hindi, output.motivation);
+            const result = await addVerse(selectedReligion, output.actual_content, output.question, output.translation_english, output.translation_hindi, output.motivation);
             if (!result.success) {
               setLoading(false);
               alert("Error saving one of the verses!");
@@ -94,7 +106,7 @@ export default function AdminControlPage() {
     else {
       for (const item of processedContent) {
         if (item.text.is_valid){
-          const result = await addVerse(selectedReligion, item.text.actual_content, item.text.translation_english, item.text.translation_hindi, item.text.motivation);
+          const result = await addVerse(selectedReligion, item.text.actual_content, item.text.question, item.text.translation_english, item.text.translation_hindi, item.text.motivation);
           if (!result.success) {
             alert("Error saving one of the verses!");
             return;
@@ -148,12 +160,7 @@ export default function AdminControlPage() {
   return (
     <div className={styles['admin-content-page']}>
       {/* Header */}
-      <div className={styles['admin-header']}>
-        <div className={styles['header-left']}>
-          <FileText size={24} />
-          <span>Admin Panel</span>
-        </div>
-      </div>
+      <Navbar pageName='Admin Controls' Icon={Controls} />
 
       {/* Main Content */}
       <div className={styles['admin-main-content']}>
@@ -161,7 +168,8 @@ export default function AdminControlPage() {
           <h2 className={styles['admin-card-title']}>Add Content</h2>
 
           {/* Religion Selection */}
-          <div className={styles['religion-section']}>
+          {/* All Visible */}
+          <div className={clsx(styles['religion-section'],styles['all-visible'])}>
             <label className={styles['section-label']}>Choose Religion</label>
             <div className={styles['religion-buttons']}>
               {religions.map((religion) => (
@@ -175,16 +183,28 @@ export default function AdminControlPage() {
               ))}
             </div>
           </div>
+          {/* Select Container */}
+          <div className={clsx(styles['religion-section'],styles['select-container'])}>
+            <label className={styles['section-label']}>Choose Religion</label>
+            <select
+              className={styles['religion-select']}
+              value={selectedReligion}
+              onChange={(e) => handleReligionChange(e.target.value)}
+            >
+              <option value="">Select Religion</option>
+              {religions.map((religion) => (
+                <option key={religion.value} value={religion.value}>
+                  {religion.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Content Input Section */}
           {selectedReligion && (
             <div className={styles['content-section']}>
               <div className={styles['content-header']}>
                 <label className={styles['section-label']}>{getContentLabel()}</label>
-                <button className={styles['add-more-btn']} onClick={addContentItem}>
-                  <Plus size={18} />
-                  <span>Add More</span>
-                </button>
               </div>
 
               <div className={styles['content-items-list']}>
@@ -204,13 +224,17 @@ export default function AdminControlPage() {
                     </div>
                     <textarea
                       className={styles['content-textarea']}
-                      placeholder={`Enter ${getContentLabel().toLowerCase()} here...`}
+                      placeholder={`${getContentLabel()} here...`}
                       value={item.text}
                       onChange={(e) => handleContentChange(item.id, e.target.value)}
                       rows={4}
                     />
                   </div>
                 ))}
+                <button className={styles['add-more-btn']} onClick={addContentItem}>
+                  <Plus size={18} />
+                  <span>Add More</span>
+                </button>
               </div>
             </div>
           )}
@@ -236,10 +260,12 @@ export default function AdminControlPage() {
         {/* Preview Section */}
         {selectedReligion && contentItems.some(item => item.text.trim() !== '') && (
           <div className={styles['preview-card']}>
-            <h3 className={styles['preview-title']}>Preview</h3>
-            <button className={styles['process-btn']} onClick={handleProcessAll}>
-              {loading ? "Processing..." : "Process Content"}
-            </button>
+            <div className={styles['preview-header']}>
+              <h3 className={styles['preview-title']}>Preview</h3>
+              <button className={styles['process-btn']} onClick={handleProcessAll}>
+                {loading ? "Processing..." : "Process Content"}
+              </button>
+            </div>
             <div className={styles['preview-content']}>
               <p className={styles['preview-religion']}>
                 <strong>Religion:</strong> {religions.find(r => r.value === selectedReligion)?.label}
@@ -258,6 +284,7 @@ export default function AdminControlPage() {
                                 <p><strong>Original:</strong> {processedContent.find(p => p.id === item.id)?.text.actual_content}</p>
                                 <p><strong>English:</strong> {processedContent.find(p => p.id === item.id)?.text.translation_english}</p>
                                 <p><strong>Hindi:</strong> {processedContent.find(p => p.id === item.id)?.text.translation_hindi}</p>
+                                <p><strong>Question:</strong> {processedContent.find(p => p.id === item.id)?.text.question}</p>
                                 <p><strong>Motivation:</strong> {processedContent.find(p => p.id === item.id)?.text.motivation}</p>
                               </div>
                               : <p>"{item.text}"" is not Valid Content!!!</p>}

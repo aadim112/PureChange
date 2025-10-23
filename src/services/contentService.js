@@ -2,13 +2,14 @@ import { ref, set, get, push, serverTimestamp } from "firebase/database";
 import { db } from "../firebase";
 
 // Add a new verse/shlok
-export async function addVerse(religion, actualContent, englishTransaltion, hindiTransaltion, explanation) {
+export async function addVerse(religion, actualContent, question, englishTransaltion, hindiTransaltion, explanation) {
   try {
     const contentRef = ref(db, `content/${religion}`);
     const newVerseRef = push(contentRef);
 
     const verseData = {
       actual_content: actualContent,
+      question: question,
       eng_translation: englishTransaltion,
       hi_transaltion: hindiTransaltion,
       explanation: explanation,

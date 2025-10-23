@@ -107,6 +107,51 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.religion-select {
+  width: 60%;
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none; /* Removes default dropdown arrow */
+  outline: none;
+  background-image: linear-gradient(135deg, #f9fafb, #ffffff);
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* On Hover */
+.religion-select:hover {
+  background: var(--color-bg-secondary);
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+}
+
+/* On Focus (when user opens dropdown) */
+.religion-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  background: white;
+}
+
+/* Optional: when a value is selected */
+.religion-select:active,
+.religion-select option:checked {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: rgb(0, 0, 0);
+}
+
+.select-container{
+  display: none;
+}
+
 /* Content Section */
 .content-section {
   margin-bottom: 32px;
@@ -132,6 +177,7 @@
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.3s ease;
+  max-width: 140px;
 }
 
 .add-more-btn:hover {
@@ -273,13 +319,39 @@
   border: 2px solid #ede9fe;
 }
 
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
 .preview-title {
   font-size: 20px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #f0f0f0;
+}
+
+.process-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.process-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }
 
 .preview-content {
@@ -369,14 +441,6 @@
     font-size: 20px;
   }
 
-  .religion-buttons {
-    flex-direction: column;
-  }
-
-  .religion-btn {
-    width: 100%;
-  }
-
   .content-header {
     flex-direction: column;
     align-items: flex-start;
@@ -410,6 +474,13 @@
 
   .admin-card {
     padding: 20px;
+  }
+
+  .select-container{
+    display: block;
+  }
+  .all-visible{
+    display: none;
   }
 
   .content-item {
