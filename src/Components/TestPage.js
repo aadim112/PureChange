@@ -76,7 +76,9 @@ function TestPage() {
     </div>
     <div>
       <Navbar pageName="Activity" Icon={Flame} buttons={buttons} />
-      <Navbar />
+      <Navbar pageName="Secrets" Icon={Flame} buttons={[
+        { label: "Home", variant: "secondary", route: "/home" },
+        { label: "Admin_Controls", variant: "secondary", route: "/admin-controls" }]}/>
     </div>
     <div style={{display: "flex", flexDirection: "column" , gap: "20px", alignItems: "center", margin: "100px"}}>
       <h1>Avatars</h1>

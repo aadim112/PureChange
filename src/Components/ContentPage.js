@@ -96,6 +96,7 @@ export default function ContentPage() {
   const [translation_HI, setTranslation_HI] = useState('<Transtion Hindi>');
   const [explanation, setExplaition] = useState('<Explaination>');
   const [question, setQuestion] = useState('<Question>');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {  
     fetchUserReligion();
@@ -110,6 +111,7 @@ export default function ContentPage() {
   
   const fetchUserReligion = async () => {
     try {
+      setLoading(true);
       const userId = localStorage.getItem('userId');
       console.log("User from ContentPage",userId);
       if (!userId) {
@@ -127,10 +129,14 @@ export default function ContentPage() {
     } catch (error) {
         console.error('Error fetching user data:', error);
     }
+    finally{
+      setLoading(false);
+    }
   };
 
   const updateContent = async (religion) => {
     try {
+      setLoading(true);
       const verses = await getVersesByReligion(religion);
       if (!verses) {
         console.log("No verses found for this religion.");
@@ -193,6 +199,9 @@ export default function ContentPage() {
     } catch (error) {
       console.error("Error in updateContent:", error);
     }
+    finally{
+      setLoading(false);
+    }
   };
 
   return (
@@ -242,6 +251,11 @@ export default function ContentPage() {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className={styles["loader-overlay"]}>
+          <div className={styles["spinner"]}></div>
+        </div>
+      )}
     </div>
   );
 }
