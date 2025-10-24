@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save, FileText } from 'lucide-react';
-import { addVerse, getVersesByReligion } from "../services/contentService";
+import { addVerse, getVersesByReligion, addOtherContent, showOtherContent, removeOtherContent } from "../services/contentService";
 import { processVerse } from "../services/llmService";
 import Navbar from "./Navbar";
 import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
+import { set } from 'firebase/database';
 
 export default function AdminControlPage() {
-  const [viewMode, setViewMode] = useState('add'); // 'add' or 'show'
+  const [viewMode, setViewMode] = useState('addVerse');
   const [selectedReligion, setSelectedReligion] = useState('');
+  const [selectedContentType, setSelectedContentType] = useState('');
   const [contentItems, setContentItems] = useState([{ id: 1, text: '', is_processed: false}]);
   const [nextId, setNextId] = useState(2);
   const [processedContent, setProcessedContent] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchedVerses, setFetchedVerses] = useState([]);
+  const [fetchedContent, setFetchedContent] = useState([]);
 
   const religions = [
     { value: 'hinduism', label: 'Hinduism', contentLabel: 'Add Shlok' },
@@ -32,14 +35,35 @@ export default function AdminControlPage() {
     { value: 'zen', label: 'Zen (Chan Buddhism)', contentLabel: 'Add Saying' }
   ];
 
+  const contentTypes = [
+    { value: 'quote', label: 'Quotes', contentLabel: 'Add Quote' },
+    { value: 'daily-tasks', label: 'Daily Tasks', contentLabel: 'Add Daily Task' },
+    { value: 'article', label: 'Articles', contentLabel: 'Add Article' },
+    { value: 'health-tips', label: 'Health Tips', contentLabel: 'Add Health Tips' },
+    { value: 'food-tips', label: 'Food Tips', contentLabel: 'Add Food Tips' }
+  ];
+
 
   const getContentLabel = () => {
     const religion = religions.find(r => r.value === selectedReligion);
     return religion ? religion.contentLabel : 'Add Content';
   };
 
+  const getContentTypeLabel = () => {
+    const contentType = contentTypes.find(r => r.value === selectedContentType);
+    return contentType ? contentType.contentLabel : 'Add Content';
+  };
+
   const handleReligionChange = (religion) => {
     setSelectedReligion(religion);
+    // Reset content items when religion changes
+    setContentItems([{ id: 1, text: '' }]);
+    setNextId(2);
+  };
+
+  const handleContentTypeChange = (contType) => {
+    setSelectedContentType(contType);
+    handleShowContent(contType);
     // Reset content items when religion changes
     setContentItems([{ id: 1, text: '' }]);
     setNextId(2);
@@ -157,13 +181,58 @@ export default function AdminControlPage() {
     setLoading(false);
   };
 
-  const handleShowContent = async (religion) => {
+  const handleShowVerses = async (religion) => {
     setSelectedReligion(religion);
     setLoading(true);
     const verses = await getVersesByReligion(religion);
-    setFetchedVerses(verses);
+    setFetchedVerses(Object.values(verses));
     setLoading(false);
   };
+
+  const handleContentSave = async () => {
+    if (!selectedContentType) {
+      alert("Please select a content type");
+      return;
+    }
+
+    const validContent = contentItems.filter(item => item.text.trim() !== "");
+    if (validContent.length === 0) {
+      alert("Please add at least one content item");
+      return;
+    }
+
+    for (const item of validContent) {
+      if (item.text){
+        const result = await addOtherContent(selectedContentType, item.text);
+        if (!result.success) {
+          alert("Error saving one of the verses!");
+          return;
+        }
+      }
+    }
+    
+    handleShowContent(selectedContentType);
+    setContentItems([{ id: 1, text: "" }]);
+    setNextId(2);
+  };
+
+  const handleShowContent = async (contType) => {
+    setLoading(true);
+    const content = await showOtherContent(contType);
+    setFetchedContent(Object.values(content));
+    console.log(Object.values(content));
+    setLoading(false);
+  };
+
+  const handleDeleteContent = async (contId) => {
+    setLoading(true);
+    const err = await removeOtherContent(selectedContentType,contId);
+    if(!err.success){
+      alert("Error in deletion!")
+    }
+    handleShowContent(selectedContentType);
+    setLoading(false);
+  }
 
   return (
     <div className={styles['admin-content-page']}>
@@ -174,28 +243,52 @@ export default function AdminControlPage() {
       <div className={styles['admin-main-content']}>
         <div className={styles['mode-buttons']}>
           <button
-            className={`${styles['mode-btn']} ${viewMode === 'add' ? styles.active : ''}`}
-            onClick={() => setViewMode('add')}
+            className={`${styles['mode-btn']} ${viewMode === 'addVerse' ? styles.active : ''}`}
+            onClick={() => setViewMode('addVerse')}
           >
-            Add Content
+            Add Verse
           </button>
           <button
-            className={`${styles['mode-btn']} ${viewMode === 'show' ? styles.active : ''}`}
-            onClick={() => setViewMode('show')}
+            className={`${styles['mode-btn']} ${viewMode === 'showVerse' ? styles.active : ''}`}
+            onClick={() => setViewMode('showVerse')}
           >
-            Show Content
+            Show Verse
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'otherContent' ? styles.active : ''}`}
+            onClick={() => setViewMode('otherContent')}
+          >
+            Content
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'motivational_images' ? styles.active : ''}`}
+            onClick={() => setViewMode('motivational_images')}
+          >
+            Motivational Images
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'motivational_videos' ? styles.active : ''}`}
+            onClick={() => setViewMode('motivational_videos')}
+          >
+            Motivational Videos
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'background-effects' ? styles.active : ''}`}
+            onClick={() => setViewMode('background-effects')}
+          >
+            Background Images and Video Effects
           </button>
         </div>
         <div className={styles['admin-card']}>
-          <div className={styles['admin-card-header']}>
-            <h2 className={styles['admin-card-title']}>
-              {viewMode === 'add' ? 'Add Content' : 'Show Content'}
-            </h2>
-          </div>
-
-          {/* Add Content */}
-          {viewMode === 'add' && (
+          {/* Add Verse Content */}
+          {viewMode === 'addVerse' && (
             <>
+              <div className={styles['admin-card-header']}>
+                <h2 className={styles['admin-card-title']}>
+                  {viewMode === 'addVerse' ? 'Add Verse' : ''}
+                </h2>
+              </div>
+
               {/* Religion Selection */}
               {/* All Visible */}
               <div className={clsx(styles['religion-section'],styles['all-visible'])}>
@@ -287,9 +380,15 @@ export default function AdminControlPage() {
             </>
           )}
 
-          {/* Show Content */}
-          {viewMode === 'show' && (
+          {/* Show Verse Content */}
+          {viewMode === 'showVerse' && (
             <>
+              <div className={styles['admin-card-header']}>
+                <h2 className={styles['admin-card-title']}>
+                  {viewMode === 'showVerse' ? 'Show Verse' : ''}
+                </h2>
+              </div>
+
               {/* All Visible */}
               <div className={clsx(styles['religion-section'], styles['all-visible'])}>
                 <label className={styles['section-label']}>Select Religion</label>
@@ -298,7 +397,7 @@ export default function AdminControlPage() {
                     <button
                       key={religion.value}
                       className={`${styles['religion-btn']} ${selectedReligion === religion.value ? styles.active : ''}`}
-                      onClick={() => handleShowContent(religion.value)}
+                      onClick={() => handleShowVerses(religion.value)}
                     >
                       {religion.label}
                     </button>
@@ -311,7 +410,7 @@ export default function AdminControlPage() {
                 <select
                   className={styles['religion-select']}
                   value={selectedReligion}
-                  onChange={(e) => handleShowContent(e.target.value)}
+                  onChange={(e) => handleShowVerses(e.target.value)}
                 >
                   <option value="">Select Religion</option>
                   {religions.map((religion) => (
@@ -347,10 +446,110 @@ export default function AdminControlPage() {
               )}
             </>
           )}
+
+          {/* Add Quotes */}
+          {viewMode === 'otherContent'  && (
+            <>
+              <div className={styles['admin-card-header']}>
+                <h2 className={styles['admin-card-title']}>
+                  {viewMode === 'otherContent' ? 'Add Content' : ''}
+                </h2>
+              </div>
+
+              {/* ContentType Selection */}
+              {/* All Visible */}
+              <div className={clsx(styles['religion-section'],styles['all-visible'])}>
+                <label className={styles['section-label']}>Choose Content Type</label>
+                <div className={styles['religion-buttons']}>
+                  {contentTypes.map((contType) => (
+                    <button
+                      key={contType.value}
+                      className={`${styles['religion-btn']} ${selectedContentType === contType.value ? styles.active : ''}`}
+                      onClick={() => handleContentTypeChange(contType.value)}
+                    >
+                      {contType.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Select Container */}
+              <div className={clsx(styles['religion-section'],styles['select-container'])}>
+                <label className={styles['section-label']}>Choose Content Type</label>
+                <select
+                  className={styles['religion-select']}
+                  value={selectedContentType}
+                  onChange={(e) => handleContentTypeChange(e.target.value)}
+                >
+                  <option value="">Select Content Type</option>
+                  {contentTypes.map((contType) => (
+                    <option key={contType.value} value={contType.value}>
+                      {contType.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Content Input Section */}
+              {selectedContentType && (
+                <div className={styles['content-section']}>
+                  <div className={styles['content-header']}>
+                    <label className={styles['section-label']}>{getContentTypeLabel()}</label>
+                  </div>
+
+                  <div className={styles['content-items-list']}>
+                    {contentItems.map((item, index) => (
+                      <div key={item.id} className={styles['content-item']}>
+                        <div className={styles['content-item-header']}>
+                          <span className={styles['content-number']}>#{index + 1}</span>
+                          {contentItems.length > 1 && (
+                            <button
+                              className={styles['remove-btn']}
+                              onClick={() => removeContentItem(item.id)}
+                              title="Remove this item"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                        <textarea
+                          className={styles['content-textarea']}
+                          placeholder={`${getContentTypeLabel()} here...`}
+                          value={item.text}
+                          onChange={(e) => handleContentChange(item.id, e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+                    ))}
+                    <button className={styles['add-more-btn']} onClick={addContentItem}>
+                      <Plus size={18} />
+                      <span>Add More</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {selectedContentType && (
+                <div className={styles['action-buttons']}>
+                  <button className={styles['cancel-btn']} onClick={() => {
+                    setSelectedContentType('');
+                    setContentItems([{ id: 1, text: '' }]);
+                    setNextId(2);
+                  }}>
+                    Cancel
+                  </button>
+                  <button className={styles['save-btn']} onClick={handleContentSave}>
+                    <Save size={18} />
+                    <span>Save Content</span>
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Preview Section */}
-        {viewMode === 'add' && selectedReligion && contentItems.some(item => item.text.trim() !== '') && (
+        {viewMode === 'addVerse' && selectedReligion && contentItems.some(item => item.text.trim() !== '') && (
           <div className={styles['preview-card']}>
             <div className={styles['preview-header']}>
               <h3 className={styles['preview-title']}>Preview</h3>
@@ -388,6 +587,41 @@ export default function AdminControlPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Content Display Section */}
+        {viewMode === 'otherContent' && selectedContentType && (
+          <div className={styles['preview-card']}>
+            <div className={styles['preview-header']}>
+              <h3 className={styles['preview-title']}>Delete Content</h3>
+            </div>
+            
+            {selectedContentType && (
+              <div className={styles['preview-content']}>
+                <p>
+                  <strong>Content Type :</strong> {contentTypes.find(r => r.value === selectedContentType)?.label}
+                </p>
+                <div className={styles['preview-items']}>
+                  {fetchedContent.length > 0 ? (
+                    fetchedContent.map((cont, index) => (
+                      <div key={index} className={styles['cont-card']}>
+                        <p><pre><strong>{index}:      </strong>{cont.actual_content}</pre></p>
+                        <button
+                          className={styles['remove-btn']}
+                          onClick={() => handleDeleteContent(cont.id)}
+                          title="Remove this item"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className={styles['no-content']}>No content found for {selectedContentType}.</p>
+                  )}
+                </div>
+              </div>
+            )}
+            </div>
         )}
       </div>
       {loading && (

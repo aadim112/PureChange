@@ -21,7 +21,8 @@
 }
 
 .mode-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6,1fr);
   gap: 12px;
 }
 
@@ -74,6 +75,18 @@
   border-radius: 8px;
   padding: 16px;
   box-shadow: var(--shadow-sm);
+}
+
+.cont-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+  border-left: 4px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 8px 16px;
+  box-shadow: var(--shadow-sm);
+  margin: 0px 30px;
 }
 
 .no-content {
@@ -490,6 +503,10 @@
     font-size: 20px;
   }
 
+  .mode-buttons{
+    grid-template-columns: repeat(4,1fr);
+  }
+
   .content-header {
     flex-direction: column;
     align-items: flex-start;
@@ -523,6 +540,10 @@
 
   .admin-card {
     padding: 20px;
+  }
+
+  .mode-buttons{
+    grid-template-columns: repeat(2,1fr);
   }
 
   .select-container{

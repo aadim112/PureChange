@@ -1,10 +1,10 @@
-import { ref, set, get, push, serverTimestamp } from "firebase/database";
+import { ref, set, get, push, remove, serverTimestamp } from "firebase/database";
 import { db } from "../firebase";
 
 // Add a new verse/shlok
 export async function addVerse(religion, actualContent, question, englishTranslation, hindiTranslation, explanation) {
   try {
-    const religionRef = ref(db, `content/${religion}`);
+    const religionRef = ref(db, `content/religionalContent/${religion}`);
     const uniqueId = push(religionRef).key;
 
     let nextVerseNum = 1;
@@ -29,7 +29,7 @@ export async function addVerse(religion, actualContent, question, englishTransla
     }
 
     const newVerseKey = `Verse_${nextVerseNum}`;
-    const newVerseRef = ref(db, `content/${religion}/${newVerseKey}`);
+    const newVerseRef = ref(db, `content/religionalContent/${religion}/${newVerseKey}`);
 
     const verseData = {
       actual_content: actualContent,
@@ -55,7 +55,7 @@ export async function addVerse(religion, actualContent, question, englishTransla
 // Fetch all verses of a given religion
 export async function getVersesByReligion(religion) {
   try {
-    const contentRef = ref(db, `content/${religion}`);
+    const contentRef = ref(db, `content/religionalContent/${religion}`);
     const snapshot = await get(contentRef);
 
     if (snapshot.exists()) {
@@ -66,5 +66,63 @@ export async function getVersesByReligion(religion) {
   } catch (error) {
     console.error("❌ Error fetching verses:", error);
     return [];
+  }
+}
+
+export async function addOtherContent(contentType, content){
+  try {
+    const religionRef = ref(db, `content/otherContent/${contentType}`);
+    const uniqueId = push(religionRef).key;
+
+    const newContentRef = ref(db, `content/otherContent/${contentType}/${uniqueId}`);
+
+    const Data = {
+      actual_content: content,
+      id: uniqueId, 
+    };
+
+    await set(newContentRef, Data);
+
+    console.log(`✅ ${contentType} added successfully at ${uniqueId}:`, Data);
+    return { success: true, data: Data, path: newContentRef.toString() };
+
+  } catch (error) {
+    console.error("❌ Error adding verse:", error);
+    return { success: false, error };
+  }
+}
+
+export async function showOtherContent(contentType){
+  try {
+    const contentRef = ref(db, `content/otherContent/${contentType}`);
+    const snapshot = await get(contentRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error(`❌ Error fetching ${contentType} content:`, error);
+    return [];
+  }
+}
+
+export async function removeOtherContent(contentType, id) {
+  try {
+    if (!contentType || !id) {
+      throw new Error("❌ Missing contentType or id for removal.");
+    }
+
+    const contentRef = ref(db, `content/otherContent/${contentType}/${id}`);
+
+    await remove(contentRef);
+
+    console.log(`🗑️ Successfully removed ${contentType} with id: ${id}`);
+    return { success: true, id };
+
+  } catch (error) {
+    console.error(`❌ Error removing ${contentType} with id ${id}:`, error);
+    return { success: false, error };
   }
 }
