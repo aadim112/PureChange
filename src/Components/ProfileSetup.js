@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ref, update, get } from 'firebase/database';
+import { ref, update, get, set } from 'firebase/database';
 import { db } from '../firebase';
 import styles from './ProfileSetup.module.css';
 import Button from './Button';
@@ -141,7 +141,7 @@ function ProfileSetup() {
       // Save username mapping if it's a Google signup (for quick username lookups)
       if (signupMethod === 'google') {
         const usernameRef = ref(db, `usernames/${formData.UserName}`);
-        await update(usernameRef, { userId });
+        await set(usernameRef, userId);
       }
 
       console.log('Profile data saved successfully');

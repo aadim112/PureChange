@@ -141,7 +141,12 @@ function App() {
         Age: "",
         Height: "",
         Weight: "",
-        BestStreak: 0,
+        NoFapStreak: {
+          BestStreak:0,
+        },
+        DailyTaskStreak: {
+          BestStreak:0,
+        },
         PreviousStreak: [],
         UserType: "Normal",
         UserName: pendingUserData.userName,
@@ -246,7 +251,12 @@ function App() {
           Age: "",
           Height: "",
           Weight: "",
-          BestStreak: 0,
+          NoFapStreak: {
+            BestStreak:0,
+          },
+          DailyTaskStreak: {
+            BestStreak:0,
+          },
           PreviousStreak: [],
           UserType: "Normal",
           UserName: "",
