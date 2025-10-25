@@ -6,7 +6,6 @@ import { processVerse } from "../services/llmService";
 import Navbar from "./Navbar";
 import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
-import { set } from 'firebase/database';
 
 export default function AdminControlPage() {
   const [viewMode, setViewMode] = useState('addVerse');
@@ -237,7 +236,7 @@ export default function AdminControlPage() {
   return (
     <div className={styles['admin-content-page']}>
       {/* Header */}
-      <Navbar pageName='Admin Controls' Icon={Controls} />
+      <Navbar pageName='Admin Controls' buttons={[{label: "Log Out", variant: "primary", route: "/"}]} Icon={Controls} />
 
       {/* Main Content */}
       <div className={styles['admin-main-content']}>

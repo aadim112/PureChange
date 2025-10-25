@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithP
 import { auth, googleProvider } from './firebase';
 import { ref, set, child, get } from 'firebase/database';
 import { db } from './firebase';
-import { Route, useNavigate, Routes } from 'react-router-dom';
+import { Route, useLocation, Navigate , useNavigate, Routes } from 'react-router-dom';
 import ProfileSetup from './Components/ProfileSetup';
 import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
@@ -16,6 +16,7 @@ import Button from './Components/Button';
 import MyPage from './Components/MyPage';
 import MoreContentPage from './Components/MoreContentPage';
 import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
+import AdminLogin from './Components/AdminLogin';
 import AdminControlPage from './Components/AdminControlPage';
 
 function App() {
@@ -33,6 +34,13 @@ function App() {
   const [pendingUserData, setPendingUserData] = useState(null);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      localStorage.removeItem("isAdminLoggedIn");
+    }
+  }, [location]);
 
   // Timer effect for verification email resend
   useEffect(() => {
@@ -42,9 +50,11 @@ function App() {
         setVerificationTimer(prev => prev - 1);
       }, 1000);
     }
-
     if(localStorage.getItem('userId')){
       navigate('/activity');
+    }
+    else if (location.pathname=='/admin'){
+      navigate('/admin');
     }
     else{
       navigate('/');
@@ -540,7 +550,12 @@ function App() {
           <div className={styles['HeroInformation']}>
             <h2>Build Decscipline, Keep your Streak, Stay Motivated</h2>
             <p>Track your progress, check off healthy habits, and consume uplifiting content design to strengthen self control and focus. Simple tools, real momentum.</p>
-            <Button variant='primary' onClick={{}} className={styles['startTrackingButton']}>Start Tracking</Button>
+            <Button variant='primary' onClick={() => {
+                setShowAuth(true);
+                setShowEmailVerification(false);
+                setIsLogin(true);
+                setError('');
+              }} className={styles['startTrackingButton']}>Start Tracking</Button>
           </div>
 
           <div className={styles['FistInformationSection']}>
@@ -586,7 +601,18 @@ function App() {
       <Route path='/edit-profile' element={<EditProfile />} />
       <Route path='/more-content' element={<MoreContentPage />} />
       <Route path='/routine' element={<PersonalisedRoutinePage />} />
-      <Route path='/admin-controls' element={<AdminControlPage />} />
+      <Route path='/admin' element={<AdminLogin />} />
+      <Route
+        path='/admin-controls'
+        element={
+          localStorage.getItem("isAdminLoggedIn") === "true"
+            ? <AdminControlPage />
+            : <div style={{ textAlign: "center", marginTop: "50px" }}>
+                <h3>Unauthorized Access</h3>
+                <p>You are not allowed to view this page.</p>
+              </div>
+        }
+      />
     </Routes>
   );
 }
