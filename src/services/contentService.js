@@ -1,5 +1,6 @@
 import { ref, set, get, push, remove, serverTimestamp } from "firebase/database";
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
+import { ref as storageRef, listAll, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 // Add a new verse/shlok
 export async function addVerse(religion, actualContent, question, englishTranslation, hindiTranslation, explanation) {
@@ -124,5 +125,95 @@ export async function removeOtherContent(contentType, id) {
   } catch (error) {
     console.error(`❌ Error removing ${contentType} with id ${id}:`, error);
     return { success: false, error };
+  }
+}
+
+export async function uploadMotivationalImages(file, onProgress) {
+  try {
+    const folderRef = storageRef(storage, "content/motivational_images");
+
+    // List all files in the folder
+    const existingFiles = await listAll(folderRef);
+    let maxIndex = 0;
+
+    existingFiles.items.forEach(item => {
+      const name = item.name; // e.g., "image_1.jpg"
+      const match = name.match(/^image_(\d+)\.jpg$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxIndex) maxIndex = num;
+      }
+    });
+
+    const nextIndex = maxIndex + 1;
+    const path = `content/motivational_images/image_${nextIndex}.jpg`;
+    const fileRef = storageRef(storage, path);
+    const uploadTask = uploadBytesResumable(fileRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          if (onProgress) onProgress(percent);
+        },
+        (error) => {
+          console.error("❌ Upload failed:", error);
+          reject({ success: false });
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({ success: true, url });
+        }
+      );
+    });
+  } catch (error) {
+    console.error("❌ Error uploading motivational image:", error);
+    return { success: false };
+  }
+}
+
+export async function uploadMotivationalVideos(file, onProgress) {
+  try {
+    const folderRef = storageRef(storage, "content/motivational_videos");
+
+    // List all existing files
+    const existingFiles = await listAll(folderRef);
+    let maxIndex = 0;
+
+    existingFiles.items.forEach(item => {
+      const name = item.name; // e.g., "video_1.mp4"
+      const match = name.match(/^video_(\d+)\.mp4$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxIndex) maxIndex = num;
+      }
+    });
+
+    const nextIndex = maxIndex + 1;
+    const path = `content/motivational_videos/video_${nextIndex}.mp4`;
+    const fileRef = storageRef(storage, path);
+    const uploadTask = uploadBytesResumable(fileRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          if (onProgress) onProgress(percent);
+        },
+        (error) => {
+          console.error("❌ Upload failed:", error);
+          reject({ success: false });
+        },
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({ success: true, url });
+        }
+      );
+    });
+  } catch (error) {
+    console.error("❌ Error uploading motivational video:", error);
+    return { success: false };
   }
 }

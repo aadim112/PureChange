@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save, FileText } from 'lucide-react';
 import { addVerse, getVersesByReligion, addOtherContent, showOtherContent, removeOtherContent } from "../services/contentService";
+import { uploadMotivationalImages, uploadMotivationalVideos } from "../services/contentService";
 import { processVerse } from "../services/llmService";
 import Navbar from "./Navbar";
 import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
@@ -17,6 +18,10 @@ export default function AdminControlPage() {
   const [loading, setLoading] = useState(false);
   const [fetchedVerses, setFetchedVerses] = useState([]);
   const [fetchedContent, setFetchedContent] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [uploadedVideos, setUploadedVideos] = useState([]);
 
   const religions = [
     { value: 'hinduism', label: 'Hinduism', contentLabel: 'Add Shlok' },
@@ -233,6 +238,126 @@ export default function AdminControlPage() {
     setLoading(false);
   }
 
+  const handleFileChange = (e, filetype = 'image') => {
+    const newFiles = Array.from(e.target.files);
+    let allowedTypes = [];
+
+    if (filetype === 'image') {
+      allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif", "image/webp"];
+    } else if (filetype === 'video') {
+      allowedTypes = ["video/mp4", "video/quicktime", "video/mov", "video/webm"];
+    }
+
+    const validFiles = newFiles.filter((file) => allowedTypes.includes(file.type));
+
+    const invalidFiles = newFiles.filter((file) => !allowedTypes.includes(file.type));
+    if (invalidFiles.length > 0) {
+      alert(`❌ Invalid file(s): ${invalidFiles.map((f) => f.name).join(", ")}\nOnly ${filetype} formats are allowed.`);
+    }
+
+    setSelectedFiles((prevFiles) => [...prevFiles, ...validFiles]);
+  };
+
+  const handleRemoveFile = (fileName) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+  };
+
+  const handleUploadImages = async () => {
+    if (selectedFiles.length === 0) {
+      alert("Please select images to upload!");
+      return;
+    }
+
+    setLoading(true);
+    const progress = {};
+    const uploaded = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+
+      if (!file.type.startsWith("image/")) {
+        console.warn(`Skipping non-image file: ${file.name}`);
+        continue;
+      }
+
+      try {
+        const result = await uploadMotivationalImages(file, (percent) => {
+          progress[file.name] = percent;
+          setUploadProgress({ ...progress });
+        });
+
+        if (result.success) {
+          uploaded.push({ url: result.url, name: file.name });
+
+          setSelectedFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+
+          setUploadProgress((prev) => {
+            const updated = { ...prev };
+            delete updated[file.name];
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.error("Upload failed for", file.name, error);
+      }
+    }
+
+    setUploadedImages((prev) => [...prev, ...uploaded]);
+    setLoading(false);
+
+    if (uploaded.length > 0) {
+      alert("✅ All selected files uploaded successfully!");
+    }
+  };
+
+  const handleUploadVideos = async () => {
+    if (selectedFiles.length === 0) {
+      alert("Please select videos to upload!");
+      return;
+    }
+
+    setLoading(true);
+    const progress = {};
+    const uploaded = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+
+      if (!file.type.startsWith("video/")) {
+        console.warn(`Skipping non-video file: ${file.name}`);
+        continue;
+      }
+
+      try {
+        const result = await uploadMotivationalVideos(file, (percent) => {
+          progress[file.name] = percent;
+          setUploadProgress({ ...progress });
+        });
+
+        if (result.success) {
+          uploaded.push({ url: result.url, name: file.name });
+
+          setSelectedFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+
+          setUploadProgress((prev) => {
+            const updated = { ...prev };
+            delete updated[file.name];
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.error("Upload failed for", file.name, error);
+      }
+    }
+
+    setUploadedVideos((prev) => [...prev, ...uploaded]);
+    setLoading(false);
+
+    if (uploaded.length > 0) {
+      alert("✅ All selected files uploaded successfully!");
+    }
+  };
+
   return (
     <div className={styles['admin-content-page']}>
       {/* Header */}
@@ -446,7 +571,7 @@ export default function AdminControlPage() {
             </>
           )}
 
-          {/* Add Quotes */}
+          {/* Add Content */}
           {viewMode === 'otherContent'  && (
             <>
               <div className={styles['admin-card-header']}>
@@ -545,6 +670,99 @@ export default function AdminControlPage() {
               )}
             </>
           )}
+
+          {/* Add Motivational Images */}
+          {viewMode === 'motivational_images' && (
+          <div className={styles['motivational-section']}>
+            <h2 className={styles['admin-card-title']}>Upload Motivational Images</h2>
+            
+            <div className={styles['upload-box']}>
+              <label htmlFor="fileInput" className={styles['add-files-btn']}>
+                + Add Files
+              </label>
+              <input
+                id="fileInput"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleFileChange(e, 'image')}
+                style={{ display: 'none' }}
+              />
+              <button className={styles['save-btn']} onClick={handleUploadImages}>
+                <Save size={18} /> <span>Upload All</span>
+              </button>
+            </div>
+
+            {/* Waiting Files List */}
+            {selectedFiles.length > 0 && (
+              <div className={styles['upload-progress-window']}>
+                <h3>Files Waiting for Upload:</h3>
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className={styles['upload-progress-item']}>
+                    <div className={styles['progress-info']}>
+                      <span>{file.name}</span>
+                      <button
+                        onClick={() => handleRemoveFile(file.name)}
+                        className={styles['trash-btn']}
+                        title="Remove this file"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    <progress value={uploadProgress[file.name] || 0} max="100" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {/* Add Motivational Videos */}
+          {viewMode === 'motivational_videos' && (
+          <div className={styles['motivational-section']}>
+            <h2 className={styles['admin-card-title']}>Upload Motivational Videos</h2>
+            
+            <div className={styles['upload-box']}>
+              <label htmlFor="fileInput" className={styles['add-files-btn']}>
+                + Add Files
+              </label>
+              <input
+                id="fileInput"
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={(e) => handleFileChange(e, 'video')}
+                style={{ display: 'none' }}
+              />
+              <button className={styles['save-btn']} onClick={handleUploadVideos}>
+                <Save size={18} /> <span>Upload All</span>
+              </button>
+            </div>
+
+            {/* Waiting Files List */}
+            {selectedFiles.length > 0 && (
+              <div className={styles['upload-progress-window']}>
+                <h3>Files Waiting for Upload:</h3>
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className={styles['upload-progress-item']}>
+                    <div className={styles['progress-info']}>
+                      <span>{file.name}</span>
+                      <button
+                        onClick={() => handleRemoveFile(file.name)}
+                        className={styles['trash-btn']}
+                        title="Remove this file"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    <progress value={uploadProgress[file.name] || 0} max="100" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         </div>
 
         {/* Preview Section */}
@@ -621,6 +839,46 @@ export default function AdminControlPage() {
               </div>
             )}
             </div>
+        )}
+
+        {/* Uploaded Preview */}
+        {viewMode === 'motivational_images' && uploadedImages.length > 0 && (
+          <div className={styles['preview-card']}>
+            <h3 className={styles['preview-header']}>Uploaded Images:</h3>
+            <div className={styles['preview-grid']}>
+              {uploadedImages.map((file, index) => (
+                <div key={index} className={styles['preview-img-container']}>
+                  <a 
+                    key={index} 
+                    href={file.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  ><img src={file.url} alt={file.name} className={styles['preview-img']} /></a>
+                  <span className={styles['preview-filename']}>{file.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {viewMode === 'motivational_videos' && uploadedVideos.length > 0 && (
+          <div className={styles['preview-card']}>
+            <h3 className={styles['preview-header']}>Uploaded Videos:</h3>
+            <div className={styles['preview-items']}>
+              {uploadedVideos.map((file, index) => (
+                <div key={index} className={styles['video-item']}>
+                  <span>{file.name}</span>
+                  <a 
+                    href={file.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles['download-btn']}
+                  >
+                    Download
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
       {loading && (
