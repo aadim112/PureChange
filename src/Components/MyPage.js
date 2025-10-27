@@ -89,7 +89,8 @@ export default function MyPage(){
         Age: '',
         City: '',
         Hobby: '',
-        UserName: ''
+        UserName: '',
+        healthScore : '',
     });
 
     useEffect(()=>{
@@ -122,11 +123,11 @@ export default function MyPage(){
                     Age: data.Age || '',
                     City: data.City || '',
                     Hobby: data.Hobby || '',
-                    UserName: data.UserName || ''
+                    UserName: data.UserName || '',
+                    healthScore : data.healthScore || '',
                 };
                 setUserData(formattedData);
                 setImgUrl(localStorage.getItem("imgURl"));
-                console.log("Image Url",imgUrl);
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -223,9 +224,9 @@ export default function MyPage(){
                                     <div className={styles["fitPlot"]}>
                                         <p style={{fontWeight:'500',fontSize:'15px'}}>Fitness Score</p>
                                         <div className={styles["scoreGraph"]}>
-                                            <CircularScoreBar value={90}/>
+                                            <CircularScoreBar value={userData.healthScore}/>
                                         </div>
-                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! 75% Fit</p>
+                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! {userData.healthScore}% Fit</p>
                                     </div>
                                     <div className={styles["fitSummary"]}></div>
                                 </div>

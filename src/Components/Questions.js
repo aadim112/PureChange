@@ -110,7 +110,7 @@ const Question = () => {
       const score = await ProcessHealth(formattedData);
       const userRef = ref(db, `users/${userId}`);
       console.log(score);
-      await update(userRef, { healthScore: score });
+      await update(userRef, { HealthScore: score });
     } else {
       // Move to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
