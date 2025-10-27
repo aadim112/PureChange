@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import styles from './Questions.module.css';
 import Button from './Button';
 import clsx from 'clsx';
+import { ProcessHealth } from '../services/llmService';
 
 const QUESTIONS = [
   {
@@ -89,6 +90,7 @@ const Question = () => {
 
   const handleNext = async () => {
     if (!selectedOption) return;
+    const userId = localStorage.getItem('userId');
 
     // Save current answer
     const updatedAnswers = {
@@ -100,6 +102,15 @@ const Question = () => {
     if (isLastQuestion) {
       // Save to Firebase
       await saveToFirebase(updatedAnswers);
+
+      const formattedData = QUESTIONS.map((q) => ({
+        question: q.question,
+        answer: updatedAnswers[`question${q.id}`],
+      }));
+      const score = await ProcessHealth(formattedData);
+      const userRef = ref(db, `users/${userId}`);
+      console.log(score);
+      await update(userRef, { healthScore: score });
     } else {
       // Move to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
