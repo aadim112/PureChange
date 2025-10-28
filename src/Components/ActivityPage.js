@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import styles from './ActivityPage.module.css';
 import Navbar from './Navbar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
@@ -7,16 +7,27 @@ import { ReactComponent as Sun } from "../assets/Sun.svg"
 import { useNavigate } from 'react-router-dom';
 import { ref, set, child, get, update, startAfter } from 'firebase/database';
 import { db } from '../firebase';
+import {
+  getDailyData,
+  initDailyDataIfMissing,
+  updateDailyDataFields,
+  toggleChecklistItem
+} from "../services/contentService";
 
 const getDailyMasterChecklist = () => {
   // For now, it's hardcoded.
   return {
-    drinkWater: [false, "Drink Water (2 liters)"],
     yoga: [false, "10 minutes Yoga"],
+    drinkWater: [false, "Drink Water (2 liters)"],
     readMinutes: [false, "Read 15 minutes"],
     cycling: [false, "Cycling 10 minutes"]
   };
 };
+
+export async function syncDailyFields(userId, updates, setDailyData) {
+  await updateDailyDataFields(userId, updates);
+  await setDailyData(prev => ({ ...prev, ...updates }));
+}
 
 export default function ActivityPage() {
   const [activeTab, setActiveTab] = useState('activity');
@@ -24,7 +35,7 @@ export default function ActivityPage() {
   const [currentMonth, setCurrentMonth] = useState('');
   const [userId, setUserId] = useState('');
   const [userData, setUserData] = useState({
-      Name: '',
+      Name: null,
       UserName: '',
       Gender: '',
       Religion: '',
@@ -37,83 +48,34 @@ export default function ActivityPage() {
   });
   const [showFapPopup, setShowFapPopup] = useState(false);
   const [popupTimeTag, setPopupTimeTag] = useState('');
-  const [checklist, setChecklist] = useState(() => {
-    const today = new Date().toDateString();
-    const lastUpdate = localStorage.getItem('lastChecklistUpdateDate');
-    
-    const defaultChecklist = getDailyMasterChecklist();
-
-    if (lastUpdate !== today) {
-      localStorage.setItem('dailyChecklist', JSON.stringify(defaultChecklist));
-      localStorage.setItem("lastChecklistUpdateDate", new Date().toDateString())
-      return defaultChecklist;
-    }
-
-    const savedChecklist = localStorage.getItem('dailyChecklist');
-    return savedChecklist ? JSON.parse(savedChecklist) : defaultChecklist;
-  });
+  const [checklist, setChecklist] = useState({});
+  const [dailyData, setDailyData] = useState({});
 
   useEffect(() => {
-    fetchCurrentMonth();
-  }, []);
+    async function init() {
+      try {
+        // Fetch current month
+        const date = new Date();
+        const monthNames = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ];
+        const currMon = `${monthNames[date.getMonth()]}${date.getFullYear()}`;
+        setCurrentMonth(currMon);
 
-  useEffect(() => {
-    if (currentMonth) {
-      fetchUserData();
-    }
-  }, [currentMonth]);
+        // Get userId from localStorage
+        const storedUserId = localStorage.getItem("userId");
+        if (!storedUserId) {
+          navigate("/");
+          return;
+        }
+        setUserId(storedUserId);
 
-  useEffect(() => {
-    if (userData.Name) {
-      checkDailyNFStreak();
-      checkDailyDTStreak();
-    }
-  }, [userData.Name]);
+        // Fetch user data from Firebase
+        const userRef = ref(db, `users/${storedUserId}`);
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) return;
 
-  useEffect(() => {
-    if (userData.Name && shouldAskFapQuestion()) {
-      setShowFapPopup(true);
-    }
-  }, [userData]);
-
-  useEffect(() => {
-    const allComplete = Object.values(checklist).every(valueArray => valueArray[0] === true);
-
-    const today = new Date().toDateString();
-    const lastUpdate = localStorage.getItem('lastDTUpdateDate');
-
-    if (allComplete && lastUpdate !== today) {
-      console.log("All daily tasks completed. Incrementing DT streak.");
-      updateDTStreak(false);
-    }
-  }, [checklist]);
-
-  const fetchCurrentMonth = () => {
-    try {
-      const date = new Date();
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-      const curr_mon = String(monthNames[date.getMonth()]+date.getFullYear());
-      
-      setCurrentMonth(curr_mon);
-    } catch(e){
-      console.error("Error Fetching Current Month : ",e);
-    }
-  }
-
-  const fetchUserData = async () => {
-    try {
-      const userId = localStorage.getItem('userId');
-      setUserId(userId);
-      console.log("User from Activity Page",userId);
-      if (!userId) {
-        navigate('/');
-        return;
-      }
-
-      const userRef = ref(db, `users/${userId}`);
-      const snapshot = await get(userRef);
-
-      if (snapshot.exists()) {
         const data = snapshot.val();
         const formattedData = {
           Name: data.Name || '',
@@ -121,130 +83,154 @@ export default function ActivityPage() {
           Gender: data.Gender || '',
           Religion: data.Religion || '',
           streakNF: data.NoFapStreak.NFStreak || 0,
-          streakNFB: data.NoFapStreak.BestStreak || 0,
-          streakNFCM: data?.NoFapStreak?.MonthlyStreak?.[currentMonth] || 0,
+          streakNFB: data.NoFapStreak.BestStreak || 1,
+          streakNFCM: data?.NoFapStreak?.MonthlyStreak?.[currMon] || 1,
           streakDT: data.DailyTaskStreak.DTStreak || 0,
           streakDTB: data.DailyTaskStreak.BestStreak || 0,
-          streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currentMonth] || 0,
+          streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currMon] || 0,
         };
         setUserData(formattedData);
+
+        // Initialize daily data only after user data ready
+        const masterChecklist = getDailyMasterChecklist();
+        const daily = await initDailyDataIfMissing(storedUserId, masterChecklist);
+        setChecklist(daily.dailyChecklist || masterChecklist);
+        setDailyData(daily);
+      } catch (e) {
+        console.error("❌ Initialization failed:", e);
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
     }
-  };
+
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (!userData.Name || dailyData.fapLastAskedDate === undefined) return;
+
+    if (dailyData.fapLastAskedDate === "" || dailyData.fapLastAskedDate === null) {
+      setPopupTimeTag('morning');
+      setShowFapPopup(true);
+      return;
+    }
+
+    if (shouldAskFapQuestion()) {
+      setShowFapPopup(true);
+    }
+  }, [userData.Name, dailyData.fapLastAskedDate]);
+
+  useEffect(() => {
+    if (userData.Name && dailyData.fapLastAskedDate) {
+      checkDailyNFStreak();
+    }
+    if (userData.Name && dailyData.lastDTUpdateDate) {
+      checkDailyDTStreak();
+    }
+  }, [userData.Name, dailyData.fapLastAskedDate, dailyData.lastDTUpdateDate]);
+
+  useEffect(() => {
+    if (checklist === undefined || dailyData.lastDTUpdateDate === undefined) return;
+    const allComplete = Object.values(checklist).every(valueArray => valueArray[0] === true);
+
+    const today = new Date().toDateString();
+    const lastUpdate = dailyData.lastDTUpdateDate;
+
+    if (allComplete && lastUpdate !== today) {
+      updateDTStreak(false);
+    }
+  }, [checklist, dailyData.lastDTUpdateDate]);
 
   const shouldAskFapQuestion = () => {
     if (userData.streakNF === 0) return false;
-
     const now = new Date();
     const hour = now.getHours();
-    const today = now.toDateString();
+    const today = new Date().toDateString();
 
-    // retrieve last asked times
-    const lastAskedDate = localStorage.getItem('fapLastAskedDate');
-    const lastAskedTimeTag = localStorage.getItem('fapLastAskedTimeTag');
+    const lastAskedDate = dailyData.fapLastAskedDate || null;
+    const lastAskedTimeTag = dailyData.fapLastAskedTimeTag || null;
 
-    // Morning condition — first visit of the day
     if (lastAskedDate !== today && hour < 18) {
       setPopupTimeTag('morning');
       return true;
     }
-
-    // After 6 PM
     if (hour >= 18 && hour < 22 && !(lastAskedDate === today && lastAskedTimeTag === 'evening')) {
       setPopupTimeTag('evening');
       return true;
     }
-
-    // After 10 PM
     if (hour >= 22 && !(lastAskedDate === today && lastAskedTimeTag === 'night')) {
       setPopupTimeTag('night');
       return true;
     }
-
     return false;
   };
 
-  const handleFapResponse = (didFap) => {
-    const today = new Date().toDateString(); 
+  const handleFapResponse = async (didFap) => {
+    const today = new Date().toDateString();
+
     if (didFap) {
       updateNFStreak(true);
-    } else {
-      localStorage.setItem('lastNFUpdateDate', today);
     }
 
-    localStorage.setItem('fapLastAskedDate', today);
-    localStorage.setItem('fapLastAskedTimeTag', popupTimeTag);
+    await syncDailyFields(userId, {
+      fapLastAskedDate: today,
+      fapLastAskedTimeTag: popupTimeTag
+    }, setDailyData);
+
     setShowFapPopup(false);
   };
 
-  const toggleChecklist = (itemKey) => {
-    setChecklist(prevChecklist => {
-      const currentItem = prevChecklist[itemKey];
-      
-      const newItem = [!currentItem[0], currentItem[1]];
-
-      const newChecklist = {
-        ...prevChecklist,
-        [itemKey]: newItem
-      };
-
-      localStorage.setItem('dailyChecklist', JSON.stringify(newChecklist));
-
-      return newChecklist;
-    });
+  const toggleChecklist = async (itemKey) => {
+    const currentItem = checklist[itemKey];
+    const newChecked = !currentItem[0];
+    const newChecklist = { ...checklist, [itemKey]: [newChecked, currentItem[1]] };
+    
+    setChecklist(newChecklist); // instant UI update
+    await toggleChecklistItem(userId, itemKey, newChecked, currentItem[1]);
+    await syncDailyFields(userId, {
+      dailyChecklist: newChecklist,
+      lastChecklistUpdateDate: new Date().toDateString()
+    }, setDailyData);
   };
 
-  const checkDailyNFStreak = () => {
-    if (!userId) return; 
+  const checkDailyNFStreak = async () => {
+    if (!userId) return;
 
     const today = new Date().toDateString();
-    const lastUpdate = localStorage.getItem('lastNFUpdateDate');
+    const lastUpdate = dailyData.lastNFUpdateDate;
 
-    if (lastUpdate === today) {
-      console.log("NF Streak already checked today.");
-      return;
-    }
+    if (lastUpdate === today) return;
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toDateString();
 
     if (lastUpdate === yesterdayString) {
-      console.log("Incrementing NF streak from yesterday.");
-      updateNFStreak(false); 
-    } else if (lastUpdate !== null) {
-      console.log("Resetting NF streak due to missed day(s).");
+      updateNFStreak(false);
+    }
+    else if (!lastUpdate || lastUpdate === "" || lastUpdate === undefined || lastUpdate === null) {
+      await syncDailyFields(userId, { lastNFUpdateDate: today }, setDailyData);
+    } 
+    else {
       updateNFStreak(true);
-    } else {
-      console.log("Setting initial NF streak check date.");
-      localStorage.setItem('lastNFUpdateDate', today);
     }
   };
 
-  const checkDailyDTStreak = () => {
+  const checkDailyDTStreak = async () => {
     if (!userId) return; 
-
     const today = new Date().toDateString();
-    const lastUpdate = localStorage.getItem('lastDTUpdateDate');
+    const lastUpdate = dailyData.lastDTUpdateDate;
 
-    if (lastUpdate === today) {
-      console.log("DT Streak already checked today.");
-      return;
-    }
+    if (lastUpdate === today) return;
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toDateString();
 
-    if (lastUpdate !== yesterdayString && lastUpdate !== null) {
-      console.log("Resetting DT streak due to missed day.");
+    if (lastUpdate && lastUpdate !== yesterdayString && lastUpdate !== today) {
       updateDTStreak(true);
     }
- };
+  };
 
-  const updateNFStreak = (reset = false) => {
+  const updateNFStreak = async (reset = false) => {
     try {
       const streakRef = ref(db, `users/${userId}/NoFapStreak/NFStreak`);
       const bestRef = ref(db, `users/${userId}/NoFapStreak/BestStreak`);
@@ -252,6 +238,7 @@ export default function ActivityPage() {
 
       const newStreak = reset ? 0 : userData.streakNF + 1;
       let newBest = userData.streakNFB;
+
       let newMonthly = reset ? userData.streakNFCM : userData.streakNFCM + 1;
 
       if (!reset && newStreak > userData.streakNFB) {
@@ -267,12 +254,13 @@ export default function ActivityPage() {
         streakNFB: newBest,
         streakNFCM: newMonthly
       }));
+      await syncDailyFields(userId, { lastNFUpdateDate: new Date().toDateString() }, setDailyData);
     } catch (e) {
       console.error("Failed Updating No Fap Streak!", e);
     }
   };
 
-  const updateDTStreak = (reset = false) => {
+  const updateDTStreak = async (reset = false) => {
     try {
       const streakRef = ref(db, `users/${userId}/DailyTaskStreak/DTStreak`);
       const bestRef = ref(db, `users/${userId}/DailyTaskStreak/BestStreak`);
@@ -296,7 +284,9 @@ export default function ActivityPage() {
         streakDTCM: newMonthly
       }));
 
-      localStorage.setItem('lastDTUpdateDate', new Date().toDateString());
+      if (!reset) {
+        await syncDailyFields(userId, { lastDTUpdateDate: new Date().toDateString() }, setDailyData);
+      }
     } catch (e) {
       console.error("Failed Updating Daily Task Streak!", e);
     }
