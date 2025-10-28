@@ -589,23 +589,31 @@ function App() {
               <h2>What You Get</h2>
               <p>Everything you need to stay consistent and motivated </p>
             </div>
+            
             <div className={styles['FeaturesCards']}>
-              <div className={styles['streakCard']}></div>
-              <div className={styles['checklistCard']}></div>
-              <div className={styles['positiveContentCard']}></div>
-            </div>
-            <div className={styles['FistInformationStats']}>
-              <div className={styles['FistInformationStatsCard']}>
-                <h2>25k+</h2>
-                <p>Daily Check-ins</p>
+
+              <div className={styles['streakCardContainer']}>
+                <div className={styles['streakCard']}></div>
+                <div className={styles['FistInformationStatsCard']}>
+                  <h2>25k+</h2>
+                  <p>Daily Check-ins</p>
+                </div>
               </div>
-              <div className={styles['FistInformationStatsCard']}>
-                <h2>92%</h2>
-                <p>Feel More Focused</p>
+
+              <div className={styles['streakCardContainer']}>
+                <div className={styles['streakCard']}></div>
+                <div className={styles['FistInformationStatsCard']}>
+                  <h2>92%</h2>
+                  <p>Feel More Focused</p>
+                </div>
               </div>
-              <div className={styles['FistInformationStatsCard']}>
-                <h2>4.5/5</h2>
-                <p>Community Rating</p>
+
+              <div className={styles['streakCardContainer']}>
+                <div className={styles['streakCard']}></div>
+                <div className={styles['FistInformationStatsCard']}>
+                  <h2>4.5/5</h2>
+                  <p>Community Rating</p>
+                </div>
               </div>
             </div>
           </div>

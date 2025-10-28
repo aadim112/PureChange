@@ -274,6 +274,9 @@ header{
   margin-top: 30px;
   gap: 20px;
 }
+.streakCardContainer{
+  height: auto;
+}
 .streakCard{
   width: 400px;
   height: 160px;
@@ -281,20 +284,7 @@ header{
   border-radius: 8px;
   background-color: #d7d1ff;
 }
-.checklistCard{
-  width: 400px;
-  height: 160px;
-  border: 2px solid rgb(212, 212, 212);
-  border-radius: 8px;
-  background-color: #d7d1ff;
-}
-.positiveContentCard{
-  width: 400px;
-  height: 160px;
-  border: 2px solid rgb(212, 212, 212);
-  border-radius: 8px;
-  background-color: #d7d1ff;
-}
+
 .FistInformationStats{
   display: flex;
   align-items: center;
@@ -313,9 +303,59 @@ header{
   padding-left: 10px;
   cursor: pointer;
   gap: 10px;
+  margin-top: 20px;
 }
 .FistInformationStatsCard:hover{
   background-color: #ebe8ff;
   color: #6E57FD;
   border: 0px;
+}
+
+@media screen and (max-width: 1287px) {
+  .HeroInformation h2{
+    width: 100%;
+    text-align: center;
+    font-size: 30px;
+  }
+  .HeroInformation p{
+    width: 90%;
+    text-align: center;
+    margin-top: 30px;
+    font-size: 16px;
+  }
+  .homebutton{
+    display: none;
+  }
+  header{
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  .options{
+    margin-right: 0px;
+    width: auto;
+  }
+  .logo{
+    width: auto;
+  }
+  .FeaturesCards{
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .streakCardContainer{
+    width: 100%;
+  }
+  .streakCard{
+    width: 100%;
+  }
+  .FeaturesCards{
+      width: 100%;
+  }
+  .FistInformationStatsCard{
+    width: 100%;
+  }
+  .FistInformationSection{
+    padding: 20px;
+  }
 }

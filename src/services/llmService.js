@@ -69,3 +69,35 @@ Verse: """${verseText}"""
     };
   }
 }
+
+
+
+
+export async function ProcessHealth(information) {
+  try{
+    const prompt = `
+You are an AI health evaluator analyzing user habits and progress in quitting masturbation.
+
+You will be given a list of questions and answers describing the user's current condition.
+
+Your task:
+1. Analyze the user's mental, emotional, and physical progress.
+2. Consider positive signs (motivation, self-control, focus, consistency) and negative signs (relapse, stress, guilt, low energy).
+3. Based on the user's overall state, predict a realistic health score between **40 and 95**.
+4. Never output 100 or values below 40.
+5. Respond **strictly with one integer number only** — no words, no symbols, no explanation.
+
+Questions and answers:
+${JSON.stringify(information, null, 2)}
+
+Output:
+<just the integer number, e.g., 78>
+`;
+    console.log(information);
+    const score = await model.generateContent(prompt);
+    const rawText = score.response.text();
+    return rawText;
+  }catch(error){
+    console.log(error);
+  }
+}
