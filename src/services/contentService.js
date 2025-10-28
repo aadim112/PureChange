@@ -50,15 +50,60 @@ export async function toggleChecklistItem(userId, itemKey, checked, label) {
   return updateDailyDataFields(userId, partial);
 }
 
-export async function transactionalIncrement(userId, dbRelativePath, delta = 1) {
-  const nodeRef = ref(db, `users/${userId}/${dbRelativePath}`);
-  return runTransaction(nodeRef, (current) => (current || 0) + delta);
+export async function getUserVerseState(userId) {
+  const snap = await get(ref(db, dailyPath(userId)));
+  if (snap.exists()) {
+    const val = snap.val();
+    return {
+      lastVerseDate: val.lastVerseDate || null,
+      currentVerseIndex: val.currentVerseIndex ?? 0,
+      shuffledVerseKeys: val.shuffledVerseKeys || []
+    };
+  }
+  return {
+    lastVerseDate: null,
+    currentVerseIndex: 0,
+    shuffledVerseKeys: []
+  };
 }
 
-export function subscribeToDailyData(userId, onChange) {
-  const nodeRef = ref(db, dailyPath(userId));
-  const off = onValue(nodeRef, (snap) => onChange(snap.exists() ? snap.val() : {}));
-  return () => off();
+export async function updateUserVerseState(userId, updates) {
+  return update(ref(db, dailyPath(userId)), updates);
+}
+
+export async function handleDailyVerseLogic(userId, allVerseKeys) {
+  const today = new Date().toDateString();
+  let { lastVerseDate, currentVerseIndex, shuffledVerseKeys } = await getUserVerseState(userId);
+
+  const keysMatch = shuffledVerseKeys &&
+    shuffledVerseKeys.length === allVerseKeys.length &&
+    allVerseKeys.every(key => shuffledVerseKeys.includes(key));
+
+  if (!lastVerseDate || lastVerseDate !== today) {
+    if (!keysMatch || currentVerseIndex >= allVerseKeys.length - 1) {
+      shuffledVerseKeys = shuffleArray(allVerseKeys);
+      currentVerseIndex = 0;
+    } else {
+      currentVerseIndex++;
+    }
+
+    await updateUserVerseState(userId, {
+      lastVerseDate: today,
+      shuffledVerseKeys,
+      currentVerseIndex
+    });
+  }
+
+  return shuffledVerseKeys[currentVerseIndex];
+}
+
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 export async function addVerse(religion, actualContent, question, englishTranslation, hindiTranslation, explanation) {

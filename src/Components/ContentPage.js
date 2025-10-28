@@ -7,7 +7,7 @@ import { ref, get } from "firebase/database";
 import { ReactComponent as ContentIcon } from "../assets/Content.svg"
 import { ReactComponent as ScriptureIcon } from "../assets/ScriptureIcon.svg"
 import { useNavigate } from 'react-router-dom';
-import { getVersesByReligion } from '../services/contentService';
+import { getVersesByReligion, handleDailyVerseLogic  } from '../services/contentService';
 
 const getLocalDate = () => {
   const now = new Date();
@@ -90,6 +90,7 @@ const formatVerse = (content, religion) => {
 export default function ContentPage() {
   const [activeTab, setActiveTab] = useState('content');
   const navigate = useNavigate();
+  const [userId , setUserId] = useState('');
   const [religion, setReligion] = useState(null);
   const [script, setScript] = useState(<p>{'<script>'}</p>);
   const [translation_EN, setTranslation_EN] = useState('<Transtion English>');
@@ -104,7 +105,6 @@ export default function ContentPage() {
 
   useEffect(() => {
     if (religion) {
-      console.log("Religion: ",religion);
       updateContent(religion);
     }
   }, [religion]);
@@ -113,7 +113,8 @@ export default function ContentPage() {
     try {
       setLoading(true);
       const userId = localStorage.getItem('userId');
-      console.log("User from ContentPage",userId);
+      setUserId(userId);
+
       if (!userId) {
         navigate('/');
         return;
@@ -144,39 +145,8 @@ export default function ContentPage() {
       }
 
       const allVerseKeys = Object.keys(verses);
-      if (allVerseKeys.length === 0) {
-        console.log("Verse object is empty.");
-        return;
-      }
+      const todayVerseKey = await handleDailyVerseLogic(userId, allVerseKeys);
 
-      const todayStr = getLocalDate();
-      const lastDate = localStorage.getItem('lastVerseDate');
-      
-      let shuffledKeys = JSON.parse(localStorage.getItem('shuffledVerseKeys'));
-      let currentIndex = parseInt(localStorage.getItem('currentVerseIndex'), 10);
-
-      const keysMatch = shuffledKeys && allVerseKeys.length === shuffledKeys.length && allVerseKeys.every(key => shuffledKeys.includes(key));
-
-      if (lastDate === todayStr && keysMatch && !isNaN(currentIndex)) {
-        console.log("Same day, using stored verse.");
-      } else {
-        console.log("New day, fetching new verse.");
-
-        if (!keysMatch || isNaN(currentIndex) || currentIndex >= allVerseKeys.length - 1) {
-          console.log("Shuffling new list.");
-          shuffledKeys = shuffleArray(allVerseKeys);
-          currentIndex = 0;
-        } else {
-          console.log("Incrementing verse index.");
-          currentIndex++;
-        }
-        
-        localStorage.setItem('lastVerseDate', todayStr);
-        localStorage.setItem('shuffledVerseKeys', JSON.stringify(shuffledKeys));
-        localStorage.setItem('currentVerseIndex', currentIndex.toString());
-      }
-
-      const todayVerseKey = shuffledKeys[currentIndex];
       const todayVerse = verses[todayVerseKey];
 
       if (todayVerse) {

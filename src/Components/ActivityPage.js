@@ -11,7 +11,8 @@ import {
   getDailyData,
   initDailyDataIfMissing,
   updateDailyDataFields,
-  toggleChecklistItem
+  toggleChecklistItem,
+  handleDailyVerseLogic
 } from "../services/contentService";
 
 const getDailyMasterChecklist = () => {
@@ -50,6 +51,7 @@ export default function ActivityPage() {
   const [popupTimeTag, setPopupTimeTag] = useState('');
   const [checklist, setChecklist] = useState({});
   const [dailyData, setDailyData] = useState({});
+  const [todayVerse, setTodayVerse] = useState(null);
 
   useEffect(() => {
     async function init() {
@@ -96,6 +98,15 @@ export default function ActivityPage() {
         const daily = await initDailyDataIfMissing(storedUserId, masterChecklist);
         setChecklist(daily.dailyChecklist || masterChecklist);
         setDailyData(daily);
+
+        // Fetch today's verse
+        const contentSnap = await get(ref(db, `content/religionalContent/${data.Religion}`));
+        if (contentSnap.exists()) {
+          const allVerses = contentSnap.val();
+          const allVerseKeys = Object.keys(allVerses);
+          const todayVerseKey = await handleDailyVerseLogic(storedUserId, allVerseKeys);
+          setTodayVerse(allVerses[todayVerseKey]);
+        }
       } catch (e) {
         console.error("❌ Initialization failed:", e);
       }
@@ -311,7 +322,14 @@ export default function ActivityPage() {
         className={styles["daily-question-card"]}
         onClick={() => navigate('/content')}
         >
-          <p>&lt;Daily Question&gt;</p>
+          <h3 className={styles["daily-question-header"]}>Daily Question</h3>
+          {todayVerse ? (
+            <p className={styles["daily-question-text"]}>
+              {todayVerse.question || todayVerse.actual_content || "Today's verse loaded!"}
+            </p>
+          ) : (
+            <p className={styles["daily-question-text"]}>Loading today’s question...</p>
+          )}
         </div>
 
         {/* Stats Section */}
