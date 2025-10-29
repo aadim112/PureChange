@@ -76,7 +76,6 @@ const CircularScoreBar= ({value}) => {
 export default function MyPage(){
     const navigate = useNavigate();
     const userId = ''
-    const [imgUrl,setImgUrl] = useState('');
     const [userData, setUserData] = useState({
         Name: '',
         Bio: '',
@@ -91,10 +90,10 @@ export default function MyPage(){
         Hobby: '',
         UserName: '',
         healthScore : '',
+        userType : '',
     });
 
     useEffect(()=>{
-        console.log("User from MyPage",userId);
         fetchUserData();
     },[]);
 
@@ -125,9 +124,9 @@ export default function MyPage(){
                     Hobby: data.Hobby || '',
                     UserName: data.UserName || '',
                     healthScore : data.healthScore || '',
+                    userType : data.UserType || '',
                 };
                 setUserData(formattedData);
-                setImgUrl(localStorage.getItem("imgURl"));
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -184,9 +183,10 @@ export default function MyPage(){
 
                         <div className={styles["seperator"]}></div>
 
-                        <div className={styles["linkedAcc"]}>
-                            <p style={{fontWeight:'500',fontSize:'12px'}}>Linked Account</p>
-                            <div></div>
+                        <div className={styles["userPlanSection"]}>
+                            <p>User Plan</p>
+                            <div className={styles["userPlan"]}>{userData.userType}</div>
+                            <button className={styles["upgradeButton"]} onClick={()=>{navigate('/pricing')}}>Upgrade Plan</button>
                         </div>
 
 

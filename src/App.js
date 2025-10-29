@@ -18,6 +18,7 @@ import MoreContentPage from './Components/MoreContentPage';
 import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
 import AdminLogin from './Components/AdminLogin';
 import AdminControlPage from './Components/AdminControlPage';
+import PricingPage from './Components/PricingPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -635,6 +636,7 @@ function App() {
       <Route path='/edit-profile' element={<EditProfile />} />
       <Route path='/more-content' element={<MoreContentPage />} />
       <Route path='/routine' element={<PersonalisedRoutinePage />} />
+      <Route path='/pricing' element={<PricingPage />} />
       <Route path='/admin' element={<AdminLogin />} />
       <Route
         path='/admin-controls'
