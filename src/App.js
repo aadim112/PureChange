@@ -384,6 +384,47 @@ function App() {
     }
   };
 
+const createOrder = async (amount) => {
+  try {
+    const response = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount }),
+    });
+
+const order = await response.json();
+
+  const options = {
+    key: "rzp_test_RZByCgPA3CgmMz", // ✅ Use your Razorpay *public* key here (not secret)
+    amount: order.amount,
+    currency: order.currency,
+    name: "My Website Name",
+    description: "Payment for Order",
+    order_id: order.id, // ✅ order id from backend
+    handler: function (response) {
+      // ✅ This runs after successful payment
+      alert("Payment Successful!");
+      console.log("Payment details:", response);
+      // You can send this response to your backend for verification
+    },
+    prefill: {
+      name: "Test User",
+      email: "test@example.com",
+      contact: "9999999999",
+    },
+    theme: {
+      color: "#3399cc",
+    },
+  };
+
+  const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
   return (
     <Routes>
       <Route path="/" element={
@@ -605,6 +646,10 @@ function App() {
           <div>
             <button className={styles["testPage"]} onClick={() => navigate('/testpage')}>
               Test Page
+            </button>
+
+            <button className={styles["testPage"]} onClick={() => createOrder(900)}>
+              Payment
             </button>
           </div>
         </div>
