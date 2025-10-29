@@ -55,6 +55,43 @@ export default function PricingPage() {
     }
   }, [userData.UserType]);
 
+  const createOrder = async (amount) => {
+    try {
+      const response = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+
+      const order = await response.json();
+      const options = {
+        key: "rzp_test_RZByCgPA3CgmMz",
+        amount: order.amount,
+        currency: order.currency,
+        name: "My Website Name",
+        description: "Payment for Order",
+        order_id: order.id,
+        handler: function (response) {
+          alert("Payment Successful!");
+          console.log("Payment details:", response);
+        },
+        prefill: {
+          name: userData.Name,
+          email: userData.Email,
+          contact: userData.PhoneNumber,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const plans = [
     {
       name: 'Free',
@@ -74,7 +111,7 @@ export default function PricingPage() {
     {
       name: 'Pro',
       description: 'For creators ramping up their content production',
-      price: isAnnual ? 11 : 15,
+      price: isAnnual ? 11 : 500,
       oldPrice: isAnnual ? 22 : null,
       popular: true,
       discount: isAnnual ? 'FIRST MONTH 50% OFF' : null,
@@ -93,7 +130,7 @@ export default function PricingPage() {
     {
       name: 'Elite',
       description: 'For professionals seeking premium guidance and support',
-      price: isAnnual ? 99 : 120,
+      price: isAnnual ? 99 : 800,
       popular: false,
       features: [
         'Everything in Pro, plus',
@@ -165,9 +202,9 @@ export default function PricingPage() {
                 )}
                 <div className={styles["price-container"]}>
                   {plan.oldPrice && (
-                    <span className={styles["old-price"]}>${plan.oldPrice}</span>
+                    <span className={styles["old-price"]}>₹{plan.oldPrice}</span>
                   )}
-                  <span className={styles["currency"]}>$</span>
+                  <span className={styles["currency"]}>₹</span>
                   <span className={styles["price"]}>{plan.price}</span>
                   <span className={styles["period"]}>per month</span>
                 </div>
@@ -175,9 +212,7 @@ export default function PricingPage() {
 
               <button
                 className={`${styles["get-started-btn"]} ${plan.name === 'Free' ? styles["btn-secondary"] : ''}`}
-                onClick={() => {
-                  console.log(`Selected ${plan.name} plan`);
-                }}
+                onClick={() => createOrder(plan.price)}
               >
                 GET STARTED
               </button>
