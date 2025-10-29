@@ -150,7 +150,7 @@ const Question = () => {
       localStorage.setItem('questionnaireCompleted', 'true');
       
       alert('Questionnaire complete!');
-      navigate('/edit-profile', { replace: true });
+      navigate('/goal-question', { replace: true });
     } catch (error) {
       console.error('Error saving questionnaire:', error);
       alert(`Error saving questionnaire: ${error.message}`);
