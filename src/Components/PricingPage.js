@@ -19,6 +19,7 @@ const CheckIcon = () => (
 
 
 export default function PricingPage() {
+  const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
           Name: '',
