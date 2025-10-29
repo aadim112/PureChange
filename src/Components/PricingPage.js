@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import styles from './PricingPage.module.css';
+import { ref, set, child, get } from 'firebase/database';
+import { db } from '../firebase';
 import { ReactComponent as CreditIcon } from '../assets/Content.svg';
 
 const CheckIcon = () => (
@@ -15,6 +17,43 @@ const CheckIcon = () => (
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState('');
+  const [navButtons,setNavButtons] = useState([{ label: "Activity", variant: "secondary", route: "/activity" }]);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const storedUserId = localStorage.getItem("userId");
+        if (!storedUserId) {
+          navigate("/");
+          return;
+        }
+
+        const userRef = ref(db, `users/${storedUserId}`);
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) return;
+
+        const data = snapshot.val();
+        const formattedData = {
+          Name: data.Name || '',
+          UserName: data.UserName || '',
+          Gender: data.Gender || '',
+          UserType: data.UserType || '',
+        };
+        setUserData(formattedData);
+        console.log(formattedData);
+      } catch (e) {
+        console.error("❌ Initialization failed:", e);
+      }
+    }
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (userData.UserType === 'Normal') {
+      setNavButtons([]);
+    }
+  }, [userData.UserType]);
 
   const plans = [
     {
@@ -76,12 +115,7 @@ export default function PricingPage() {
       <Navbar
         pageName="Pricing"
         Icon={CreditIcon}
-        buttons={[
-          { label: "Ranking", variant: "secondary", route: "/leaderboard" },
-          { label: "My Routine", variant: "secondary", route: "/routine" },
-          { label: "Activity", variant: "secondary", route: "/activity" },
-          { label: "My Page", variant: "secondary", route: "/mypage" },
-        ]}
+        buttons={navButtons}
       />
 
       <div className={styles["header"]}>
@@ -90,7 +124,7 @@ export default function PricingPage() {
           Plans built for creators and business of all sizes
         </p>
         
-        <div className={styles["billing-toggle"]}>
+        {/* <div className={styles["billing-toggle"]}>
           <span className={`${styles["toggle-label"]} ${!isAnnual ? styles["active"] : ''}`}>
             Monthly
           </span>
@@ -106,7 +140,7 @@ export default function PricingPage() {
             Annual
           </span>
           {isAnnual && <span className={styles["badge"]}>2 MONTHS FREE</span>}
-        </div>
+        </div> */}
       </div>
 
       <div className={styles["pricing-container"]}>
