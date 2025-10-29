@@ -24,8 +24,19 @@
   text-align: center;
   margin-bottom: 30px;
   box-shadow: var(--shadow-base);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
   font-size: var(--font-size-sm);
+}
+
+.daily-question-header {
+  margin-bottom: 10px;
+}
+
+.daily-question-text {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-tertiary-dark);
+  pointer-events: none;
 }
 
 /* Stats Section */

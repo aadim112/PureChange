@@ -1,8 +1,111 @@
-import { ref, set, get, push, remove, serverTimestamp } from "firebase/database";
 import { db, storage } from "../firebase";
+import { ref, get, update, set, push, remove, serverTimestamp, runTransaction, onValue } from 'firebase/database';
 import { ref as storageRef, listAll, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-// Add a new verse/shlok
+const dailyPath = (uid) => `users/${uid}/dailyData`;
+
+export async function getDailyData(userId) {
+  const snap = await get(ref(db, dailyPath(userId)));
+  return snap.exists() ? snap.val() : {};
+}
+
+export async function initDailyDataIfMissing(userId, defaultChecklist) {
+  if (!userId) return;
+
+  const pathRef = ref(db, dailyPath(userId));
+  const snap = await get(pathRef);
+  const today = new Date().toDateString();
+
+  if (!snap.exists()) {
+    return;
+  }
+
+  const data = snap.val();
+
+  if (data.lastChecklistUpdateDate !== today) {
+    const updatedData = {
+      ...data,
+      lastChecklistUpdateDate: today,
+      dailyChecklist: defaultChecklist || data.dailyChecklist,
+    };
+
+    await update(pathRef, updatedData);
+    return updatedData;
+  }
+
+  return data;
+}
+
+export async function updateDailyDataFields(userId, updates) {
+  return update(ref(db, dailyPath(userId)), updates);
+}
+
+export async function setDailyChecklist(userId, checklist) {
+  return updateDailyDataFields(userId, { dailyChecklist: checklist });
+}
+
+export async function toggleChecklistItem(userId, itemKey, checked, label) {
+  const partial = {};
+  partial[`dailyChecklist/${itemKey}`] = [checked, label];
+  return updateDailyDataFields(userId, partial);
+}
+
+export async function getUserVerseState(userId) {
+  const snap = await get(ref(db, dailyPath(userId)));
+  if (snap.exists()) {
+    const val = snap.val();
+    return {
+      lastVerseDate: val.lastVerseDate || null,
+      currentVerseIndex: val.currentVerseIndex ?? 0,
+      shuffledVerseKeys: val.shuffledVerseKeys || []
+    };
+  }
+  return {
+    lastVerseDate: null,
+    currentVerseIndex: 0,
+    shuffledVerseKeys: []
+  };
+}
+
+export async function updateUserVerseState(userId, updates) {
+  return update(ref(db, dailyPath(userId)), updates);
+}
+
+export async function handleDailyVerseLogic(userId, allVerseKeys) {
+  const today = new Date().toDateString();
+  let { lastVerseDate, currentVerseIndex, shuffledVerseKeys } = await getUserVerseState(userId);
+
+  const keysMatch = shuffledVerseKeys &&
+    shuffledVerseKeys.length === allVerseKeys.length &&
+    allVerseKeys.every(key => shuffledVerseKeys.includes(key));
+
+  if (!lastVerseDate || lastVerseDate !== today) {
+    if (!keysMatch || currentVerseIndex >= allVerseKeys.length - 1) {
+      shuffledVerseKeys = shuffleArray(allVerseKeys);
+      currentVerseIndex = 0;
+    } else {
+      currentVerseIndex++;
+    }
+
+    await updateUserVerseState(userId, {
+      lastVerseDate: today,
+      shuffledVerseKeys,
+      currentVerseIndex
+    });
+  }
+
+  return shuffledVerseKeys[currentVerseIndex];
+}
+
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export async function addVerse(religion, actualContent, question, englishTranslation, hindiTranslation, explanation) {
   try {
     const religionRef = ref(db, `content/religionalContent/${religion}`);
@@ -53,7 +156,6 @@ export async function addVerse(religion, actualContent, question, englishTransla
   }
 }
 
-// Fetch all verses of a given religion
 export async function getVersesByReligion(religion) {
   try {
     const contentRef = ref(db, `content/religionalContent/${religion}`);

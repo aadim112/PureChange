@@ -11,7 +11,7 @@ import Avatar from "./Avatar";
 
 const MyProfile = [
   {label : "Ranking", variant : "secondary", route: '/leaderboard'},
-  {label : "My Routine", variant : "secondary", route : "/myroutine"},
+  {label : "My Routine", variant : "secondary", route : "/routine"},
   {label : "Activity", variant: "secondary", route : "/activity"},
   {label : "My Page", variant: "primary", route : "/mypage"}
 ]
