@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import styles from './PricingPage.module.css';
 import { ReactComponent as CreditIcon } from '../assets/Content.svg';
+import { ref } from 'firebase/database';
+import { db } from '../firebase';
+import { set,get } from 'firebase/database';
+
 
 const CheckIcon = () => (
   <div className={styles["check-icon"]}>
@@ -12,9 +16,106 @@ const CheckIcon = () => (
   </div>
 );
 
+
+
 export default function PricingPage() {
-  const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState({
+          Name: '',
+          Bio: '',
+          Email: '',
+          PhoneNumber: '',
+          Gender: '',
+          Religion: '',
+          Weight: '',
+          Height: '',
+          Age: '',
+          City: '',
+          Hobby: '',
+          UserName: '',
+          healthScore : '',
+          userType : '',
+      });
+  
+
+  useEffect(()=>{
+      fetchUserData();
+  },[]);
+
+  const fetchUserData = async () => {
+    try {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            navigate('/');
+            return;
+        }
+
+        const userRef = ref(db, `users/${userId}`);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const formattedData = {
+                Name: data.Name || '',
+                Bio: data.Bio || '',
+                Email: data.Email || '',
+                PhoneNumber: data.PhoneNumber || '',
+                Gender: data.Gender || '',
+                Religion: data.Religion || '',
+                Weight: data.Weight || '',
+                Height: data.Height || '',
+                Age: data.Age || '',
+                City: data.City || '',
+                Hobby: data.Hobby || '',
+                UserName: data.UserName || '',
+                healthScore : data.healthScore || '',
+                userType : data.UserType || '',
+            };
+            setUserData(formattedData);
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+  };
+
+  const createOrder = async (amount) => {
+  try {
+    const response = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount }),
+    });
+
+    const order = await response.json();
+      const options = {
+        key: "rzp_test_RZByCgPA3CgmMz", // ✅ Use your Razorpay *public* key here (not secret)
+        amount: order.amount,
+        currency: order.currency,
+        name: "My Website Name",
+        description: "Payment for Order",
+        order_id: order.id, // ✅ order id from backend
+        handler: function (response) {
+          // ✅ This runs after successful payment
+          alert("Payment Successful!");
+          console.log("Payment details:", response);
+          // You can send this response to your backend for verification
+        },
+        prefill: {
+          name: userData.Name,
+          email: userData.Email,
+          contact: userData.PhoneNumber,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+    };
+
+    const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const plans = [
     {
@@ -35,7 +136,7 @@ export default function PricingPage() {
     {
       name: 'Pro',
       description: 'For creators ramping up their content production',
-      price: isAnnual ? 11 : 15,
+      price: isAnnual ? 11 : 500,
       oldPrice: isAnnual ? 22 : null,
       popular: true,
       discount: isAnnual ? 'FIRST MONTH 50% OFF' : null,
@@ -54,7 +155,7 @@ export default function PricingPage() {
     {
       name: 'Elite',
       description: 'For professionals seeking premium guidance and support',
-      price: isAnnual ? 99 : 120,
+      price: isAnnual ? 99 : 800,
       popular: false,
       features: [
         'Everything in Pro, plus',
@@ -90,7 +191,7 @@ export default function PricingPage() {
           Plans built for creators and business of all sizes
         </p>
         
-        <div className={styles["billing-toggle"]}>
+        {/* <div className={styles["billing-toggle"]}>
           <span className={`${styles["toggle-label"]} ${!isAnnual ? styles["active"] : ''}`}>
             Monthly
           </span>
@@ -106,7 +207,7 @@ export default function PricingPage() {
             Annual
           </span>
           {isAnnual && <span className={styles["badge"]}>2 MONTHS FREE</span>}
-        </div>
+        </div> */}
       </div>
 
       <div className={styles["pricing-container"]}>
@@ -131,9 +232,9 @@ export default function PricingPage() {
                 )}
                 <div className={styles["price-container"]}>
                   {plan.oldPrice && (
-                    <span className={styles["old-price"]}>${plan.oldPrice}</span>
+                    <span className={styles["old-price"]}>₹{plan.oldPrice}</span>
                   )}
-                  <span className={styles["currency"]}>$</span>
+                  <span className={styles["currency"]}>₹</span>
                   <span className={styles["price"]}>{plan.price}</span>
                   <span className={styles["period"]}>per month</span>
                 </div>
@@ -141,9 +242,7 @@ export default function PricingPage() {
 
               <button
                 className={`${styles["get-started-btn"]} ${plan.name === 'Free' ? styles["btn-secondary"] : ''}`}
-                onClick={() => {
-                  console.log(`Selected ${plan.name} plan`);
-                }}
+                onClick={() => createOrder(plan.price)}
               >
                 GET STARTED
               </button>

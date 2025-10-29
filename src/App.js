@@ -410,7 +410,6 @@ const createOrder = async (amount) => {
     });
 
 const order = await response.json();
-
   const options = {
     key: "rzp_test_RZByCgPA3CgmMz", // ✅ Use your Razorpay *public* key here (not secret)
     amount: order.amount,
