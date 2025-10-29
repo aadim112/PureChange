@@ -19,6 +19,7 @@ import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
 import AdminLogin from './Components/AdminLogin';
 import AdminControlPage from './Components/AdminControlPage';
 import PricingPage from './Components/PricingPage';
+import GoalSetup from './Components/GoalSetup';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -667,6 +668,10 @@ const order = await response.json();
             <button className={styles["testPage"]} onClick={() => createOrder(900)}>
               Payment
             </button>
+
+            <button className={styles["testPage"]} onClick={() => navigate('/goal-question')}>
+              goal setup
+            </button>
           </div>
         </div>
       } />
@@ -682,6 +687,7 @@ const order = await response.json();
       <Route path='/routine' element={<PersonalisedRoutinePage />} />
       <Route path='/pricing' element={<PricingPage />} />
       <Route path='/admin' element={<AdminLogin />} />
+      <Route path='/goal-question' element={<GoalSetup/>} />
       <Route
         path='/admin-controls'
         element={
