@@ -317,6 +317,32 @@
   margin: 20px 0;
 }
 
+/* Disabled Get Started Button for Current Plan */
+.get-started-btn[disabled] {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border: 1px solid #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+.current-plan-btn[disabled] {
+  background: transparent;
+  color: #10b981;
+  border: 2px solid #10b981;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+.current-plan-btn:hover {
+  opacity: 1;
+  background: rgba(16, 185, 129, 0.05);
+  transform: none;
+  box-shadow: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .pricing-grid {

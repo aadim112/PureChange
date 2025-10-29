@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import styles from './PricingPage.module.css';
-import { ref, set, child, get } from 'firebase/database';
+import { ref, set, get } from 'firebase/database';
 import { db } from '../firebase';
 import { ReactComponent as CreditIcon } from '../assets/Content.svg';
 
@@ -13,12 +13,14 @@ const CheckIcon = () => (
     </svg>
   </div>
 );
+const planLevels = { Free: 1, Pro: 2, Elite: 3 };
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
   const [userData, setUserData] = useState('');
   const [navButtons,setNavButtons] = useState([{ label: "Activity", variant: "secondary", route: "/activity" }]);
+  const [userPlanLevel, setUserPlanLevel] = useState(1);
 
   useEffect(() => {
     async function init() {
@@ -41,7 +43,8 @@ export default function PricingPage() {
           UserType: data.UserType || '',
         };
         setUserData(formattedData);
-        console.log(formattedData);
+        const level = planLevels[data.UserType] || 1;
+        setUserPlanLevel(level);
       } catch (e) {
         console.error("❌ Initialization failed:", e);
       }
@@ -55,7 +58,29 @@ export default function PricingPage() {
     }
   }, [userData.UserType]);
 
-  const createOrder = async (amount) => {
+  const updateUserTypeAndRedirect = async (planName) => {
+    try {
+      const storedUserId = localStorage.getItem("userId");
+      if (!storedUserId) return;
+
+      const userRef = ref(db, `users/${storedUserId}/UserType`);
+      await set(userRef, planName);
+
+      setUserData((prev) => ({ ...prev, UserType: planName }));
+
+      navigate('/activity');
+    } catch (error) {
+      console.error("❌ Failed to update UserType:", error);
+    }
+  };
+
+  const createOrder = async (amount, planName) => {
+    if (planName === 'Free') {
+      alert("You have activated the Free plan!");
+      await updateUserTypeAndRedirect(planName);
+      return;
+    }
+
     try {
       const response = await fetch("/api/create-order", {
         method: "POST",
@@ -71,9 +96,10 @@ export default function PricingPage() {
         name: "My Website Name",
         description: "Payment for Order",
         order_id: order.id,
-        handler: function (response) {
+        handler: async function (response) {
           alert("Payment Successful!");
           console.log("Payment details:", response);
+          await updateUserTypeAndRedirect(planName);
         },
         prefill: {
           name: userData.Name,
@@ -182,54 +208,69 @@ export default function PricingPage() {
 
       <div className={styles["pricing-container"]}>
         <div className={styles["pricing-grid"]}>
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`${styles["pricing-card"]} ${plan.popular ? styles["popular-card"] : ''}`}
-            >
-              {plan.popular && (
-                <div className={styles["popular-badge"]}>MOST POPULAR</div>
-              )}
+          {plans.map((plan, index) => {
+            const isCurrentPlan = userData?.UserType === plan.name;
 
-              <div className={styles["plan-header"]}>
-                <h2 className={styles["plan-name"]}>{plan.name}</h2>
-                <p className={styles["plan-description"]}>{plan.description}</p>
-              </div>
-
-              <div className={styles["price-section"]}>
-                {plan.discount && (
-                  <span className={styles["discount"]}>{plan.discount}</span>
+            return (
+              <div
+                key={index}
+                className={`${styles["pricing-card"]} ${plan.popular ? styles["popular-card"] : ''}`}
+              >
+                {plan.popular && (
+                  <div className={styles["popular-badge"]}>MOST POPULAR</div>
                 )}
-                <div className={styles["price-container"]}>
-                  {plan.oldPrice && (
-                    <span className={styles["old-price"]}>₹{plan.oldPrice}</span>
+
+                <div className={styles["plan-header"]}>
+                  <h2 className={styles["plan-name"]}>{plan.name}</h2>
+                  <p className={styles["plan-description"]}>{plan.description}</p>
+                </div>
+
+                <div className={styles["price-section"]}>
+                  {plan.discount && (
+                    <span className={styles["discount"]}>{plan.discount}</span>
                   )}
-                  <span className={styles["currency"]}>₹</span>
-                  <span className={styles["price"]}>{plan.price}</span>
-                  <span className={styles["period"]}>per month</span>
+                  <div className={styles["price-container"]}>
+                    {plan.oldPrice && (
+                      <span className={styles["old-price"]}>₹{plan.oldPrice}</span>
+                    )}
+                    <span className={styles["currency"]}>₹</span>
+                    <span className={styles["price"]}>{plan.price}</span>
+                    <span className={styles["period"]}>per month</span>
+                  </div>
+                </div>
+
+                <button
+                  className={`${styles["get-started-btn"]} 
+                              ${plan.name === 'Free' ? styles["btn-secondary"] : ''} 
+                              ${isCurrentPlan ? styles["current-plan-btn"] : ''}`}
+                  onClick={() => {
+                    if (!isCurrentPlan && planLevels[plan.name] >= userPlanLevel) {
+                      createOrder(plan.price, plan.name);
+                    }
+                  }}
+                  disabled={isCurrentPlan || planLevels[plan.name] < userPlanLevel}
+                >
+                  {isCurrentPlan
+                    ? "CURRENT PLAN"
+                    : planLevels[plan.name] < userPlanLevel
+                    ? "NOT AVAILABLE"
+                    : "GET STARTED"}
+                </button>
+
+                <div className={styles["features-list"]}>
+                  <p className={styles["features-title"]}>
+                    {plan.name === 'Free' ? 'Features:' : `Everything in ${index === 1 ? 'Free' : 'Pro'}, plus:`}
+                  </p>
+                  {plan.features.map((feature, i) => (
+                    <div key={i} className={styles["feature-item"]}>
+                      <CheckIcon />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              <button
-                className={`${styles["get-started-btn"]} ${plan.name === 'Free' ? styles["btn-secondary"] : ''}`}
-                onClick={() => createOrder(plan.price)}
-              >
-                GET STARTED
-              </button>
-
-              <div className={styles["features-list"]}>
-                <p className={styles["features-title"]}>
-                  {plan.name === 'Free' ? 'Features:' : `Everything in ${index === 1 ? 'Free' : 'Pro'}, plus:`}
-                </p>
-                {plan.features.map((feature, i) => (
-                  <div key={i} className={styles["feature-item"]}>
-                    <CheckIcon />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
