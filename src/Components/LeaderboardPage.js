@@ -1,6 +1,8 @@
 import React, { useState , useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ref, set, child, get } from 'firebase/database';
+import { db } from '../firebase';
 import styles from './LeaderboardPage.module.css';
-import { Trophy, Award, Medal } from 'lucide-react';
 import clsx from 'clsx';
 import Navbar from './Navbar';
 import Avatar from './Avatar';
@@ -10,6 +12,30 @@ import { ReactComponent as RankGold } from "../assets/Rank-Gold.svg"
 
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState('ranking');
+  const [currentMonth, setCurrentMonth] = useState('');
+  const [userId, setUserId] = useState('');
+  const [userData, setUserData] = useState({
+      Name: null,
+      UserName: '',
+      Gender: '',
+      Religion: '',
+      streakNF: 0,
+      streakNFB: 0,
+      streakNFCM: 0,
+      streakDT: 0,
+      streakDTB: 0,
+      streakDTCM: 0
+  });
+  const navigate = useNavigate();
+  const getInitials = () => {
+    if (userData.Name) {
+      const names = userData.Name.split(' ');
+      return names.length > 1
+          ? `${names[0][0]}${names[1][0]}`.toUpperCase()
+          : names[0].substring(0, 2).toUpperCase();
+    }
+    return userData.UserName ? userData.UserName.substring(0, 2).toUpperCase() : 'U';
+  };
 
   const [profileBig, setProfileBig] = useState(55);
   const [profileSmall, setProfileSmall] = useState(40);
@@ -33,6 +59,53 @@ export default function LeaderboardPage() {
     return () => window.removeEventListener("resize", updateProfileSize);
   }, []);
 
+  useEffect(() => {
+    async function init() {
+      try {
+        // Fetch current month
+        const date = new Date();
+        const monthNames = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ];
+        const currMon = `${monthNames[date.getMonth()]}${date.getFullYear()}`;
+        setCurrentMonth(currMon);
+
+        // Get userId from localStorage
+        const storedUserId = localStorage.getItem("userId");
+        if (!storedUserId) {
+          navigate("/");
+          return;
+        }
+        setUserId(storedUserId);
+
+        // Fetch user data from Firebase
+        const userRef = ref(db, `users/${storedUserId}`);
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) return;
+
+        const data = snapshot.val();
+        const formattedData = {
+          Name: data.Name || '',
+          UserName: data.UserName || '',
+          Gender: data.Gender || '',
+          Religion: data.Religion || '',
+          streakNF: data.NoFapStreak.NFStreak || 0,
+          streakNFB: data.NoFapStreak.BestStreak || 1,
+          streakNFCM: data?.NoFapStreak?.MonthlyStreak?.[currMon] || 1,
+          streakDT: data.DailyTaskStreak.DTStreak || 0,
+          streakDTB: data.DailyTaskStreak.BestStreak || 0,
+          streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currMon] || 0,
+        };
+        setUserData(formattedData);
+      } catch (e) {
+        console.error("❌ Initialization failed:", e);
+      }
+    }
+
+    init();
+  }, []);
+
   // Sample leaderboard data
   const leaderboardData = [
     { rank: 1, initials: "RS", name: 'Rohan Sali', NFstreak: '28', DTstreak: '20', globalRank: '206', highlight: true },
@@ -42,7 +115,7 @@ export default function LeaderboardPage() {
     { rank: 5, initials: "U5", name: 'User 5', NFstreak: '20', DTstreak: '10', globalRank: '20' },
     { rank: 6, initials: "U6", name: 'User 6', NFstreak: '20', DTstreak: '10', globalRank: '20' },
     { rank: 7, initials: "U7", name: 'User 7', NFstreak: '20', DTstreak: '10', globalRank: '20' },
-    { rank: 8, initials: "U8", name: 'User 8', NFstreak: '20', DTstreak: '10', globalRank: '20' },
+    { rank: 8, initials: "U8", name: 'User 8', NFstreak: '20', DTstreak: '10', globalRank: '20' }
   ];
 
   return (
@@ -63,20 +136,20 @@ export default function LeaderboardPage() {
         {/* User Stats Card */}
         <div className={styles["user-stats-card"]}>
           <div className={styles["user-avatar"]}>
-            <Avatar initials="RS" size='medium'/>
-            <div className={styles["user-name"]}>Rohan Sali</div>
+            <Avatar initials={getInitials()} size='medium'/>
+            <div className={styles["user-name"]}>{userData.Name}</div>
           </div>
           <div className={styles["stat-item"]}>
             <div className={styles["stat-label"]}>Current Month</div>
             <div className={styles["stat-value-group"]}>
               <div className={styles["stat-value"]}>No Fap : </div>
               <ColouredFlame className={styles["flame"]}/>
-              <div className={styles["stat-subvalue"]}>0 Days</div>
+              <div className={styles["stat-subvalue"]}>{userData.streakNFCM} Days</div>
             </div>
             <div className={styles["stat-value-group"]}>
               <div className={styles["stat-value"]}>Daily Task : </div>
               <ColouredFlame className={styles["flame"]}/>
-              <div className={styles["stat-subvalue"]}>0 Days</div>
+              <div className={styles["stat-subvalue"]}>{userData.streakDTCM} Days</div>
             </div>
           </div>
           <div className={styles["stat-item"]}>
@@ -84,12 +157,12 @@ export default function LeaderboardPage() {
             <div className={styles["stat-value-group"]}>
               <div className={styles["stat-value"]}>No Fap : </div>
               <ColouredFlame className={styles["flame"]}/>
-              <div className={styles["stat-subvalue"]}>0 Days</div>
+              <div className={styles["stat-subvalue"]}>{userData.streakNFB} Days</div>
             </div>
             <div className={styles["stat-value-group"]}>
               <div className={styles["stat-value"]}>Daily Task : </div>
               <ColouredFlame className={styles["flame"]}/>
-              <div className={styles["stat-subvalue"]}>0 Days</div>
+              <div className={styles["stat-subvalue"]}>{userData.streakDTB} Days</div>
             </div>
           </div>
           <div className={styles["stat-item"]}>
