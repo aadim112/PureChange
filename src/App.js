@@ -20,6 +20,7 @@ import AdminLogin from './Components/AdminLogin';
 import AdminControlPage from './Components/AdminControlPage';
 import PricingPage from './Components/PricingPage';
 import GoalSetup from './Components/GoalSetup';
+import ChatRoomPage from './Components/ChatRoomPage';
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -688,6 +689,7 @@ const order = await response.json();
       <Route path='/pricing' element={<PricingPage />} />
       <Route path='/admin' element={<AdminLogin />} />
       <Route path='/goal-question' element={<GoalSetup/>} />
+      <Route path='/chatroom' element={<ChatRoomPage/>} />
       <Route
         path='/admin-controls'
         element={

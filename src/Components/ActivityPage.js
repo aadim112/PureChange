@@ -354,6 +354,7 @@ export default function ActivityPage() {
         pageName="Activity"
         Icon={Flame}
         buttons={[
+          { label: "ChatRoom", variant: "secondary", route: "/chatroom" },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
           { label: "My Routine", variant: "secondary", route: "/routine" },
           { label: "Activity", variant: "primary", route: "/activity" },

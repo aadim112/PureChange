@@ -4,7 +4,7 @@ import Navbar from './Navbar';
 import styles from './PricingPage.module.css';
 import { ref, set, get } from 'firebase/database';
 import { db } from '../firebase';
-import { ReactComponent as CreditIcon } from '../assets/Content.svg';
+import { ReactComponent as CreditIcon } from '../assets/Pricing.svg';
 
 const CheckIcon = () => (
   <div className={styles["check-icon"]}>
