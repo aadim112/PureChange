@@ -68,6 +68,15 @@ export default function PricingPage() {
 
       setUserData((prev) => ({ ...prev, UserType: planName }));
 
+      const currentDate = new Date().toDateString();
+      let expirydate = new Date();
+      const startdateRef = ref(db, `users/${storedUserId}/dailyData/planStartDate`);
+      const expirydateRef = ref(db, `users/${storedUserId}/dailyData/planExpiryDate`);
+      expirydate.setDate(expirydate.getDate() + (isAnnual ? 365 : 30));
+      expirydate = expirydate.toDateString();
+      await set(expirydateRef, expirydate);
+      await set(startdateRef, currentDate);
+
       navigate('/activity');
     } catch (error) {
       console.error("❌ Failed to update UserType:", error);
@@ -137,7 +146,7 @@ export default function PricingPage() {
     {
       name: 'Pro',
       description: 'For creators ramping up their content production',
-      price: isAnnual ? 11 : 500,
+      price: isAnnual ? 11 : 499,
       oldPrice: isAnnual ? 22 : null,
       popular: true,
       discount: isAnnual ? 'FIRST MONTH 50% OFF' : null,
@@ -156,7 +165,7 @@ export default function PricingPage() {
     {
       name: 'Elite',
       description: 'For professionals seeking premium guidance and support',
-      price: isAnnual ? 99 : 800,
+      price: isAnnual ? 99 : 799,
       popular: false,
       features: [
         'Everything in Pro, plus',

@@ -90,8 +90,14 @@ export default function ActivityPage() {
           streakDT: data.DailyTaskStreak.DTStreak || 0,
           streakDTB: data.DailyTaskStreak.BestStreak || 0,
           streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currMon] || 0,
+          UserType: data.UserType || ''
         };
         setUserData(formattedData);
+
+        if (data.UserType === 'Normal') {
+          navigate('/pricing');
+          return;
+        }
 
         // Initialize daily data only after user data ready
         const masterChecklist = getDailyMasterChecklist();
@@ -107,6 +113,45 @@ export default function ActivityPage() {
           const todayVerseKey = await handleDailyVerseLogic(storedUserId, allVerseKeys);
           setTodayVerse(allVerses[todayVerseKey]);
         }
+
+        // Checking user subscription status
+        if (data.UserType === 'Pro' || data.UserType === 'Elite') {
+          const now = new Date();
+          const expiryStr = daily.planExpiryDate;
+          const expiryDate = new Date(expiryStr);
+
+          if (now >= expiryDate) {
+            const subscribe = window.confirm("Your subscription has expired. You have been downgraded to Normal plan. Would you like to renew your subscription?");
+            if (subscribe) {
+              const userTypeRef = ref(db, `users/${storedUserId}/UserType`);
+              await set(userTypeRef, 'Normal');
+              navigate('/pricing');
+            } else {
+              const userTypeRef = ref(db, `users/${storedUserId}/UserType`);
+              await set(userTypeRef, 'Free');
+              setUserData(prev => ({ ...prev, UserType: 'Free' }));
+            }
+          }
+        }
+
+        if (data.UserType === 'Free') {
+          const now = new Date();
+          const expiryStr = daily.planExpiryDate;
+          const expiryDate = new Date(expiryStr);
+
+          if (now >= expiryDate) {
+            const expirydateRef = ref(db, `users/${storedUserId}/dailyData/planExpiryDate`);
+            const snapshot = await get(expirydateRef);
+
+            if (snapshot.exists()) {
+              let expirydate = new Date(snapshot.val());
+              expirydate.setDate(expirydate.getDate() + 30);
+              const newExpiry = expirydate.toDateString();
+              await set(expirydateRef, newExpiry);
+            }
+          }
+        }
+
       } catch (e) {
         console.error("❌ Initialization failed:", e);
       }
