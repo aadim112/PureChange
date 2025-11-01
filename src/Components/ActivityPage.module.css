@@ -305,13 +305,23 @@
   z-index: 1000;
 }
 
-.popup-box {
+.popup-box{
   background: #1e1e1e;
   color: white;
   padding: 24px;
   border-radius: 12px;
   text-align: center;
   width: 300px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+.popup-box2{
+  background: #1e1e1e;
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  width: 400px;
   box-shadow: 0 0 15px rgba(0,0,0,0.4);
 }
 

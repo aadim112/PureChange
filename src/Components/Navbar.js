@@ -19,6 +19,20 @@ function Navbar({
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const handleButtonClick = (btn) => {
+    // If button has an action callback, execute it
+    if (btn.action && typeof btn.action === 'function') {
+      btn.action();
+    } 
+    // Otherwise, navigate to the route
+    else if (btn.route) {
+      navigate(btn.route);
+    }
+    
+    // Close menu after clicking (for mobile)
+    setMenuOpen(false);
+  };
+
   return (
     <div className={styles["navbar"]}>
       <div className={styles["logo-section"]}>
@@ -44,7 +58,7 @@ function Navbar({
           <Button
             key={index}
             variant={btn.variant}
-            onClick={() => navigate(btn.route)}
+            onClick={() => handleButtonClick(btn)}
           >
             {btn.label}
           </Button>

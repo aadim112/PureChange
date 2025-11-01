@@ -25,6 +25,14 @@
   background : transparent;
   color: rgb(52, 52, 52);
 }
+.btn--emergency{
+  background : transparent;
+  color: rgb(52, 52, 52);
+}
+.btn--emergency:hover{
+  background-color: rgb(255, 56, 56);
+  color: white;
+}
 .btn--secondary:hover {
   background-color: var(--button-color-secondary-hover);
   color: #00070F;

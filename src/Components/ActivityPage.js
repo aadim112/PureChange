@@ -48,6 +48,7 @@ export default function ActivityPage() {
       streakDTCM: 0
   });
   const [showFapPopup, setShowFapPopup] = useState(false);
+  const [showCustomPopup, setShowCustomPopup] = useState(false); // New popup state
   const [popupTimeTag, setPopupTimeTag] = useState('');
   const [checklist, setChecklist] = useState({});
   const [dailyData, setDailyData] = useState({});
@@ -90,7 +91,8 @@ export default function ActivityPage() {
           streakDT: data.DailyTaskStreak.DTStreak || 0,
           streakDTB: data.DailyTaskStreak.BestStreak || 0,
           streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currMon] || 0,
-          UserType: data.UserType || ''
+          UserType: data.UserType || '',
+          Goal: data.Goal || '',
         };
         setUserData(formattedData);
 
@@ -234,6 +236,15 @@ export default function ActivityPage() {
     setShowFapPopup(false);
   };
 
+  // Handler for custom popup
+  const handleOpenCustomPopup = () => {
+    setShowCustomPopup(true);
+  };
+
+  const handleCloseCustomPopup = () => {
+    setShowCustomPopup(false);
+  };
+
   const toggleChecklist = async (itemKey) => {
     const currentItem = checklist[itemKey];
     const newChecked = !currentItem[0];
@@ -354,6 +365,7 @@ export default function ActivityPage() {
         pageName="Activity"
         Icon={Flame}
         buttons={[
+          { label: "Emergency", variant: "emergency", action: handleOpenCustomPopup }, // New button with action
           { label: "ChatRoom", variant: "secondary", route: "/chatroom" },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
           { label: "My Routine", variant: "secondary", route: "/routine" },
@@ -374,7 +386,7 @@ export default function ActivityPage() {
               {todayVerse.question || todayVerse.actual_content || "Today's verse loaded!"}
             </p>
           ) : (
-            <p className={styles["daily-question-text"]}>Loading today’s question...</p>
+            <p className={styles["daily-question-text"]}>Loading today's question...</p>
           )}
         </div>
 
@@ -480,6 +492,8 @@ export default function ActivityPage() {
           </div>
         </div>
       </div>
+
+      {/* Fap Popup */}
       {showFapPopup && (
         <div className={styles["popup-overlay"]}>
           <div className={styles["popup-box"]}>
@@ -487,6 +501,20 @@ export default function ActivityPage() {
             <div className={styles["popup-buttons"]}>
               <button className={styles["yes-btn"]} onClick={() => handleFapResponse(true)}>Yes</button>
               <button className={styles["no-btn"]} onClick={() => handleFapResponse(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Popup triggered from Navbar */}
+      {showCustomPopup && (
+        <div className={styles["popup-overlay"]}>
+          <div className={styles["popup-box2"]}>
+            <h3>REMEMBER YOUR GOAL</h3>
+            <h2 style={{color:'red',margin:'10px'}}>{userData.Goal}</h2>
+            <p>Want to break it?</p>
+            <div className={styles["popup-buttons"]}>
+              <button className={styles["no-btn"]} onClick={handleCloseCustomPopup}>Close</button>
             </div>
           </div>
         </div>
