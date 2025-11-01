@@ -281,10 +281,8 @@ export default function ChatRoomPage() {
         pageName="Chat Room"
         Icon={ChatIcon}
         buttons={[
-          { label: "Ranking", variant: "secondary", route: "/leaderboard" },
-          { label: "My Routine", variant: "secondary", route: "/routine" },
           { label: "Activity", variant: "secondary", route: "/activity" },
-          { label: "My Page", variant: "secondary", route: "/mypage" },
+          { label: "ChatRoom", variant: "primary", route: "/chatroom" },
         ]}
       />
 

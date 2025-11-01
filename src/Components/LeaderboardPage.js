@@ -124,10 +124,9 @@ export default function LeaderboardPage() {
         pageName="Leaderboard"
         Icon={RankIcon}
         buttons={[
-          { label: "Ranking", variant: "primary", route: "/leaderboard" },
-          { label: "My Routine", variant: "secondary", route: "/routine" },
           { label: "Activity", variant: "secondary", route: "/activity" },
-          { label: "My Page", variant: "secondary", route: "/mypage" },
+          { label: "Ranking", variant: "primary", route: "/leaderboard" },
+          
         ]}
       />
       

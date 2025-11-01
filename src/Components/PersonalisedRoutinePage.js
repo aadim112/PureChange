@@ -15,10 +15,8 @@ export default function PersonalisedRoutinePage() {
         pageName="Personalised Routine"
         Icon={Goals}
         buttons={[
-          { label: "Ranking", variant: "secondary", route: "/leaderboard" },
-          { label: "My Routine", variant: "primary", route: "/routine" },
-          { label: "Activity", variant: "secondary", route: "/activity" },
           { label: "My Page", variant: "secondary", route: "/mypage" },
+          { label: "My Routine", variant: "primary", route: "/routine" },
         ]}
       />
 

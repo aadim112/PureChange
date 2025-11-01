@@ -368,9 +368,8 @@ export default function ActivityPage() {
           { label: "Emergency", variant: "emergency", action: handleOpenCustomPopup }, // New button with action
           { label: "ChatRoom", variant: "secondary", route: "/chatroom" },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
-          { label: "My Routine", variant: "secondary", route: "/routine" },
-          { label: "Activity", variant: "primary", route: "/activity" },
           { label: "My Page", variant: "secondary", route: "/mypage" },
+          { label: "Activity", variant: "primary", route: "/activity" },
         ]}
       />
 

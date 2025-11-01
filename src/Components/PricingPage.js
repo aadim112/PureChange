@@ -19,7 +19,7 @@ export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const navigate = useNavigate();
   const [userData, setUserData] = useState('');
-  const [navButtons,setNavButtons] = useState([{ label: "Activity", variant: "secondary", route: "/activity" }]);
+  const [navButtons,setNavButtons] = useState([{ label: "Activity", variant: "primary", route: "/activity" }]);
   const [userPlanLevel, setUserPlanLevel] = useState(1);
 
   useEffect(() => {
