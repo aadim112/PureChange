@@ -89,7 +89,7 @@ export default function MyPage(){
         City: '',
         Hobby: '',
         UserName: '',
-        healthScore : '',
+        HealthScore : '',
         userType : '',
     });
 
@@ -123,7 +123,7 @@ export default function MyPage(){
                     City: data.City || '',
                     Hobby: data.Hobby || '',
                     UserName: data.UserName || '',
-                    healthScore : data.healthScore || '',
+                    HealthScore : data.HealthScore || '',
                     userType : data.UserType || '',
                 };
                 setUserData(formattedData);
@@ -224,7 +224,7 @@ export default function MyPage(){
                                     <div className={styles["fitPlot"]}>
                                         <p style={{fontWeight:'500',fontSize:'15px'}}>Fitness Score</p>
                                         <div className={styles["scoreGraph"]}>
-                                            <CircularScoreBar value={userData.healthScore}/>
+                                            <CircularScoreBar value={userData.HealthScore}/>
                                         </div>
                                         <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! {userData.healthScore}% Fit</p>
                                     </div>
