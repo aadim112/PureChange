@@ -14,6 +14,7 @@ import {
   toggleChecklistItem,
   handleDailyVerseLogic
 } from "../services/contentService";
+import { generateEmergencyMotivation, getSimpleAlternativeTask } from '../services/llmService';
 
 const getDailyMasterChecklist = () => {
   // For now, it's hardcoded.
@@ -40,6 +41,9 @@ export default function ActivityPage() {
       UserName: '',
       Gender: '',
       Religion: '',
+      Goal: '',
+      UserType: '',
+      Hobby: '',
       streakNF: 0,
       streakNFB: 0,
       streakNFCM: 0,
@@ -53,6 +57,9 @@ export default function ActivityPage() {
   const [checklist, setChecklist] = useState({});
   const [dailyData, setDailyData] = useState({});
   const [todayVerse, setTodayVerse] = useState(null);
+  const [emergencyMotivation, setEmergencyMotivation] = useState(null);
+  const [alternativeTask, setAlternativeTask] = useState(null);
+  const [loadingEmergency, setLoadingEmergency] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -85,14 +92,15 @@ export default function ActivityPage() {
           UserName: data.UserName || '',
           Gender: data.Gender || '',
           Religion: data.Religion || '',
+          Goal: data.Goal || '',
+          UserType: data.UserType || 'Normal',
+          Hobby: data.Hobby || '',
           streakNF: data.NoFapStreak.NFStreak || 0,
           streakNFB: data.NoFapStreak.BestStreak || 1,
           streakNFCM: data?.NoFapStreak?.MonthlyStreak?.[currMon] || 1,
           streakDT: data.DailyTaskStreak.DTStreak || 0,
           streakDTB: data.DailyTaskStreak.BestStreak || 0,
           streakDTCM: data?.DailyTaskStreak?.MonthlyStreak?.[currMon] || 0,
-          UserType: data.UserType || '',
-          Goal: data.Goal || '',
         };
         setUserData(formattedData);
 
@@ -237,11 +245,41 @@ export default function ActivityPage() {
   };
 
   // Handler for custom popup
-  const handleOpenCustomPopup = () => {
+  const handleOpenCustomPopup = async () => {
     setShowCustomPopup(true);
+    setLoadingEmergency(true);
+
+    try {
+      // Generate short motivation
+      const motivation = await generateEmergencyMotivation(
+        userData.Goal,
+        userData.streakNF
+      );
+      setEmergencyMotivation(motivation);
+
+      // Get one simple alternative task
+      const task = await getSimpleAlternativeTask(
+        userData.Hobby,
+        checklist
+      );
+      setAlternativeTask(task);
+    } catch (error) {
+      console.error("Error generating emergency content:", error);
+      setEmergencyMotivation({
+        line1: "You are stronger than this moment.",
+        line2: "This urge will pass in 15 minutes.",
+        task: "Do 20 push-ups RIGHT NOW"
+      });
+      setAlternativeTask("Take a cold shower");
+    } finally {
+      setLoadingEmergency(false);
+    }
   };
 
-  const handleCloseCustomPopup = () => {
+  const handleCloseCustomPopup = (fapped) => {
+    if (fapped) {
+      updateNFStreak(true);
+    }
     setShowCustomPopup(false);
   };
 
@@ -365,8 +403,8 @@ export default function ActivityPage() {
         pageName="Activity"
         Icon={Flame}
         buttons={[
-          { label: "Emergency", variant: "emergency", action: handleOpenCustomPopup }, // New button with action
-          { label: "ChatRoom", variant: "secondary", route: "/chatroom" },
+          { label: "Resist the Urge", variant: "emergency", action: handleOpenCustomPopup }, // New button with action
+          { label: "Chat Room", variant: "secondary", route: "/chatroom" },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
           { label: "My Page", variant: "secondary", route: "/mypage" },
           { label: "Activity", variant: "primary", route: "/activity" },
@@ -507,14 +545,99 @@ export default function ActivityPage() {
 
       {/* Custom Popup triggered from Navbar */}
       {showCustomPopup && (
-        <div className={styles["popup-overlay"]}>
-          <div className={styles["popup-box2"]}>
-            <h3>REMEMBER YOUR GOAL</h3>
-            <h2 style={{color:'red',margin:'10px'}}>{userData.Goal}</h2>
-            <p>Want to break it?</p>
-            <div className={styles["popup-buttons"]}>
-              <button className={styles["no-btn"]} onClick={handleCloseCustomPopup}>Close</button>
-            </div>
+        <div className={styles["emergency-overlay"]}>
+          <div className={styles["emergency-popup"]}>
+            {loadingEmergency ? (
+              <div className={styles["emergency-loading"]}>
+                <div className={styles["emergency-loading-spinner"]}></div>
+                <p className={styles["emergency-loading-text"]}>Preparing your support...</p>
+              </div>
+            ) : (
+              <>
+                {/* Warning Banner */}
+                <div className={styles["emergency-banner"]}>
+                  <span className={styles["emergency-banner-icon"]}>⚠️</span>
+                  <h2 className={styles["emergency-banner-text"]}>Stop Right Now</h2>
+                </div>
+
+                {/* Content */}
+                <div className={styles["emergency-content"]}>
+                  {/* Streak Display */}
+                  {userData.streakNF > 0 && (
+                    <div className={styles["emergency-streak"]}>
+                      <span className={styles["emergency-streak-icon"]}>🔥</span>
+                      <p className={styles["emergency-streak-text"]}>
+                        {userData.streakNF} Day Streak at Risk!
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Goal Section */}
+                  <div className={styles["emergency-goal"]}>
+                    <div className={styles["emergency-goal-content"]}>
+                      <span className={styles["emergency-goal-label"]}>Your Goal</span>
+                      <h3 className={styles["emergency-goal-text"]}>
+                        {userData.Goal || "Become the best version of yourself"}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Motivation */}
+                  {emergencyMotivation && (
+                    <div className={styles["emergency-motivation"]}>
+                      <p className={styles["emergency-motivation-line"]}>
+                        <span className={styles["emergency-motivation-highlight"]}>
+                          {emergencyMotivation.line1}
+                        </span>
+                      </p>
+                      <p className={styles["emergency-motivation-line"]}>
+                        {emergencyMotivation.line2}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Task */}
+                  {emergencyMotivation && (
+                    <div className={styles["emergency-action-card"]}>
+                      <span className={styles["emergency-action-label"]}>
+                        Do This Right Now
+                      </span>
+                      <p className={styles["emergency-action-text"]}>
+                        {emergencyMotivation.task}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Alternative Task */}
+                  {alternativeTask && (
+                    <div className={styles["emergency-alternative"]}>
+                      <span className={styles["emergency-alternative-icon"]}>💡</span>
+                      <p className={styles["emergency-alternative-text"]}>
+                        Or: {alternativeTask}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className={styles["emergency-buttons"]}>
+                    <button 
+                      className={styles["emergency-btn-primary"]} 
+                      onClick={() => handleCloseCustomPopup(false)}
+                    >
+                      <span>💪</span>
+                      Become 1% of Men
+                    </button>
+                    <button 
+                      className={styles["emergency-btn-secondary"]} 
+                      onClick={() => handleCloseCustomPopup(true)}
+                    >
+                      <span>😞</span>
+                      I have Fapped!
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

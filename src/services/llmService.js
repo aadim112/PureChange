@@ -70,9 +70,6 @@ Verse: """${verseText}"""
   }
 }
 
-
-
-
 export async function ProcessHealth(information) {
   try{
     const prompt = `
@@ -93,11 +90,98 @@ ${JSON.stringify(information, null, 2)}
 Output:
 <just the integer number, e.g., 78>
 `;
-    console.log(information);
     const score = await model.generateContent(prompt);
     const rawText = score.response.text();
     return rawText;
   }catch(error){
     console.log(error);
+  }
+}
+
+export async function generateEmergencyMotivation(goal, currentStreak) {
+  if (!goal) {
+    return {
+      line1: "You are stronger than this urge.",
+      line2: "This feeling will pass in 15 minutes.",
+      task: "Do 20 push-ups RIGHT NOW"
+    };
+  }
+
+  try {
+    const prompt = `
+You are helping someone resist masturbation urge in a critical moment.
+
+User's Goal: "${goal}"
+Current Streak: ${currentStreak} days
+
+Create SHORT, POWERFUL motivation (NOT a paragraph):
+1. First line: One powerful sentence connecting to their goal (max 12 words)
+2. Second line: One encouraging fact or reminder (max 12 words)
+3. Task: ONE simple physical task they can do immediately (max 8 words)
+
+Rules:
+- NO lengthy explanations or paragraphs
+- Use simple, direct language
+- Make it emotional but SHORT
+- Task should be physical and take under 2 minutes
+
+Return ONLY in this JSON format:
+{
+  "line1": "short powerful sentence",
+  "line2": "short encouragement",
+  "task": "simple physical task"
+}
+`;
+
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
+
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No valid JSON in model response");
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("❌ Emergency Motivation Error:", error);
+    return {
+      line1: `Don't destroy your ${currentStreak} days for 5 minutes.`,
+      line2: "Your goal matters more than this urge.",
+      task: "Do 25 jumping jacks NOW"
+    };
+  }
+}
+
+export async function getSimpleAlternativeTask(hobby, checklist) {
+  try {
+    // Get first incomplete task
+    const incompleteTask = Object.entries(checklist)
+      .filter(([key, value]) => !value[0])
+      .map(([key, value]) => value[1])[0];
+
+    const prompt = `
+User hobby: ${hobby || "none"}
+Incomplete task: ${incompleteTask || "none"}
+
+Suggest ONE simple activity to do RIGHT NOW (not later) to distract from masturbation urge.
+- Must take 2-5 minutes max
+- Must be immediately doable
+- Prefer incomplete task if exists
+- If no task, use hobby or suggest physical activity
+
+Return ONLY the activity as one short sentence (max 10 words). NO explanation.
+Example: "Complete your yoga right now"
+Example: "Run up and down stairs 5 times"
+`;
+
+    const result = await model.generateContent(prompt);
+    const task = result.response.text().trim().replace(/['"]/g, '');
+    return task;
+  } catch (error) {
+    console.error("❌ Alternative Task Error:", error);
+    const incompleteTask = Object.entries(checklist)
+      .filter(([key, value]) => !value[0])
+      .map(([key, value]) => value[1])[0];
+    
+    return incompleteTask || "Take a cold shower for 2 minutes";
   }
 }
