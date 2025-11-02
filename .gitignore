@@ -5,9 +5,11 @@
 /.pnp
 .pnp.js
 
+#env
+.env
+
 # testing
 /coverage
-src/firebase.js
 
 # production
 /build
