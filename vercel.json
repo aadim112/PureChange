@@ -21,30 +21,12 @@
       "dest": "/build/static/$1"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/build/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/build/manifest.json"
-    },
-    {
-      "src": "/logo(.*)",
-      "dest": "/build/logo$1"
-    },
-    {
       "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot))",
       "dest": "/build/$1"
     },
     {
       "src": "/(.*)",
       "dest": "/build/index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!api).*)",
-      "destination": "/index.html"
     }
   ]
 }

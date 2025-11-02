@@ -1,18 +1,13 @@
-import express from 'express';
-import Razorpay from 'razorpay';
-import cors from 'cors';
-import dotenv from 'dotenv';
+const express = require('express');
+const Razorpay = require('razorpay');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
 
-dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || true 
-    : 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID, 
@@ -29,21 +24,23 @@ app.post("/api/create-order", async (req, res) => {
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (err) {
-    console.error('Razorpay order creation error:', err);
+    console.error('Razorpay error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Health check endpoint
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  res.json({ status: "ok" });
 });
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../build")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../build", "index.html"));
+  });
 }
 
-// Export for Vercel serverless
-export default app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+module.exports = app;

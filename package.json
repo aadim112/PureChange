@@ -28,7 +28,7 @@
     "server": "node server/server.js",
     "client": "react-scripts start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "ESLINT_NO_DEV_ERRORS=true react-scripts build",
+    "build": "react-scripts build",
     "vercel-build": "npm run build"
   },
   "eslintConfig": {
@@ -51,6 +51,5 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
-  },
-  "proxy": "http://localhost:5000"
+  }
 }
