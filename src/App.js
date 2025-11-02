@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import styles from './App.module.css';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, sendEmailVerification, applyActionCode } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, sendEmailVerification } from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
-import { ref, set, child, get } from 'firebase/database';
+import { ref, set, get } from 'firebase/database';
 import { db } from './firebase';
-import { Route, useLocation, Navigate , useNavigate, Routes } from 'react-router-dom';
+import { Route, useLocation , useNavigate, Routes } from 'react-router-dom';
 import ProfileSetup from './Components/ProfileSetup';
 import TestPage from './Components/TestPage';
 import Question from './Components/Questions';
@@ -56,7 +56,7 @@ function App() {
     if(localStorage.getItem('userId')){
       navigate('/activity');
     }
-    else if (location.pathname=='/admin'){
+    else if (location.pathname=== '/admin'){
       navigate('/admin');
     }
     else{

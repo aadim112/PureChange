@@ -28,7 +28,7 @@
   "server": "node server/server.js",
   "client": "react-scripts start",
   "dev": "concurrently \"npm run server\" \"npm run client\"",
-  "build": "react-scripts build",
+  "build": "ESLINT_NO_DEV_ERRORS=true react-scripts build",
   "vercel-build": "npm run build"
   },
   "eslintConfig": {

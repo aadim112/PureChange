@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './AdminControlPage.module.css';
-import { Plus, Trash2, Save, FileText } from 'lucide-react';
+import { Plus, Trash2, Save } from 'lucide-react';
 import { addVerse, getVersesByReligion, addOtherContent, showOtherContent, removeOtherContent } from "../services/contentService";
 import { uploadMotivationalImages, uploadMotivationalVideos } from "../services/contentService";
 import { processVerse } from "../services/llmService";

@@ -1,14 +1,13 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ActivityPage.module.css';
 import Navbar from './Navbar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 import { ReactComponent as NoSign } from "../assets/NoSign.svg"
 import { ReactComponent as Sun } from "../assets/Sun.svg"
 import { useNavigate } from 'react-router-dom';
-import { ref, set, child, get, update, startAfter } from 'firebase/database';
+import { ref, set, get, } from 'firebase/database';
 import { db } from '../firebase';
 import {
-  getDailyData,
   initDailyDataIfMissing,
   updateDailyDataFields,
   toggleChecklistItem,
@@ -32,7 +31,7 @@ export async function syncDailyFields(userId, updates, setDailyData) {
 }
 
 export default function ActivityPage() {
-  const [activeTab, setActiveTab] = useState('activity');
+  // const [activeTab, setActiveTab] = useState('activity');
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState('');
   const [userId, setUserId] = useState('');
