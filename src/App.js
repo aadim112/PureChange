@@ -662,8 +662,8 @@ const order = await response.json();
           </div>
 
           <div>
-            <button className={styles["testPage"]} onClick={() => navigate('/testpage')}>
-              Test Page
+            <button className={styles["testPage"]} onClick={() => navigate('/admin')}>
+              Admin
             </button>
 
             <button className={styles["testPage"]} onClick={() => createOrder(900)}>
