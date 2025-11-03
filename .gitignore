@@ -30,3 +30,4 @@ src/Components/LLM.js
 
 
 .env
+.vercel
