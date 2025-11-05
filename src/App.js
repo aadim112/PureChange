@@ -45,25 +45,25 @@ function App() {
     }
   }, [location]);
 
-  // Timer effect for verification email resend
-  useEffect(() => {
-    let interval;
-    if (verificationTimer > 0) {
-      interval = setInterval(() => {
-        setVerificationTimer(prev => prev - 1);
-      }, 1000);
-    }
-    if(localStorage.getItem('userId')){
-      navigate('/activity');
-    }
-    else if (location.pathname=== '/admin'){
-      navigate('/admin');
-    }
-    else{
-      navigate('/');
-    }
-    return () => clearInterval(interval);
-  }, [verificationTimer]);
+  // // Timer effect for verification email resend
+  // useEffect(() => {
+  //   let interval;
+  //   if (verificationTimer > 0) {
+  //     interval = setInterval(() => {
+  //       setVerificationTimer(prev => prev - 1);
+  //     }, 1000);
+  //   }
+  //   // if(localStorage.getItem('userId')){
+  //   //   navigate('/activity');
+  //   // }
+  //   else if (location.pathname === '/admin'){
+  //     navigate('/admin');
+  //   }
+  //   else{
+  //     navigate('/');
+  //   }
+  //   return () => clearInterval(interval);
+  // }, [verificationTimer]);
 
   const handleUserName = async (userName) => {
     if (!userName || userName.trim() === '') {
