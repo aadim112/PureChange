@@ -351,38 +351,42 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  /* slightly softer than deep black, keeps focus but less harsh */
+  background: rgba(10, 12, 20, 0.6);
+  backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  animation: emergencyFadeIn 0.4s ease-out;
+  animation: emergencyFadeIn 0.35s ease-out;
 }
 
 @keyframes emergencyFadeIn {
   from {
     opacity: 0;
+    transform: scale(0.995);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 /* Emergency Popup Container */
 .emergency-popup {
-  background: white;
-  width: 800px;
-  max-width: 92%;
-  max-height: 90%;
-  border-radius: 24px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  background: #ffffff;
+  width: 820px;
+  max-width: 94%;
+  max-height: 88%;
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(9, 10, 12, 0.28);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  animation: emergencySlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: emergencySlideUp 0.45s cubic-bezier(0.2, 0.9, 0.2, 1);
   position: relative;
+  border: 1px solid rgba(15, 23, 42, 0.05);
 }
 
 /* Chrome, Safari, and Edge */
@@ -392,7 +396,7 @@
 
 @keyframes emergencySlideUp {
   from {
-    transform: translateY(50px) scale(0.9);
+    transform: translateY(30px) scale(0.98);
     opacity: 0;
   }
   to {
@@ -403,55 +407,62 @@
 
 /* Top Warning Banner */
 .emergency-banner {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-  padding: 20px 28px;
+  /* muted slate background with subtle amber accent via small border for seriousness */
+  background: linear-gradient(90deg, rgba(55,65,81,1) 0%, rgba(31,41,55,1) 100%);
+  padding: 18px 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 6px 16px rgba(9, 10, 12, 0.08);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
 .emergency-banner-icon {
-  font-size: 32px;
-  animation: pulse 1.5s ease-in-out infinite;
+  font-size: 30px;
+  /* gentle pulse but subtle */
+  animation: subtlePulse 1.6s ease-in-out infinite;
 }
 
-@keyframes pulse {
+@keyframes subtlePulse {
   0%, 100% {
     transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.1);
+    transform: scale(1.06);
+    opacity: 0.95;
   }
 }
 
 .emergency-banner-text {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  color: white;
-  letter-spacing: 1px;
+  color: #fff;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* Content Area */
 .emergency-content {
-  padding: 32px 28px 28px;
+  padding: 28px 30px 28px;
 }
 
-/* Streak Display */
+/* Streak Display (muted neutral) */
 .emergency-streak {
-  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-  padding: 14px 20px;
-  border-radius: 16px;
+  background: linear-gradient(90deg, #fbf7ee 0%, #f7f6f3 100%);
+  padding: 12px 18px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
-  border: 2px solid #fbbf24;
+  gap: 6px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 14px rgba(11, 12, 15, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  color: #6b4b2d;
 }
 
 .emergency-streak-warning{
@@ -460,23 +471,24 @@
 }
 
 .emergency-streak-icon {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .emergency-streak-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: #92400e;
+  color: #4b2e1f;
   margin: 0;
+  text-align: center;
 }
 
-/* Goal Section */
+/* Goal Section (subtle indigo, toned down) */
 .emergency-goal {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  padding: 24px;
-  border-radius: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #5753a7 0%, #4a3fbf 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 18px rgba(74, 63, 191, 0.08);
   position: relative;
   overflow: hidden;
 }
@@ -484,21 +496,12 @@
 .emergency-goal::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  animation: rotate 10s linear infinite;
-}
-
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  top: -40%;
+  left: -40%;
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 60%);
+  transform: rotate(15deg);
 }
 
 .emergency-goal-content {
@@ -509,36 +512,36 @@
 .emergency-goal-label {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   display: block;
 }
 
 .emergency-goal-text {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: white;
   margin: 0;
-  line-height: 1.4;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  line-height: 1.35;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
 /* Motivation Box */
 .emergency-motivation {
   background: var(--color-bg-secondary);
-  padding: 24px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  border-left: 4px solid #8b5cf6;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border-left: 4px solid rgba(74,63,191,0.12);
 }
 
 .emergency-motivation-line {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-text-primary);
-  line-height: 1.7;
-  margin: 0 0 12px 0;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
   font-weight: 500;
 }
 
@@ -547,50 +550,62 @@
 }
 
 .emergency-motivation-highlight {
-  color: #8b5cf6;
+  color: #4a3fbf;
   font-weight: 700;
 }
 
-/* Action Card */
+/* Action Card (muted card with subtle accent) */
 .emergency-action-card {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  padding: 20px 24px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(180deg, #f6f7fb 0%, #ffffff 100%);
+  padding: 18px 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(9, 10, 12, 0.04);
+  border: 1px solid rgba(74,63,191,0.06);
 }
 
 .emergency-action-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(15, 23, 42, 0.6);
   font-weight: 700;
   margin-bottom: 8px;
   display: block;
 }
 
 .emergency-action-text {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: white;
+  color: #152033;
   margin: 0;
-  line-height: 1.3;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  line-height: 1.35;
 }
 
-.emergency-tasks-list { margin-top: 8px; }
-.emergency-task-item { margin-bottom: 6px; }
+/* Tasks list */
+.emergency-tasks-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.emergency-task-item {
+  margin-bottom: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(9, 10, 12, 0.02);
+  font-size: 15px;
+  color: #1f2937;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
-/* Alternative Task */
+/* Alternative Task (kept minimal) */
 .emergency-alternative {
   padding: 8px 18px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .emergency-alternative-icon {
-  font-size: 20px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
@@ -606,71 +621,67 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
+/* Primary: supportive and professional (muted indigo) */
 .emergency-btn-primary {
-  padding: 16px 32px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 14px 30px;
+  background: linear-gradient(135deg, #4a3fbf 0%, #6361d9 100%);
   color: white;
   border: none;
-  border-radius: 14px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 20px rgba(74,63,191,0.12);
+  text-transform: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .emergency-btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(74,63,191,0.14);
 }
 
-.emergency-btn-primary:active {
-  transform: translateY(-1px);
-}
-
+/* Secondary: quiet outline */
 .emergency-btn-secondary {
-  padding: 14px 24px;
+  padding: 14px 30px;
   background: transparent;
-  color: var(--color-text-tertiary);
-  border: 2px solid #e5e7eb;
-  border-radius: 14px;
-  font-size: 14px;
+  color: var(--color-text-primary);
+  border: 1.5px solid rgba(15,23,42,0.08);
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .emergency-btn-secondary:hover {
-  background: var(--color-bg-secondary);
-  border-color: #d1d5db;
-  color: var(--color-text-primary);
+  background: rgba(15,23,42,0.03);
+  border-color: rgba(15,23,42,0.12);
 }
 
 /* Loading State */
 .emergency-loading {
-  padding: 60px 40px;
+  padding: 48px 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .emergency-loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 5px solid rgba(139, 92, 246, 0.1);
-  border-top: 5px solid #8b5cf6;
+  width: 44px;
+  height: 44px;
+  border: 5px solid rgba(74,63,191,0.08);
+  border-top: 5px solid rgba(74,63,191,0.9);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 @keyframes spin {
   0% {
@@ -686,6 +697,47 @@
   color: var(--color-text-tertiary);
   font-weight: 500;
 }
+
+/* Congratulatory popup shown after clicking Become 1% of Men */
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 12, 20, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.popup-box{
+  background: #ffffff;
+  color: #0f1724;
+  padding: 22px;
+  border-radius: 12px;
+  text-align: center;
+  width: 340px;
+  box-shadow: 0 14px 30px rgba(9,10,12,0.12);
+  border: 1px solid rgba(15,23,42,0.04);
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.yes-btn, .no-btn {
+  background: #111827;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.yes-btn:hover { background: #0b1220; }
+.no-btn:hover { background: #0b1220; }
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -736,15 +788,15 @@
   .emergency-popup {
     width: 100%;
     max-width: 95%;
-    border-radius: 20px;
+    border-radius: 14px;
   }
 
   .emergency-banner {
-    padding: 16px 20px;
+    padding: 14px 18px;
   }
 
   .emergency-banner-icon {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .emergency-banner-text {
@@ -752,11 +804,11 @@
   }
 
   .emergency-content {
-    padding: 24px 20px 20px;
+    padding: 20px 18px 18px;
   }
 
   .emergency-streak {
-    padding: 12px 16px;
+    padding: 10px 12px;
   }
 
   .emergency-streak-text {
@@ -764,32 +816,32 @@
   }
 
   .emergency-goal {
-    padding: 20px;
+    padding: 18px;
   }
 
   .emergency-goal-text {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .emergency-motivation {
-    padding: 20px;
+    padding: 18px;
   }
 
   .emergency-motivation-line {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .emergency-action-card {
-    padding: 16px 20px;
+    padding: 14px 16px;
   }
 
   .emergency-action-text {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .emergency-btn-primary {
-    padding: 14px 24px;
-    font-size: 15px;
+    padding: 12px 20px;
+    font-size: 14px;
   }
 }
 
