@@ -445,12 +445,18 @@
   background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
   padding: 14px 20px;
   border-radius: 16px;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
   border: 2px solid #fbbf24;
+}
+
+.emergency-streak-warning{
+  display: inline-flex;
+  align-items: center;
 }
 
 .emergency-streak-icon {
@@ -571,6 +577,9 @@
   line-height: 1.3;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
+
+.emergency-tasks-list { margin-top: 8px; }
+.emergency-task-item { margin-bottom: 6px; }
 
 /* Alternative Task */
 .emergency-alternative {

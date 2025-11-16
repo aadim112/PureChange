@@ -11,17 +11,18 @@ import {
   initDailyDataIfMissing,
   updateDailyDataFields,
   toggleChecklistItem,
-  handleDailyVerseLogic
+  handleDailyVerseLogic,
+  buildDailyChecklistForUser
 } from "../services/contentService";
-import { generateEmergencyMotivation, getSimpleAlternativeTask } from '../services/llmService';
+import { generateEmergencyMotivation } from '../services/llmService';
 
 const getDailyMasterChecklist = () => {
   // For now, it's hardcoded.
   return {
-    yoga: [false, "10 minutes Yoga"],
-    drinkWater: [false, "Drink Water (2 liters)"],
-    readMinutes: [false, "Read 15 minutes"],
-    cycling: [false, "Cycling 10 minutes"]
+    yoga: [false, "Premade :10 minutes Yoga"],
+    drinkWater: [false, "Premade :Drink Water (2 liters)"],
+    readMinutes: [false, "Premade : Read 15 minutes"],
+    cycling: [false, "Premade : Cycling 10 minutes"]
   };
 };
 
@@ -57,7 +58,7 @@ export default function ActivityPage() {
   const [dailyData, setDailyData] = useState({});
   const [todayVerse, setTodayVerse] = useState(null);
   const [emergencyMotivation, setEmergencyMotivation] = useState(null);
-  const [alternativeTask, setAlternativeTask] = useState(null);
+  const [showCongratsPopup, setShowCongratsPopup] = useState(false);
   const [loadingEmergency, setLoadingEmergency] = useState(false);
 
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function ActivityPage() {
         }
 
         // Initialize daily data only after user data ready
-        const masterChecklist = getDailyMasterChecklist();
+        const masterChecklist = await buildDailyChecklistForUser(storedUserId);
         const daily = await initDailyDataIfMissing(storedUserId, masterChecklist);
         setChecklist(daily.dailyChecklist || masterChecklist);
         setDailyData(daily);
@@ -243,33 +244,30 @@ export default function ActivityPage() {
     setShowFapPopup(false);
   };
 
-  // Handler for custom popup
   const handleOpenCustomPopup = async () => {
     setShowCustomPopup(true);
     setLoadingEmergency(true);
 
     try {
-      // Generate short motivation
       const motivation = await generateEmergencyMotivation(
         userData.Goal,
-        userData.streakNF
-      );
-      setEmergencyMotivation(motivation);
-
-      // Get one simple alternative task
-      const task = await getSimpleAlternativeTask(
+        userData.streakNF,
         userData.Hobby,
         checklist
       );
-      setAlternativeTask(task);
+      setEmergencyMotivation(motivation);
     } catch (error) {
       console.error("Error generating emergency content:", error);
       setEmergencyMotivation({
         line1: "You are stronger than this moment.",
-        line2: "This urge will pass in 15 minutes.",
-        task: "Do 20 push-ups RIGHT NOW"
+        line2: "This urge will pass in 30 minutes.",
+        tasks: [
+          { title: "Write down one next-step toward goal (15 minutes)", estimate_minutes: 15 },
+          { title: "Short breathing meditation (10 minutes)", estimate_minutes: 10 },
+          { title: userData.Hobby ? `${userData.Hobby} now (5+ minutes)` : "Go for a walk (5+ minutes)", estimate_minutes: 5 }
+        ],
+        total_minutes: 30
       });
-      setAlternativeTask("Take a cold shower");
     } finally {
       setLoadingEmergency(false);
     }
@@ -561,14 +559,22 @@ export default function ActivityPage() {
 
                 {/* Content */}
                 <div className={styles["emergency-content"]}>
-                  {/* Streak Display */}
-                  {userData.streakNF > 0 && (
+                  {/* Do not see, touch.. */}
+                  {userData.streakNF>=0 && (
                     <div className={styles["emergency-streak"]}>
-                      <span className={styles["emergency-streak-icon"]}>🔥</span>
-                      <p className={styles["emergency-streak-text"]}>
-                        {userData.streakNF} Day Streak at Risk!
-                      </p>
+                      <p className={styles["emergency-streak-text"]}>Avoid anything that triggers the urge :</p>
+                      <p className={styles["emergency-streak-text"]}>Don't Watch, Don't Listen, Don't Imagine and Don't Touch</p>
+                      {/* Streak Display */}
+                      {userData.streakNF > 0 && (
+                        <div className={styles["emergency-streak-warning"]}>
+                          <span className={styles["emergency-streak-icon"]}>🔥</span>
+                          <p className={styles["emergency-streak-text"]}>
+                            {userData.streakNF} Day Streak at Risk!
+                          </p>
+                        </div>
+                      )}
                     </div>
+
                   )}
 
                   {/* Goal Section */}
@@ -599,21 +605,17 @@ export default function ActivityPage() {
                   {emergencyMotivation && (
                     <div className={styles["emergency-action-card"]}>
                       <span className={styles["emergency-action-label"]}>
-                        Do This Right Now
+                        Do These Right Now
                       </span>
-                      <p className={styles["emergency-action-text"]}>
-                        {emergencyMotivation.task}
-                      </p>
-                    </div>
-                  )}
 
-                  {/* Alternative Task */}
-                  {alternativeTask && (
-                    <div className={styles["emergency-alternative"]}>
-                      <span className={styles["emergency-alternative-icon"]}>💡</span>
-                      <p className={styles["emergency-alternative-text"]}>
-                        Or: {alternativeTask}
-                      </p>
+                      {/* Show the three tasks */}
+                      <div className={styles["emergency-tasks-list"]}>
+                        {emergencyMotivation.tasks && emergencyMotivation.tasks.map((t, idx) => (
+                          <div key={idx} className={styles["emergency-task-item"]}>
+                            <strong>{idx + 1}.</strong> <span>{t.title}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -621,7 +623,7 @@ export default function ActivityPage() {
                   <div className={styles["emergency-buttons"]}>
                     <button 
                       className={styles["emergency-btn-primary"]} 
-                      onClick={() => handleCloseCustomPopup(false)}
+                      onClick={() => setShowCongratsPopup(true)}
                     >
                       <span>💪</span>
                       Become 1% of Men
@@ -638,6 +640,26 @@ export default function ActivityPage() {
               </>
             )}
           </div>
+          {/* Congratulatory popup shown after clicking Become 1% of Men */}
+          {showCongratsPopup && (
+            <div className={styles["popup-overlay"]}>
+              <div className={styles["popup-box"]}>
+                <h3>🎉 Congratulations!</h3>
+                <p>You're sticking to your goal — well done.</p>
+                <div className={styles["popup-buttons"]}>
+                  <button
+                    className={styles["yes-btn"]}
+                    onClick={() => {
+                      setShowCongratsPopup(false);
+                      setShowCustomPopup(false);
+                    }}
+                  >
+                    Okay!
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -50,6 +50,148 @@ export async function toggleChecklistItem(userId, itemKey, checked, label) {
   return updateDailyDataFields(userId, partial);
 }
 
+export async function buildDailyChecklistForUser(userId) {
+  const dummyChecklist = {
+    yoga: [false, "Dummy Yoga."],
+    drinkWater: [false, "Dummy Water."],
+    morningRoutine: [false, "Dummy Morning Routine."],
+    daytimeRoutine: [false, "Dummy Daytime Routine."],
+    wakeupTime: [false, "Dummy Wakeup Time."]
+  };
+
+  if (!userId) return dummyChecklist;
+
+  const today = new Date().toDateString();
+  const userDailyRefPath = (uid) => `users/${uid}/dailyData`;
+  const tasksPoolRefPath = `content/otherContent/daily-tasks`;
+
+  try {
+    const userRef = ref(db, userDailyRefPath(userId));
+    const userSnap = await get(userRef);
+    const userDaily = userSnap && userSnap.exists() ? userSnap.val() : {};
+
+    if (userDaily.lastChecklistUpdateDate === today && userDaily.dailyChecklist) {
+      return userDaily.dailyChecklist;
+    }
+
+    const poolRef = ref(db, tasksPoolRefPath);
+    const poolSnap = await get(poolRef);
+    const pool = [];
+    if (poolSnap && poolSnap.exists()) {
+      const raw = poolSnap.val();
+      Object.entries(raw).forEach(([id, obj]) => {
+        const actual = obj && obj.actual_content ? String(obj.actual_content).trim() : null;
+        if (!actual) return;
+        const m = actual.match(/^([^:]+)\s*:\s*(.+)$/);
+        if (m) {
+          pool.push({ id, rawText: actual, prefix: m[1].trim(), textAfter: m[2].trim() });
+        } else {
+          pool.push({ id, rawText: actual, prefix: null, textAfter: actual });
+        }
+      });
+    }
+
+    const findByPrefix = (prefixList) => {
+      if (!pool.length) return null;
+      const lowered = prefixList.map(p => String(p).toLowerCase());
+      const found = pool.find(p => p.prefix && lowered.includes(p.prefix.toLowerCase()));
+      return found || null;
+    };
+
+    const yogaPrefixes = [
+      "Yoga", "yoga", "YOGA",
+      "Yoga ", " Yoga",
+      "Yoga-", "Yoga_",
+      "Yoga Routine", "YogaRoutine", "Yoga_Routine"
+    ];
+
+    const waterPrefixes = [
+      "Water", "water", "WATER",
+      "Water ", " Water",
+      "Water-", "Water_",
+      "Drink Water", "drink water",
+      "Water Intake", "WaterIntake"
+    ];
+
+    const morningPrefixes = [
+      "Morning Routine", "morning routine", "MORNING ROUTINE",
+      "Morning", "morning",
+      "MorningRoutine", "Morning_Routine",
+      "Exercise", "exercise",
+      "Morning Exercise", "MorningExercise"
+    ];
+
+    const daytimePrefixes = [
+      "Daytime Routine", "daytime routine", "DAYTIME ROUTINE",
+      "Daytime", "daytime",
+      "Routine", "routine",
+      "DaytimeRoutine", "Daytime_Routine",
+      "Daily Routine", "daily routine"
+    ];
+
+    const wakeupPrefixes = [
+      "Wakeup", "wakeup", "WAKEUP",
+      "Wake Up", "wake up", "WAKE UP",
+      "Wakeup Time", "WakeUpTime", "Wakeup_Time",
+      "Wake Time", "wake time"
+    ];
+
+    const prevIds = Array.isArray(userDaily.lastDailyTaskIds) ? userDaily.lastDailyTaskIds : [];
+
+    const ensureCandidateFor = async (prefixVariants, dummyPrefixLabel) => {
+      const cand = pool.find(p => p.prefix && prefixVariants.some(pref => p.prefix.toLowerCase() === String(pref).toLowerCase()));
+      if (cand) return cand;
+      const dummyContent = `${prefixVariants[0]}: ${dummyPrefixLabel}`;
+      try {
+        const newRef = push(ref(db, tasksPoolRefPath));
+        await set(newRef, { actual_content: dummyContent });
+        const newId = newRef.key;
+        const created = { id: newId, rawText: dummyContent, prefix: prefixVariants[0], textAfter: dummyPrefixLabel };
+        pool.push(created);
+        return created;
+      } catch (err) {
+        console.warn("buildDailyChecklistForUser: failed creating dummy entry", err);
+        return null;
+      }
+    };
+
+    const yogaCandidate = await ensureCandidateFor(["Yoga"], "Dummy Yoga.");
+    const waterCandidate = await ensureCandidateFor(["Water"], "Dummy Water.");
+    const morningCandidate = await ensureCandidateFor(["Morning Routine", "Morning"], "Dummy Morning Routine.");
+    const daytimeCandidate = await ensureCandidateFor(["Daytime Routine", "Daytime", "Routine"], "Dummy Daytime Routine.");
+    const wakeupCandidate = await ensureCandidateFor(["Wakeup", "Wake Up", "Wakeup Time"], "Dummy Wakeup Time.");
+
+    if (!yogaCandidate || !waterCandidate || !morningCandidate || !daytimeCandidate || !wakeupCandidate) {
+      return dummyChecklist;
+    }
+
+    const checklist = {
+      yoga: [false, yogaCandidate.textAfter],
+      drinkWater: [false, waterCandidate.textAfter],
+      morningRoutine: [false, morningCandidate.textAfter],
+      daytimeRoutine: [false, daytimeCandidate.textAfter],
+      wakeupTime: [false, wakeupCandidate.textAfter]
+    };
+
+    const toPersist = {
+      lastChecklistUpdateDate: today,
+      lastDailyTaskIds: [yogaCandidate.id, waterCandidate.id, morningCandidate.id, daytimeCandidate.id, wakeupCandidate.id],
+      dailyChecklist: checklist
+    };
+
+    try {
+      await update(userRef, toPersist);
+    } catch (err) {
+      console.warn("buildDailyChecklistForUser: failed to persist user dailyData", err);
+    }
+
+    return checklist;
+  } catch (err) {
+    console.error("buildDailyChecklistForUser: unexpected error", err);
+    return dummyChecklist;
+  }
+}
+
 export async function getUserVerseState(userId) {
   const snap = await get(ref(db, dailyPath(userId)));
   if (snap.exists()) {
