@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import styles from './ActivityPage.module.css';
 import Navbar from './Navbar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
@@ -15,16 +15,289 @@ import {
   buildDailyChecklistForUser
 } from "../services/contentService";
 import { generateEmergencyMotivation } from '../services/llmService';
+import {
+  createReferralCode,
+  fetchReferralInfo,
+  saveBankDetails,
+  appendTransaction,
+  isReferralCodeValid,
+  revokeReferralCode
+} from "../services/referalService";
+import referralRules from '../services/referalService';
 
-const getDailyMasterChecklist = () => {
-  // For now, it's hardcoded.
-  return {
-    yoga: [false, "Premade :10 minutes Yoga"],
-    drinkWater: [false, "Premade :Drink Water (2 liters)"],
-    readMinutes: [false, "Premade : Read 15 minutes"],
-    cycling: [false, "Premade : Cycling 10 minutes"]
-  };
-};
+const ReferralPopup = memo(function ReferralPopup({
+  show,
+  onClose,
+  referralData,
+  loading,
+  createCode,        // function to create code (parent)
+  revokeCode,        // function to revoke (parent)
+  saveBankAndCreate, // function (parent) -> accepts bankDetails object
+  fetchFresh         // optional parent refresh function
+}) {
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [creatingCode, setCreatingCode] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [bankForm, setBankForm] = useState({ type: 'upi', name: '', upiId: '', accountNumber: '', ifsc: '' });
+  const firstInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!show) return;
+    setErrorMsg('');
+    if (!referralData?.bank_details) {
+      setShowBankForm(false);
+    }
+    const bd = referralData?.bank_details;
+    if (bd) {
+      setBankForm({
+        type: bd.type || "upi",
+        name: bd.name || "",
+        upiId: bd.upiId || "",
+        accountNumber: bd.accountNumber || "",
+        ifsc: bd.ifsc || ""
+      });
+    }
+    setTimeout(() => { firstInputRef.current && firstInputRef.current.focus(); }, 80);
+    // lock body scroll while popup open
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [show, referralData]);
+
+  const handleGenerate = useCallback(async () => {
+    setErrorMsg('');
+    try {
+      // if bank_details not present in referralData, show bank form instead
+      if (!referralData?.bank_details) {
+        setShowBankForm(true);
+        setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), 80);
+        return;
+      }
+      setCreatingCode(true);
+      await createCode();
+      if (fetchFresh) await fetchFresh();
+    } catch (e) {
+      console.error(e);
+      setErrorMsg('Unable to create code. Try again.');
+    } finally {
+      setCreatingCode(false);
+    }
+  }, [createCode, referralData, fetchFresh]);
+
+  const handleSaveAndCreate = useCallback(async () => {
+    setErrorMsg('');
+    try {
+      // basic validation
+      if (bankForm.type === "upi" && !bankForm.upiId) {
+        setErrorMsg("Enter UPI id.");
+        return;
+      }
+      if (bankForm.type === "bank" && (!bankForm.accountNumber || !bankForm.ifsc || !bankForm.name)) {
+        setErrorMsg("Fill account name, number and IFSC.");
+        return;
+      }
+      // call parent to save; it will create code if requested
+      await saveBankAndCreate(bankForm, true);
+      if (fetchFresh) await fetchFresh();
+      setShowBankForm(false);
+    } catch (e) {
+      console.error(e);
+      setErrorMsg(e.message || "Failed to save details. Try again.");
+    }
+  }, [bankForm, saveBankAndCreate, fetchFresh]);
+
+  if (!show) return null;
+
+  const referral = referralData?.referral || null;
+  const joined = referralData?.joined || [];
+  const transactions = referralData?.transactions || [];
+
+  return (
+    <div className={styles["refer-overlay"]}>
+      <div className={styles["refer-popup"]} role="dialog" aria-modal="true">
+        <div className={styles["refer-header"]}>
+          <h3>Refer & Earn</h3>
+          <p className={styles["small-muted"]}>Invite friends — earn ₹100 (Pro) / ₹300 (Elite). Payout within 48 hours.</p>
+        </div>
+
+        <div className={styles["refer-body"]}>
+          {loading ? (
+            <div className={styles["refer-loading"]}>Loading…</div>
+          ) : (
+            <>
+              {/* Refer & Earn quick rules (generated from rulebook) */}
+              <div className={styles["refer-guidelines"]} aria-hidden={loading ? "true" : "false"}>
+                <h4 className={styles["guidelines-title"]}>How Refer & Earn works</h4>
+
+                <ol className={styles["guidelines-list"]}>
+                  {referralRules.map((r, idx) => (
+                    <li className={styles["guideline-item"]} key={r.id}>
+                      <div className={styles["guideline-main"]}>
+                        <strong>{r.title}</strong>
+                        <span className={styles["guideline-short"]}>{r.short}</span>
+                      </div>
+
+                      {/* info icon: tooltip text pulled from rule details */}
+                      <button
+                        className={styles["info-btn"]}
+                        type="button"
+                        aria-label={`${r.title} details`}
+                        data-tooltip={r.details}
+                      >
+                        i
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className={styles["refer-section"]}>
+                <label className={styles["label"]}>Your Referral Code</label>
+                {referral && referral.code ? (
+                  <div className={styles["code-row"]}>
+                    <div className={styles["code-box"]}>{referral.code}</div>
+                    <div className={styles["code-meta"]}>
+                      <small>Expires: {referral.expiresAt ? new Date(referral.expiresAt).toLocaleString() : referral.expiresAtStr}</small>
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button className={styles["btn-secondary"]} 
+                          onClick={() => {
+                            setShowBankForm(true);
+                            setTimeout(() => firstInputRef.current?.focus(), 80);
+                          }}>
+                          Change Account Details
+                        </button>
+
+                        <button className={styles["btn-danger"]} onClick={revokeCode}>Revoke</button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <button className={styles["btn-primary"]} onClick={handleGenerate} disabled={creatingCode}>
+                      {creatingCode ? "Creating…" : "Generate Code (48h)"}
+                    </button>
+                    <button className={styles["btn-secondary"]} onClick={onClose}>Close</button>
+                  </div>
+                )}
+                {errorMsg && <div className={styles["error"]}>{errorMsg}</div>}
+              </div>
+
+              {showBankForm && (
+                <div className={styles["refer-section"]}>
+                  <label className={styles["label"]}>Payout Details</label>
+
+                  <div className={styles["form-row"]}>
+                    <select
+                      value={bankForm.type}
+                      onChange={(e) => setBankForm((p) => ({ ...p, type: e.target.value }))}
+                      className={styles["input"]}
+                    >
+                      <option value="upi">UPI</option>
+                      <option value="bank">Bank Account</option>
+                    </select>
+                  </div>
+
+                  {bankForm.type === "upi" ? (
+                    <>
+                      <input
+                        ref={firstInputRef}
+                        className={styles["input"]}
+                        placeholder="UPI ID (example@bank)"
+                        value={bankForm.upiId}
+                        onChange={(e) => setBankForm((p) => ({ ...p, upiId: e.target.value }))}
+                        maxLength={64}
+                        autoComplete="off"
+                        inputMode="text"
+                        spellCheck="false"
+                      />
+                      <input
+                        className={styles["input"]}
+                        placeholder="Account holder name"
+                        value={bankForm.name}
+                        onChange={(e) => setBankForm((p) => ({ ...p, name: e.target.value }))}
+                        maxLength={80}
+                        autoComplete="name"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        ref={firstInputRef}
+                        className={styles["input"]}
+                        placeholder="Account holder name"
+                        value={bankForm.name}
+                        onChange={(e) => setBankForm((p) => ({ ...p, name: e.target.value }))}
+                        maxLength={80}
+                        autoComplete="name"
+                      />
+                      <input
+                        className={styles["input"]}
+                        placeholder="Account number"
+                        value={bankForm.accountNumber}
+                        onChange={(e) => setBankForm((p) => ({ ...p, accountNumber: e.target.value }))}
+                        maxLength={30}
+                        inputMode="numeric"
+                        autoComplete="off"
+                      />
+                      <input
+                        className={styles["input"]}
+                        placeholder="IFSC code (e.g. HDFC0001234)"
+                        value={bankForm.ifsc}
+                        onChange={(e) => setBankForm((p) => ({ ...p, ifsc: e.target.value.toUpperCase() }))}
+                        maxLength={11}
+                        autoComplete="off"
+                      />
+                    </>
+                  )}
+
+                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                    <button className={styles["btn-primary"]} onClick={handleSaveAndCreate}>Save & Generate</button>
+                    <button className={styles["btn-secondary"]} onClick={() => setShowBankForm(false)}>Cancel</button>
+                  </div>
+                  {errorMsg && <div className={styles["error"]}>{errorMsg}</div>}
+                </div>
+              )}
+
+              <div className={styles["refer-section"]}>
+                <label className={styles["label"]}>People joined with your code</label>
+                {(!referralData || !referralData.joined || referralData.joined.length === 0) ? (
+                  <p className={styles["small-muted"]}>No one has joined via your code yet.</p>
+                ) : (
+                  <ul className={styles["joined-list"]}>
+                    {referralData.joined.map((j, idx) => (
+                      <li key={j.uid || idx}><strong>{j.userName || j.uid}</strong> <small className={styles["small-muted"]}> — {j.when}</small></li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className={styles["refer-section"]}>
+                <label className={styles["label"]}>Transaction History</label>
+                {(!referralData || !referralData.transactions || referralData.transactions.length === 0) ? (
+                  <p className={styles["small-muted"]}>No payouts yet.</p>
+                ) : (
+                  <table className={styles["tx-table"]}>
+                    <thead><tr><th>Date</th><th>Amount</th><th>Reason</th></tr></thead>
+                    <tbody>
+                      {referralData.transactions.map(tx => (
+                        <tr key={tx.txid}>
+                          <td>{new Date(tx.whenMs || tx.when).toLocaleString()}</td>
+                          <td>₹{tx.amount}</td>
+                          <td>{tx.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        <button className={styles["refer-close"]} onClick={onClose} aria-label="Close referral popup">✕</button>
+      </div>
+    </div>
+  );
+});
 
 export async function syncDailyFields(userId, updates, setDailyData) {
   await updateDailyDataFields(userId, updates);
@@ -60,6 +333,9 @@ export default function ActivityPage() {
   const [emergencyMotivation, setEmergencyMotivation] = useState(null);
   const [showCongratsPopup, setShowCongratsPopup] = useState(false);
   const [loadingEmergency, setLoadingEmergency] = useState(false);
+  const [showReferPopup, setShowReferPopup] = useState(false);
+  const [loadingRefer, setLoadingRefer] = useState(false);
+  const [referralData, setReferralData] = useState(null); // { referral, joined, transactions, bank_details }
 
   useEffect(() => {
     async function init() {
@@ -394,13 +670,83 @@ export default function ActivityPage() {
     }
   };
 
+  // Open refer popup & load data
+  const handleOpenReferEarnPopup = async () => {
+    setShowReferPopup(true);
+    setLoadingRefer(true);
+    try {
+      const data = await fetchReferralInfo(userId);
+      setReferralData(data);
+    } catch (e) {
+      console.error("Failed to fetch referral info", e);
+      setReferralData(null);
+    } finally {
+      setLoadingRefer(false);
+    }
+  };
+
+  // generate referral code (asks for bank details first if missing)
+  const handleGenerateCode = async () => {
+    try {
+      // if bank details are missing, do nothing here - popup will show the form
+      if (!referralData || !referralData.bank_details) {
+        return;
+      }
+
+      // create the referral code and refresh the referralData
+      await createReferralCode(userId);
+      const data = await fetchReferralInfo(userId);
+      setReferralData(data);
+    } catch (e) {
+      console.error("Failed to create code", e);
+      // optionally: set a parent-level error state if you want to show a global message
+    }
+  };
+
+  // Save bank details and then create code if requested
+  const handleSaveBankAndCreateCode = async (bankDetails = {}, createAfter = true) => {
+    try {
+      if (bankDetails.type === 'upi' && !bankDetails.upiId) {
+        throw new Error('Please enter your UPI id.');
+      }
+      if (bankDetails.type === 'bank' && (!bankDetails.accountNumber || !bankDetails.ifsc || !bankDetails.name)) {
+        throw new Error('Please fill bank name, account number and IFSC.');
+      }
+
+      await saveBankDetails(userId, bankDetails);
+      const data = await fetchReferralInfo(userId);
+      setReferralData(data);
+
+      if (createAfter) {
+        await handleGenerateCode(); // will only create if bank_details now present
+      }
+    } catch (e) {
+      console.error("Failed saving bank details", e);
+      throw e; // let popup show the error message
+    }
+  };
+
+  const handleRevokeCode = async () => {
+    try {
+      const res = await revokeReferralCode(userId);
+
+      setReferralData(prev => ({ ...(prev || {}), referral: null }));
+      
+      const data = await fetchReferralInfo(userId);
+      setReferralData(data);
+    } catch (e) {
+      console.error("Failed to revoke referral code:", e);
+    }
+  };
+
   return (
     <div className={styles["activity-page"]}>
       <Navbar
         pageName="Activity"
         Icon={Flame}
         buttons={[
-          { label: "Resist the Urge", variant: "emergency", action: handleOpenCustomPopup }, // New button with action
+          { label: "Refer & Earn", variant: "secondary", action: handleOpenReferEarnPopup },
+          { label: "Resist the Urge", variant: "emergency", action: handleOpenCustomPopup },
           { label: "Chat Room", variant: "secondary", route: "/chatroom" },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
           { label: "My Page", variant: "secondary", route: "/mypage" },
@@ -662,6 +1008,30 @@ export default function ActivityPage() {
           )}
         </div>
       )}
+
+      {/* Refer & Earn Popup */}
+      <ReferralPopup
+        show={showReferPopup}
+        onClose={() => setShowReferPopup(false)}
+        referralData={referralData}
+        loading={loadingRefer}
+        createCode={async () => {
+          try {
+            await createReferralCode(userId);
+            const data = await fetchReferralInfo(userId);
+            setReferralData(data);
+          } catch (e) {
+            console.error(e);
+            throw e;
+          }
+        }}
+        saveBankAndCreate={handleSaveBankAndCreateCode}
+        revokeCode={handleRevokeCode}
+        fetchFresh={async () => {
+          const d = await fetchReferralInfo(userId);
+          setReferralData(d);
+        }}
+      />
     </div>
   );
 }
