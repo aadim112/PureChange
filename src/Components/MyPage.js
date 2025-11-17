@@ -8,6 +8,7 @@ import { getAuth } from "firebase/auth";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
 import Avatar from "./Avatar";
+import { calculateConsistencyScore,getConsistencyWithDays } from "../services/consistencyService";
 
 const MyProfile = [
   {label : "My Routine", variant : "secondary", route : "/routine"},
@@ -15,15 +16,15 @@ const MyProfile = [
   {label : "My Page", variant: "primary", route : "/mypage"}
 ]
 
-const StreakHolderBox  = ({NoFapDays,TotalDays}) =>{
+const StreakHolderBox = ({month = "Month", NoFapDays, TotalDays}) => {
     return(
         <div className={styles["streakHolder"]}>
             <div className={styles['StreakHolderheader']}>
-                <Calender/><p style={{fontSize:'18px'}}>Month</p>
+                <Calender/><p style={{fontSize:'18px'}}>{month}</p>
             </div>
             <div className={styles["StreakHolderInfo"]}>
-                <p style={{fontSize:'14px'}}>No Fap:{NoFapDays}</p>
-                <p style={{fontSize:'14px'}}>Daily: {TotalDays}</p>
+                <p style={{fontSize:'14px'}}>No Fap: {NoFapDays || 0}</p>
+                <p style={{fontSize:'14px'}}>Daily: {TotalDays || 0}</p>
             </div>  
         </div>
     )
@@ -54,9 +55,8 @@ const AchievementsBadges = ({ names = [] }) => {
   );
 };
 
-
-const CircularScoreBar= ({value}) => {
-    const normalizedValue = Math.min(Math.max(value, 0), 100); // Clamp 0–100
+const CircularScoreBar = ({value}) => {
+    const normalizedValue = Math.min(Math.max(value, 0), 100);
     const radius = 30;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (normalizedValue / 100) * circumference;
@@ -74,7 +74,6 @@ const CircularScoreBar= ({value}) => {
 
 export default function MyPage(){
     const navigate = useNavigate();
-    const userId = ''
     const [userData, setUserData] = useState({
         Name: '',
         Bio: '',
@@ -91,9 +90,17 @@ export default function MyPage(){
         HealthScore : '',
         userType : '',
     });
+    const [monthlyStreaks, setMonthlyStreaks] = useState([]);
+    const [consistencyData, setConsistencyData] = useState({
+        score: 0,
+        daysAnalyzed: 80,
+        insights: ''
+    });
+    const [fullUserData, setFullUserData] = useState(null); // Store complete user data for consistency calc
 
     useEffect(()=>{
         fetchUserData();
+        fetchMonthlyStreaks();
     },[]);
 
     const fetchUserData = async () => {
@@ -109,6 +116,10 @@ export default function MyPage(){
 
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                
+                // Store complete data for consistency calculation
+                setFullUserData(data);
+                
                 const formattedData = {
                     Name: data.Name || '',
                     Bio: data.Bio || '',
@@ -126,9 +137,54 @@ export default function MyPage(){
                     userType : data.UserType || '',
                 };
                 setUserData(formattedData);
+                
+                // Calculate consistency score
+                const consistency = getConsistencyWithDays(data);
+                setConsistencyData({
+                    score: consistency.score,
+                    daysAnalyzed: consistency.daysAnalyzed,
+                    insights: consistency.insights,
+                    breakdown: consistency.breakdown
+                });
+                
+                console.log('Consistency Score:', consistency);
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
+        }
+    };
+
+    const fetchMonthlyStreaks = async () => {
+        try {
+            const userId = localStorage.getItem('userId');
+            if (!userId) return;
+
+            const noFapStreakRef = ref(db, `users/${userId}/NoFapStreak/MonthlyStreak`);
+            const dailyTaskStreakRef = ref(db, `users/${userId}/DailyTaskStreak/MonthlyStreak`);
+            
+            const [noFapSnapshot, dailyTaskSnapshot] = await Promise.all([
+                get(noFapStreakRef),
+                get(dailyTaskStreakRef)
+            ]);
+
+            const noFapData = noFapSnapshot.exists() ? noFapSnapshot.val() : {};
+            const dailyTaskData = dailyTaskSnapshot.exists() ? dailyTaskSnapshot.val() : {};
+
+            // Get all unique months from both datasets
+            const allMonths = new Set([...Object.keys(noFapData), ...Object.keys(dailyTaskData)]);
+            
+            const streaksArray = Array.from(allMonths).map(month => ({
+                month: month,
+                NoFapDays: noFapData[month] || 0,
+                TotalDays: dailyTaskData[month] || 0
+            }));
+            
+            // Sort by most recent months
+            streaksArray.sort((a, b) => b.month.localeCompare(a.month));
+            
+            setMonthlyStreaks(streaksArray);
+        } catch (error) {
+            console.error('Error fetching monthly streaks:', error);
         }
     };
 
@@ -147,17 +203,16 @@ export default function MyPage(){
             const auth = getAuth();
             await auth.signOut();
             
-            // Clear localStorage
             localStorage.removeItem('userId');
             localStorage.removeItem('UserName');
             
-            // Navigate to login/home page
             navigate('/');
         } catch (error) {
             console.error('Error during logout:', error);
             alert('Error logging out. Please try again.');
         }
     };
+
     return(
         <div>
             <Navbar pageName="Profile" buttons={MyProfile} Icon={User}/>
@@ -171,8 +226,6 @@ export default function MyPage(){
                             <p style={{fontWeight: "400", fontSize:'12px'}}>{userData.Bio}</p>
                         </div>
 
-                        <div className={styles["seperator"]}></div>
-
                         <div className={styles["extraInformation"]}>
                             <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Email: </p><p>{userData.Email}</p></span>
                             <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Phone No: </p><p>{userData.PhoneNumber}</p></span>
@@ -180,14 +233,11 @@ export default function MyPage(){
                             <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Gender: </p><p>{userData.Gender}</p></span>
                         </div>
 
-                        <div className={styles["seperator"]}></div>
-
                         <div className={styles["userPlanSection"]}>
                             <p>User Plan</p>
                             <div className={styles["userPlan"]}>{userData.userType}</div>
                             <button className={styles["upgradeButton"]} onClick={()=>{navigate('/pricing')}}>Upgrade Plan</button>
                         </div>
-
 
                         <div className={styles["actionButtons"]}>
                             <button style={{backgroundColor:'#6E57FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
@@ -200,12 +250,18 @@ export default function MyPage(){
                         <div className={styles["streakHistory"]}>
                             <h2>Streak History</h2>
                             <div className={styles["streakHolderContainer"]}>
-                                <StreakHolderBox />
-                                <StreakHolderBox />
-                                <StreakHolderBox />
-                                <StreakHolderBox />
-                                <StreakHolderBox />
-                                <StreakHolderBox />
+                                {monthlyStreaks.length > 0 ? (
+                                    monthlyStreaks.map((streak, index) => (
+                                        <StreakHolderBox 
+                                            key={index}
+                                            month={streak.month}
+                                            NoFapDays={streak.NoFapDays}
+                                            TotalDays={streak.TotalDays}
+                                        />
+                                    ))
+                                ) : (
+                                    <p style={{color: 'grey', padding: '20px'}}>No streak data available</p>
+                                )}
                             </div>
                         </div>
                         <div className={styles["Achievements"]}>
@@ -225,7 +281,7 @@ export default function MyPage(){
                                         <div className={styles["scoreGraph"]}>
                                             <CircularScoreBar value={userData.HealthScore}/>
                                         </div>
-                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! {userData.healthScore}% Fit</p>
+                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! {userData.HealthScore}% Fit</p>
                                     </div>
                                     <div className={styles["fitSummary"]}></div>
                                 </div>
@@ -234,11 +290,19 @@ export default function MyPage(){
                                     <div className={styles["fitPlot"]}>
                                         <p style={{fontWeight:'500',fontSize:'15px'}}>Consistency Score</p>
                                         <div className={styles["scoreGraph"]}>
-                                            <CircularScoreBar value={90}/>
+                                            <CircularScoreBar value={consistencyData.score}/>
                                         </div>
-                                        <p style={{color:'grey',textAlign:'center',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>88% Consistent last 80 days</p>
+                                        <p style={{color:'grey',textAlign:'center',fontWeight:'500',fontSize:'15px',width:'80%'}}>
+                                            {consistencyData.score}% Consistent last {consistencyData.daysAnalyzed} days
+                                        </p>
                                     </div>
-                                    <div className={styles["fitSummary"]}></div>
+                                    <div className={styles["fitSummary"]}>
+                                        {consistencyData.insights && (
+                                            <p style={{fontSize:'12px', color:'grey', padding:'10px', textAlign:'center'}}>
+                                                {consistencyData.insights}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

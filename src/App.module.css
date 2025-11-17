@@ -1,75 +1,87 @@
-*{
+* {
   margin: 0px;
   padding: 0px;
   font-family: poppins;
+  box-sizing: border-box;
 }
 
-body::-webkit-scrollbar{
+body::-webkit-scrollbar {
   display: none;
 }
 
-.App{
+.App {
   font-family: poppins;
+  overflow-x: hidden;
 }
-header{
+
+header {
   width: 100%;
   height: 65px;
   display: flex;
   justify-content: space-between;
+  padding: 0 20px;
 }
-.Offers{
+
+.Offers {
   width: 100%;
   height: 40px;
   background-color: #d6d0ff;
+  gap: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.Offers p{
-  margin-top: 0px;
+  padding: 0 15px;
 }
 
-.logo{
-  width: 200px;
+.Offers p {
+  margin-top: 0px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.logo {
+  width: auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0px;
+  font-weight: 600;
+  font-size: 18px;
 }
-.options{
-  width: 200px;
+
+.options {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  margin-right: 50px;
+  gap: 15px;
 }
-.startbutton{
+
+.startbutton {
   background-color: #6E57FD;
-  padding-inline: 30px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding: 8px 25px;
   border-radius: 10px;
-  flex-shrink: 0;
   color: #FFF;
   font-family: Poppins;
-  font-style: normal;
   font-weight: 600;
-  line-height: normal;
   border: 0px;
   cursor: pointer;
   font-size: 15px;
+  white-space: nowrap;
 }
-.homebutton{
+
+.startbutton:hover {
+  background-color: #5a45e0;
+}
+
+.homebutton {
   background-color: transparent;
   font-family: poppins;
   font-weight: 600;
   font-size: 17px;
-  border:0px;
-  margin-right: 20px;
+  border: 0px;
   cursor: pointer;
 }
-.authentication{
+
+.authentication {
   width: 100%;
   height: 100%;
   display: flex;
@@ -79,23 +91,26 @@ header{
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 1000;
+  padding: 20px;
 }
-.card{
-  width: 900px;
-  max-height: 620px;
+
+.card {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
   background-color: white;
   border-radius: 15px;
   position: relative;
-  box-sizing: border-box;
-  margin: 0px 15px;
-  overflow: scroll;
-  padding: 40px;
+  overflow-y: auto;
+  padding: 40px 30px;
 }
+
 .card::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
-.close-btn{
+
+.close-btn {
   position: absolute;
   top: 15px;
   right: 20px;
@@ -106,54 +121,55 @@ header{
   color: #666;
   font-weight: 300;
   line-height: 1;
+  z-index: 10;
 }
 
-.close-btn:hover{
+.close-btn:hover {
   color: #000;
 }
 
-.card-content{
+.card-content {
   margin-top: 20px;
 }
 
-.card-content h2{
-  font-size: 32px;
+.card-content h2 {
+  font-size: 28px;
   font-weight: 700;
   margin-bottom: 10px;
 }
 
-.subtitle{
+.subtitle {
   color: #666;
   margin-bottom: 30px;
+  font-size: 14px;
 }
 
-.input-group{
+.input-group {
   margin-bottom: 20px;
 }
 
-.input-group label{
+.input-group label {
   display: block;
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
 }
 
-.input-group input{
+.input-group input {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 15px;
   font-family: Poppins;
-  box-sizing: border-box;
 }
 
-.input-group input:focus{
+.input-group input:focus {
   outline: none;
   border-color: #6E57FD;
 }
 
-.signin-btn{
+.signin-btn {
   width: 100%;
   background-color: #6E57FD;
   color: white;
@@ -167,11 +183,11 @@ header{
   font-family: Poppins;
 }
 
-.signin-btn:hover{
+.signin-btn:hover {
   background-color: #5a45e0;
 }
 
-.google-btn{
+.google-btn {
   width: 100%;
   background-color: white;
   border: 1px solid #ddd;
@@ -188,22 +204,22 @@ header{
   margin-bottom: 20px;
 }
 
-.google-btn:hover{
+.google-btn:hover {
   background-color: #f8f8f8;
 }
 
-.google-icon{
+.google-icon {
   width: 20px;
   height: 20px;
 }
 
-.divider{
+.divider {
   text-align: center;
   position: relative;
   margin: 20px 0;
 }
 
-.divider::before{
+.divider::before {
   content: '';
   position: absolute;
   left: 0;
@@ -213,7 +229,7 @@ header{
   background-color: #ddd;
 }
 
-.divider span{
+.divider span {
   background-color: white;
   padding: 0 15px;
   position: relative;
@@ -221,141 +237,555 @@ header{
   font-size: 14px;
 }
 
-.toggle-text{
+.toggle-text {
   text-align: center;
   margin-top: 20px;
   color: #666;
   font-size: 14px;
 }
 
-.toggle-link{
+.toggle-link {
   color: #6E57FD;
   font-weight: 600;
   cursor: pointer;
 }
 
-.toggle-link:hover{
+.toggle-link:hover {
   text-decoration: underline;
 }
-.HeroInformation{
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Hero Section */
+.HeroInformation {
+  width: 100%;
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.HeroInformation h2 {
+  font-size: 40px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 900px;
+}
+
+.HeroInformation p {
+  margin-top: 20px;
+  font-size: 18px;
+  max-width: 800px;
+  text-align: center;
+  color: #666;
+  line-height: 1.6;
+}
+
+.startTrackingButton {
+  margin-top: 30px;
+}
+
+/* Features Section */
+.FistInformationSection {
+  padding: 60px 40px;
+}
+
+.headerInformation {
+  margin-bottom: 40px;
+}
+
+.headerInformation h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.headerInformation p {
+  color: #666;
+  font-size: 16px;
+}
+
+.FeaturesCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.streakCardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.streakCard {
+  width: 100%;
+  height: auto;
+  min-height: 160px;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.FistInformationStatsCard {
+  border: 1.5px solid rgb(183, 183, 183);
+  width: 100%;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.FistInformationStatsCard h2 {
+  font-size: 32px;
+  margin-bottom: 5px;
+}
+
+.FistInformationStatsCard p {
+  color: #666;
+  font-size: 14px;
+}
+
+.FistInformationStatsCard:hover {
+  background-color: #ebe8ff;
+  color: #6E57FD;
+  border-color: #6E57FD;
+  transform: translateY(-5px);
+}
+
+/* Extra Information Section */
+.ExtraInformationContainer {
+  background-color: #bfb6ff;
+  padding: 60px 40px;
+}
+
+.ThirdInformationStatsCard {
+  margin-bottom: 40px;
+}
+
+.ThirdInformationStatsCard h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.ThirdInformationStatsCard p {
+  font-size: 16px;
+  color: #333;
+}
+
+.ExtraInformation {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  align-items: center;
+}
+
+.SecoundInformationStatsCard {
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.SecoundInformationStatsCard h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.SecoundInformationStatsCard p {
+  font-size: 14px;
+  color: #333;
+}
+
+.SecoundInformationStatsCard:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-5px);
+}
+
+.seperator {
+  display: none;
+}
+
+/* Skeleton Section */
+.SkeletonInformationContainer {
+  padding: 60px 40px;
+}
+
+.SkeletonHeading {
+  margin-bottom: 40px;
+}
+
+.SkeletonHeading h3 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.SkeletonHeading p {
+  color: #666;
+  font-size: 16px;
+}
+
+.SkeletonInformationSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.SkeletonPart1,
+.SkeletonPart2 {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid #ddd;
+  padding: 20px;
+}
+
+.SkeletonPart1 {
+  min-height: 400px;
+}
+
+.SkeletonPart2 {
+  min-height: 400px;
+}
+
+.InnerSkeletonheading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: bold;
+  color: #6E57FD;
+  margin-bottom: 20px;
+}
+
+.BoxContainer {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.box {
+  background-color: #d6d0ff;
+  border-radius: 8px;
+  height: 80px;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.row-2 .box {
+  height: 80px;
+}
+
+.row-3 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 15px;
+}
+
+.row-3 .box {
+  height: 80px;
+}
+
+/* Explore Content Section */
+.ExploreContentContainer {
+  padding: 0px 40px;
+}
+
+.ExploreContentContainer h2 {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 40px;
+}
+
+.ExploreContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.Explore {
+  background-color: #e1dcff;
+  border-radius: 12px;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+}
+
+.Explore:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(110, 87, 253, 0.2);
+}
+
+.Explore p:first-of-type {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.Explore p:last-of-type {
+  color: #666;
+  font-size: 14px;
+}
+
+.Explore div {
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.Explore div:hover {
+  background-color: #6E57FD;
+  color: white;
+}
+
+.testPage {
+  margin: 20px;
+  padding: 10px 20px;
+  background-color: #6E57FD;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: Poppins;
+  font-weight: 600;
+}
+.ReferalProgramContainer{
   width: 100%;
   height: auto;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-top: 40px;
   align-items: center;
-}
-.HeroInformation h2{
-  font-size: 40px;
-  font-weight: 600;
-}
-.HeroInformation p{
-  margin-top: 12px;
-  font-size: 20px;
-  width: 900px;
-  text-align: center;
-}
-.startTrackingButton{
-  margin-top: 20px;
-}
-.FistInformationSection{
-  margin-top: 50px;
-  padding: 40px;
-}
-
-.headerInformation{
-
-}
-.FeaturesCards{
-  display: flex;
-  align-items: center;
+  padding: 0px 40px;
   justify-content: space-between;
-  margin-top: 30px;
   gap: 20px;
 }
-.streakCardContainer{
+.ReferalImage{
+  width: 400px;
+  height: 240px;
+  background-color: black;
+  border-radius: 8px;
+}
+.ReferalProgram{
+  width: 80%;
   height: auto;
-}
-.streakCard{
-  width: 400px;
-  height: 160px;
-  border: 2px solid rgb(212, 212, 212);
   border-radius: 8px;
-  background-color: #d7d1ff;
+  padding: 20px;
+  background-color: #e1dcff;
 }
-
-.FistInformationStats{
+.ReferalPoints{
+  width: auto ;
+  height: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-  gap: 20px;
-}
-.FistInformationStatsCard{
-  border: 1.5px solid rgb(183, 183, 183);
-  width: 400px;
-  border-radius: 8px;
-  height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: 10px;
-  cursor: pointer;
   gap: 10px;
+}
+.ReferalButton{
+  width: 200px;
+  height: 40px;
+  background-color: white;
+  border-radius: 8px;
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
-.FistInformationStatsCard:hover{
-  background-color: #ebe8ff;
-  color: #6E57FD;
-  border: 0px;
+.ReferalButton:hover{
+    font-weight: bold;
 }
-
-@media screen and (max-width: 1287px) {
-  .HeroInformation h2{
-    width: 100%;
-    text-align: center;
-    font-size: 30px;
+/* Tablet Responsive (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+  .HeroInformation h2 {
+    font-size: 36px;
   }
-  .HeroInformation p{
-    width: 90%;
-    text-align: center;
-    margin-top: 30px;
+
+  .HeroInformation p {
     font-size: 16px;
   }
-  .homebutton{
+
+  .FistInformationSection,
+  .ExtraInformationContainer,
+  .SkeletonInformationContainer,
+  .ExploreContentContainer {
+    padding: 40px 30px;
+  }
+
+  .ExtraInformation {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .seperator {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: #6852F2;
+  }
+}
+
+/* Mobile Responsive (max-width: 768px) */
+@media screen and (max-width: 768px) {
+  .Offers {
+    height: auto;
+    min-height: 40px;
+    padding: 10px 15px;
+  }
+
+  .Offers p {
+    font-size: 12px;
+  }
+
+  header {
+    height: auto;
+    padding: 15px 20px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .homebutton {
     display: none;
   }
-  header{
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
+
+  .startbutton {
+    padding: 6px 20px;
+    font-size: 14px;
   }
-  .options{
-    margin-right: 0px;
-    width: auto;
+
+  .card {
+    padding: 30px 20px;
   }
-  .logo{
-    width: auto;
+
+  .card-content h2 {
+    font-size: 24px;
   }
-  .FeaturesCards{
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+
+  .HeroInformation {
+    padding: 40px 20px;
   }
-  .streakCardContainer{
+
+  .HeroInformation h2 {
+    font-size: 28px;
+  }
+
+  .HeroInformation p {
+    font-size: 15px;
+    margin-top: 15px;
+  }
+
+  .FistInformationSection,
+  .ExtraInformationContainer,
+  .SkeletonInformationContainer,
+  .ExploreContentContainer {
+    padding: 40px 20px;
+  }
+
+  .headerInformation h2,
+  .SkeletonHeading h3,
+  .ExploreContentContainer h2,
+  .ThirdInformationStatsCard h2 {
+    font-size: 28px;
+  }
+
+  .FeaturesCards {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .ExtraInformation {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .seperator {
+    display: none !important;
+  }
+
+  .SkeletonInformationSection {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .ExploreContent {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small Mobile (max-width: 480px) */
+@media screen and (max-width: 480px) {
+  .HeroInformation h2 {
+    font-size: 24px;
+  }
+
+  .HeroInformation p {
+    font-size: 14px;
+  }
+
+  .headerInformation h2,
+  .SkeletonHeading h3,
+  .ExploreContentContainer h2,
+  .ThirdInformationStatsCard h2 {
+    font-size: 24px;
+  }
+
+  .FistInformationStatsCard h2 {
+    font-size: 28px;
+  }
+
+  .SecoundInformationStatsCard h2 {
+    font-size: 20px;
+  }
+
+  .card {
+    margin: 0 10px;
+    padding: 25px 15px;
+  }
+
+  .close-btn {
+    font-size: 30px;
+  }
+  .ReferalProgramContainer{
+    display: block;
+  }
+  .ReferalProgram{
     width: 100%;
+    margin-top: 20px;
   }
-  .streakCard{
+  .ReferalImage{
     width: 100%;
-  }
-  .FeaturesCards{
-      width: 100%;
-  }
-  .FistInformationStatsCard{
-    width: 100%;
-  }
-  .FistInformationSection{
-    padding: 20px;
   }
 }

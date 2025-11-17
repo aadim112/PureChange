@@ -21,6 +21,17 @@ import AdminControlPage from './Components/AdminControlPage';
 import PricingPage from './Components/PricingPage';
 import GoalSetup from './Components/GoalSetup';
 import ChatRoomPage from './Components/ChatRoomPage';
+import comminity from './assets/community.jpg'
+import focusimage from './assets/focus.jpg'
+import strong from './assets/strong.JPG'
+import referal from './assets/referal.jpg'
+import background from './assets/background.jpg'
+import background2 from './assets/background2.jpg'
+import background3 from './assets/background3.jpg'
+import { Scale } from 'lucide-react';
+import streak from './assets/Streak.jpg'
+import positiveContent from './assets/positiveContent.jpg'
+import checklist from './assets/checklist.jpg'
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -448,12 +459,13 @@ const order = await response.json();
       <Route path="/" element={
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
+            <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
             <p>Offer Information will be over here</p>
           </div>
           <header>
             <div className={styles["logo"]}>Pure Change</div>
             <div className={styles["options"]}>
-              <button className={styles["homebutton"]}>Home</button>
+              <button className={styles["homebutton"]} onClick={() => navigate('/admin')}>Admin</button>
               <button className={styles["startbutton"]} onClick={() => {
                 setShowAuth(true);
                 setShowEmailVerification(false);
@@ -616,7 +628,7 @@ const order = await response.json();
             </div>
           )}
 
-          <div className={styles['HeroInformation']}>
+          <div className={styles['HeroInformation']} style={{backgroundImage:`url(${background2})`,backgroundSize:'cover'}}>
             <h2>Build Decscipline, Keep your Streak, Stay Motivated</h2>
             <p>Track your progress, check off healthy habits, and consume uplifiting content design to strengthen self control and focus. Simple tools, real momentum.</p>
             <Button variant='primary' onClick={() => {
@@ -625,18 +637,50 @@ const order = await response.json();
                 setIsLogin(true);
                 setError('');
               }} className={styles['startTrackingButton']}>Start Tracking</Button>
+              <br></br>
           </div>
 
-          <div className={styles['FistInformationSection']}>
+          <div className={styles["ReferalProgramContainer"]}>
+            <div className={styles["ReferalImage"]} style={{backgroundImage:`url(${referal})`,backgroundSize:'cover'}}></div>
+            <div className={styles["ReferalProgram"]}>
+              <h3>Join the Pure Change Referal Program</h3>
+              <p>Help others break free from addiction - and grow with them.</p>
+              <br></br>
+              <div className={styles["ReferalPoints"]}>
+                <i class="fa-solid fa-user"></i><p>Every Referal = One more life transformed</p>
+              </div>
+
+              <div className={styles["ReferalPoints"]}>
+                <i class="fa-solid fa-gift"></i><p>Earn exciting rewards and recognition</p>
+              </div>
+
+              <div className={styles["ReferalPoints"]}>
+                <i class="fa-solid fa-seedling"></i><p>Be part of a growing comminity of self-control and strength</p>
+              </div>
+
+              <div className={styles["ReferalButton"]}  onClick={() => {
+                setShowAuth(true);
+                setShowEmailVerification(false);
+                setIsLogin(true);
+                setError('');
+              }}>Refer Now</div>
+            </div>
+          </div>
+
+          <div className={styles['FistInformationSection']} style={{backgroundImage:`url(${background3})`,backgroundSize:'cover',backgroundPosition:'top',backgroundPositionY:'-300px'}}>
             <div className={styles['headerInformation']}>
-              <h2>What You Get</h2>
-              <p>Everything you need to stay consistent and motivated </p>
+              <h2 style={{fontSize:'30px'}}>What Makes Us Different</h2>
+              <p>It's not just a website-it's your daily guide for transformation </p>
             </div>
             
             <div className={styles['FeaturesCards']}>
 
               <div className={styles['streakCardContainer']}>
-                <div className={styles['streakCard']}></div>
+                <div className={styles['streakCard']} style={{backgroundImage:`url(${streak})`,backgroundSize:'cover'}}>
+                  <i className="fa-solid fa-fire-flame-curved fa-3x" style={{color:'#6852F2'}}></i> 
+                  <p style={{marginTop:'5px',fontWeight:'bold',fontSize:'20px'}}>Streak</p>
+                  <p style={{marginTop:'0px',fontSize:'13px'}}>Here will be the information about what to add will be written</p>
+                </div>
                 <div className={styles['FistInformationStatsCard']}>
                   <h2>25k+</h2>
                   <p>Daily Check-ins</p>
@@ -644,7 +688,11 @@ const order = await response.json();
               </div>
 
               <div className={styles['streakCardContainer']}>
-                <div className={styles['streakCard']}></div>
+                <div className={styles['streakCard']} style={{backgroundImage:`url(${checklist})`,backgroundSize:'cover'}}>
+                  <i className="fa-solid fa-check-double fa-3x" style={{color:'#6852F2'}}></i> 
+                  <p style={{marginTop:'5px',fontWeight:'bold',fontSize:'20px'}}>Checklist</p>
+                  <p style={{marginTop:'0px',fontSize:'13px'}}>Here will be the information about what to add will be written</p>
+                </div>
                 <div className={styles['FistInformationStatsCard']}>
                   <h2>92%</h2>
                   <p>Feel More Focused</p>
@@ -652,7 +700,11 @@ const order = await response.json();
               </div>
 
               <div className={styles['streakCardContainer']}>
-                <div className={styles['streakCard']}></div>
+                <div className={styles['streakCard']} style={{backgroundImage:`url(${positiveContent})`,backgroundSize:'cover'}}>
+                  <i className="fa-solid fa-star fa-3x" style={{color:'#6852F2'}}></i> 
+                  <p style={{marginTop:'5px',fontWeight:'bold',fontSize:'20px'}}>Positive Content</p>
+                  <p style={{marginTop:'0px',fontSize:'13px'}}>Here will be the information about what to add will be written</p>
+                </div>
                 <div className={styles['FistInformationStatsCard']}>
                   <h2>4.5/5</h2>
                   <p>Community Rating</p>
@@ -660,19 +712,118 @@ const order = await response.json();
               </div>
             </div>
           </div>
+          <div className={styles['ExtraInformationContainer']}>
+            <div className={styles['ThirdInformationStatsCard']}>
+                <h2 style={{fontSize:'30px'}}>Why Join Pure Change</h2>
+                <p>Because real Changestarts with one strong decision</p>
+              </div>
+            <div className={styles['ExtraInformation']}>
+              <div className={styles['SecoundInformationStatsCard']}>
+                  <h2>Build Strong Willpower</h2>
+                  <p>Simple daily tools to strengthen your focus</p>
+              </div>
+              <div style={{height:'120px',width:'2px',backgroundColor:'#6852F2'}} className={styles['seperator']}></div>
+              <div className={styles['SecoundInformationStatsCard']}>
+                  <h2>Track Your Progress</h2>
+                  <p>Mainly daily check-ins and watch your streak grow</p>
+              </div>
+              <div style={{height:'120px',width:'2px',backgroundColor:'#6852F2'}} className={styles['seperator']}></div>
+              <div className={styles['SecoundInformationStatsCard']}>
+                  <h2>Daily Check-Ins</h2>
+                  <p>Stay consistent and build momentum with our website</p>
+              </div>
+            </div>
+          </div>
 
-          <div>
-            <button className={styles["testPage"]} onClick={() => navigate('/admin')}>
-              Admin
-            </button>
+          <div className={styles['SkeletonInformationContainer']}>
+              <div className={styles['SkeletonHeading']}>
+                <h3 style={{fontSize:'25px'}}>A Simple, Motivation Workspace</h3>
+                <p>Everything you need to stay consistent and motivated</p>
+              </div>
+              <div className={styles['SkeletonInformationSection']}>
+                <div className={styles['SkeletonPart1']}>
+                  <div className={styles['InnerSkeletonheading']}>
+                    <i class="fa-solid fa-user" style={{color:"#6852F2"}}></i>
+                    <p>My Profile</p>
+                  </div>
+                  <div className={styles['BoxContainer']}>
+                    <div className={styles["grid"]}>
+                        <div className={styles["box"]}></div>
+                        <div className={styles["box"]}></div>
+                    </div>
+                    <div className={styles["row-2"]}>
+                        <div className={styles["box"]}></div>
+                        <div className={styles["box"]}></div>
+                        <div class="box"></div>
+                    </div>
+                    <div className={styles["row-3"]}>
+                        <div className={styles["box"]}></div>
+                        <div className={styles["box"]}></div>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles['SkeletonPart2']}>
+                  <div className={styles['SkeletonHeading']}>
+                    <p style={{fontWeight:'bold'}}>Why It Works?</p>
+                  </div>
+                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
 
-            <button className={styles["testPage"]} onClick={() => createOrder(900)}>
-              Payment
-            </button>
+                  </div>
+                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
 
-            <button className={styles["testPage"]} onClick={() => navigate('/goal-question')}>
-              goal setup
-            </button>
+                  </div>
+                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
+
+                  </div>
+                </div>
+              </div>
+          </div>
+
+          <div className={styles['ExploreContentContainer']}>
+            <h2 style={{textAlign:'center',color:'#7863ffff'}}>Explore Content</h2>
+            <div className={styles['ExploreContent']}>
+              <div className={styles['Explore']}>
+                <i className="fa-solid fa-book fa-2xl" style={{color:'black',marginTop:'20px'}}></i>
+                <p style={{fontWeight:'bold',fontSize:'15px',marginTop:'10px'}}>General Guid</p>
+                <p>ldsfhksghfasfladsugofsgfi asfuigsyu fasuof</p>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'white',width:'100%',height:'30px',borderRadius:'8px',bottom:'0px',position:"relative"}}  onClick={() => {
+                  setShowAuth(true);
+                  setShowEmailVerification(false);
+                  setIsLogin(true);
+                  setError('');
+                }}>
+                  <p>Browse</p>
+                </div>
+              </div>
+
+              <div className={styles['Explore']}>
+                <i className="fa-solid fa-quote-left fa-2xl" style={{color:'black',marginTop:'20px'}}></i>
+                <p style={{fontWeight:'bold',fontSize:'15px',marginTop:'10px'}}>Daily Quotes</p>
+                <p>ldsfhksghfasfladsugofsgfi asfuigsyu fasuof</p>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'white',width:'100%',height:'30px',borderRadius:'8px',bottom:'0px',position:"relative"}}  onClick={() => {
+                  setShowAuth(true);
+                  setShowEmailVerification(false);
+                  setIsLogin(true);
+                  setError('');
+                }}>
+                  <p>See Quotes</p>
+                </div>
+              </div>
+
+              <div className={styles['Explore']}>
+                <i className="fa-solid fa-gift fa-2xl" style={{color:'black',marginTop:'20px'}}></i>
+                <p style={{fontWeight:'bold',fontSize:'15px',marginTop:'10px'}}>Refer</p>
+                <p>ldsfhksghfasfladsugofsgfi asfuigsyu fasuof</p>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'white',width:'100%',height:'30px',borderRadius:'8px',bottom:'0px',position:"relative"}}  onClick={() => {
+                  setShowAuth(true);
+                  setShowEmailVerification(false);
+                  setIsLogin(true);
+                  setError('');
+                }}>
+                  <p>Get Code</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       } />

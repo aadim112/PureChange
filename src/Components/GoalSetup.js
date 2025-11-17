@@ -10,11 +10,28 @@ export default function GoalSetup() {
 
   const question = "What is your primary fitness goal?";
   const options = [
-    "Lose Weight",
-    "Build Muscle",
-    "Improve Endurance",
-    "Stay Active & Healthy"
+    "Quit Porn Completely",
+    "Stop Masturbation Addiction",
+    "Build a Long Streak (7–90 Days)",
+    "Gain Strong Self-Control",
+    "Improve Focus & Concentration",
+    "Increase Energy Levels",
+    "Reduce Brain Fog",
+    "Gain Confidence & Self-Respect",
+    "Build a Consistent Daily Routine",
+    "Improve Physical Appearance",
+    "Boost Motivation & Willpower",
+    "Strengthen Relationships",
+    "Better Sleep Quality",
+    "Reduce Anxiety & Stress",
+    "Spiritual Growth & Inner Peace",
+    "Improve Productivity",
+    "Break Social Media & Dopamine Addiction",
+    "Become Physically Stronger",
+    "Develop a Growth Mindset",
+    "Become the Best Version of Themselves"
   ];
+
 
   const handleSubmit = () => {
     const userId = localStorage.getItem('userId');
