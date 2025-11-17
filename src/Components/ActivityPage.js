@@ -880,7 +880,7 @@ export default function ActivityPage() {
               <CardImage src={ImgGeneralContent} alt="General content" />
               <h4>General Content</h4>
               <p>Articles, tips, lessons</p>
-              <button className={styles["explore-btn"]}>Browse</button>
+              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'default' } })}>Browse</button>
             </div>
 
             {/* Pro Content */}
@@ -888,7 +888,7 @@ export default function ActivityPage() {
               <CardImage src={ImgProContent} alt="Pro content" />
               <h4>Pro Content</h4>
               <p>Personalized routines, live videos</p>
-              <button className={styles["explore-btn"]}>Explore</button>
+              <button className={styles["explore-btn"]} onClick={() => navigate('/routine')}>Explore</button>
             </div>
 
             {/* Elite Content */}
@@ -896,7 +896,7 @@ export default function ActivityPage() {
               <CardImage src={ImgEliteContent} alt="Elite content" />
               <h4>Elite Content</h4>
               <p>Personal calls, Creator videos</p>
-              <button className={styles["explore-btn"]}>Explore</button>
+              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'elite' } })}>Explore</button>
             </div>
 
             {/* Daily Quote */}
@@ -904,7 +904,7 @@ export default function ActivityPage() {
               <CardImage src={ImgDailyQuotes} alt="Daily quotes" />
               <h4>Daily Quote</h4>
               <p>oh ! have a look</p>
-              <button className={styles["explore-btn"]}>More Quotes</button>
+              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'quote' } })}>More Quotes</button>
             </div>
           </div>
         </div>

@@ -461,3 +461,130 @@ export async function uploadMotivationalVideos(file, onProgress) {
     return { success: false };
   }
 }
+
+async function listMotivationalMedia(folderPath) {
+  try {
+    const folderRef = storageRef(storage, folderPath);
+    const listed = await listAll(folderRef);
+    if (!listed || !listed.items || listed.items.length === 0) return [];
+    const urls = await Promise.all(listed.items.map(it => getDownloadURL(it)));
+    // return array of { name, url } for easy persist/comparison
+    return listed.items.map((it, idx) => ({ name: it.name, url: urls[idx] }));
+  } catch (err) {
+    console.error(`listMotivationalMedia(${folderPath}) failed`, err);
+    return [];
+  }
+}
+
+export async function listMotivationalImages() {
+  return listMotivationalMedia("content/motivational_images");
+}
+
+export async function listMotivationalVideos() {
+  return listMotivationalMedia("content/motivational_videos");
+}
+
+function pickRandomFromArray(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+  const idx = Math.floor(Math.random() * arr.length);
+  return arr[idx];
+}
+
+/**
+ * getDailyMotivation(userId)
+ * Returns object:
+ * {
+ *   date: 'Thu Nov 17 2025',
+ *   image: { name, url },
+ *   video: { name, url },
+ *   article: { id, actual_content },
+ *   quote: { id, actual_content }
+ * }
+ *
+ * Persists in users/{uid}/dailyData.lastMotivationSelection
+ */
+export async function getDailyMotivation(userId) {
+  if (!userId) {
+    // no user -> just return a non-persisted random pick from pools
+    const imgs = await listMotivationalImages();
+    const vids = await listMotivationalVideos();
+    const articlesMap = await showOtherContent('article'); // returns map
+    const quotesMap = await showOtherContent('quote');
+
+    const articleEntries = articlesMap ? Object.entries(articlesMap) : [];
+    const quoteEntries = quotesMap ? Object.entries(quotesMap) : [];
+
+    return {
+      date: new Date().toDateString(),
+      image: pickRandomFromArray(imgs),
+      video: pickRandomFromArray(vids),
+      article: articleEntries.length ? { id: articleEntries[0][0], actual_content: articleEntries[0][1].actual_content } : null,
+      quote: quoteEntries.length ? { id: quoteEntries[0][0], actual_content: quoteEntries[0][1].actual_content } : null
+    };
+  }
+
+  // get previous user daily data
+  const dailyRef = ref(db, `users/${userId}/dailyData`);
+  const snap = await get(dailyRef);
+  const today = new Date().toDateString();
+  const prev = snap && snap.exists() ? snap.val() : {};
+
+  if (prev.lastMotivationSelection && prev.lastMotivationSelection.date === today) {
+    // already chosen for today, return persisted selection
+    return prev.lastMotivationSelection;
+  }
+
+  // fetch pools
+  const [imgs, vids] = await Promise.all([listMotivationalImages(), listMotivationalVideos()]);
+  const articlesMap = await showOtherContent('article');
+  const quotesMap = await showOtherContent('quote');
+
+  const articleEntries = articlesMap ? Object.entries(articlesMap) : [];
+  const quoteEntries = quotesMap ? Object.entries(quotesMap) : [];
+
+  // Build candidate pools (objects with {id, actual_content} for articles/quotes)
+  const articlePool = articleEntries.map(([id, obj]) => ({ id, actual_content: obj.actual_content }));
+  const quotePool = quoteEntries.map(([id, obj]) => ({ id, actual_content: obj.actual_content }));
+
+  // avoid repeating yesterday's exact same items (if available in prev.lastMotivationSelection)
+  const prevSel = prev.lastMotivationSelection || {};
+  const chooseNonRepeating = (pool, prevKeyChecker) => {
+    if (!pool || pool.length === 0) return null;
+    // if pool length is 1 -> must pick it
+    if (pool.length === 1) return pool[0];
+    // try to pick a different element than previous one
+    const prevId = prevKeyChecker(prevSel);
+    const filtered = pool.filter(p => {
+      if (!prevId) return true;
+      // prevSel might store object shapes for image/video with name or for article/quote with id
+      if (p.name) return p.name !== prevId;
+      if (p.id) return p.id !== prevId;
+      return true;
+    });
+    // if filter reduced to zero fallback to full pool
+    const finalPool = filtered.length > 0 ? filtered : pool;
+    return pickRandomFromArray(finalPool);
+  };
+
+  const chosenImage = chooseNonRepeating(imgs, s => s?.image?.name);
+  const chosenVideo = chooseNonRepeating(vids, s => s?.video?.name);
+  const chosenArticle = chooseNonRepeating(articlePool, s => s?.article?.id);
+  const chosenQuote = chooseNonRepeating(quotePool, s => s?.quote?.id);
+
+  const selection = {
+    date: today,
+    image: chosenImage || null,
+    video: chosenVideo || null,
+    article: chosenArticle || null,
+    quote: chosenQuote || null
+  };
+
+  // persist selection under dailyData
+  try {
+    await updateDailyDataFields(userId, { lastMotivationSelection: selection });
+  } catch (err) {
+    console.warn("getDailyMotivation: failed to persist selection", err);
+  }
+
+  return selection;
+}
