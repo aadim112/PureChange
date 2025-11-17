@@ -4,6 +4,10 @@ import Navbar from './Navbar';
 import { ReactComponent as Flame } from "../assets/Flame.svg"
 import { ReactComponent as NoSign } from "../assets/NoSign.svg"
 import { ReactComponent as Sun } from "../assets/Sun.svg"
+import ImgGeneralContent from "../assets/ImgGeneralContent.png";
+import ImgProContent from "../assets/ImgProContent.png";
+import ImgEliteContent from "../assets/ImgEliteContent.png";
+import ImgDailyQuotes from "../assets/ImgDailyQuotes.png";
 import { useNavigate } from 'react-router-dom';
 import { ref, set, get, } from 'firebase/database';
 import { db } from '../firebase';
@@ -24,6 +28,39 @@ import {
   revokeReferralCode
 } from "../services/referalService";
 import referralRules from '../services/referalService';
+
+function CardImage({ src, alt }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+    if (!src) return;
+    let cancelled = false;
+    const img = new Image();
+    img.src = src;
+    img.onload = () => { if (!cancelled) setLoaded(true); };
+    img.onerror = () => { if (!cancelled) setFailed(true); };
+    return () => { cancelled = true; };
+  }, [src]);
+
+  return (
+    // .card-image contains the gradient background and *fixed* rectangle size.
+    <div className={styles["card-image"]} aria-hidden={!src}>
+      {/* image element placed in DOM always but toggled with CSS classes for smoother layout */}
+      {src ? (
+        <img
+          className={`${styles["card-image__img"]} ${loaded ? styles["is-loaded"] : ""} ${failed ? styles["is-failed"] : ""}`}
+          src={src}
+          alt={alt || ""}
+          draggable={false}
+        />
+      ) : null}
+      {/* gradient remains as background of .card-image until .is-loaded is present */}
+    </div>
+  );
+}
 
 const ReferralPopup = memo(function ReferralPopup({
   show,
@@ -840,7 +877,7 @@ export default function ActivityPage() {
           <div className={styles["content-grid"]}>
             {/* General Content */}
             <div className={styles["content-card"]}>
-              <div className={styles["card-image"]}></div>
+              <CardImage src={ImgGeneralContent} alt="General content" />
               <h4>General Content</h4>
               <p>Articles, tips, lessons</p>
               <button className={styles["explore-btn"]}>Browse</button>
@@ -848,7 +885,7 @@ export default function ActivityPage() {
 
             {/* Pro Content */}
             <div className={styles["content-card"]}>
-              <div className={styles["card-image"]}></div>
+              <CardImage src={ImgProContent} alt="Pro content" />
               <h4>Pro Content</h4>
               <p>Personalized routines, live videos</p>
               <button className={styles["explore-btn"]}>Explore</button>
@@ -856,7 +893,7 @@ export default function ActivityPage() {
 
             {/* Elite Content */}
             <div className={styles["content-card"]}>
-              <div className={styles["card-image"]}></div>
+              <CardImage src={ImgEliteContent} alt="Elite content" />
               <h4>Elite Content</h4>
               <p>Personal calls, Creator videos</p>
               <button className={styles["explore-btn"]}>Explore</button>
@@ -864,7 +901,7 @@ export default function ActivityPage() {
 
             {/* Daily Quote */}
             <div className={styles["content-card"]}>
-              <div className={styles["card-image"]}></div>
+              <CardImage src={ImgDailyQuotes} alt="Daily quotes" />
               <h4>Daily Quote</h4>
               <p>oh ! have a look</p>
               <button className={styles["explore-btn"]}>More Quotes</button>

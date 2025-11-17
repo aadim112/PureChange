@@ -255,9 +255,43 @@
 
 .card-image {
   width: 100%;
-  height: 140px;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+  height: 150px;
+  max-height: 150px;
   border-bottom: 2px solid #f0f0f0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+  background-size: cover;
+  background-position: center center;
+  display: block;
+}
+
+.card-image__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  opacity: 0;
+  transition: opacity 240ms ease-in-out;
+  will-change: opacity;
+  pointer-events: none;
+}
+
+.is-loaded {
+  opacity: 1;
+  z-index: 2;
+}
+
+.is-failed {
+  opacity: 0;
+  z-index: 1;
+}
+
+.content-card {
+  position: relative;
 }
 
 .content-card h4 {
