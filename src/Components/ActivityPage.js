@@ -776,6 +776,52 @@ export default function ActivityPage() {
     }
   };
 
+  // show the persisted daily quote from user's dailyData
+  const [persistedDailyQuote, setPersistedDailyQuote] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPersistedDailyQuote() {
+      try {
+        const uid = localStorage.getItem('userId'); // same pattern used elsewhere
+        if (!uid) {
+          // fallback: use localStorage (if MoreContentPage stored it)
+          const local = localStorage.getItem('dailyQuote');
+          if (!cancelled) setPersistedDailyQuote(local || null);
+          return;
+        }
+
+        const dRef = ref(db, `users/${uid}/dailyData/lastMotivationSelection`);
+        const snap = await get(dRef);
+        if (!cancelled) {
+          if (snap && snap.exists()) {
+            const sel = snap.val();
+            const q = sel && sel.quote && sel.quote.actual_content ? sel.quote.actual_content : null;
+            if (q) setPersistedDailyQuote(q);
+            else {
+              // fallback to localStorage if present
+              const local = localStorage.getItem('dailyQuote');
+              setPersistedDailyQuote(local || null);
+            }
+          } else {
+            // no DB entry -> fallback
+            const local = localStorage.getItem('dailyQuote');
+            setPersistedDailyQuote(local || null);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to read daily selection from DB', err);
+        if (!cancelled) {
+          const local = localStorage.getItem('dailyQuote');
+          setPersistedDailyQuote(local || null);
+        }
+      }
+    }
+
+    loadPersistedDailyQuote();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className={styles["activity-page"]}>
       <Navbar
@@ -903,8 +949,17 @@ export default function ActivityPage() {
             <div className={styles["content-card"]}>
               <CardImage src={ImgDailyQuotes} alt="Daily quotes" />
               <h4>Daily Quote</h4>
-              <p>oh ! have a look</p>
-              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'quote' } })}>More Quotes</button>
+              <p>
+                oh ! have a look : {" "}
+              </p>
+              <p>
+                {persistedDailyQuote ? (
+                  <span className={styles["activity-quote"]}>"{persistedDailyQuote}"</span>
+                ) : (
+                  <span className={styles["activity-quote-fallback"]}>"No quote for today"</span>
+                )}
+              </p>
+              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'pro' } })}>More Quotes</button>
             </div>
           </div>
         </div>
