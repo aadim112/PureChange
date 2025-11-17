@@ -286,3 +286,297 @@
     margin-left: 0;
   }
 }
+
+/* PRO variant: videos row - horizontal scroll but scrollbar hidden */
+.pro-videos-row {
+  position: relative;
+  margin-top: 18px;
+  overflow: hidden;
+}
+
+.pro-videos-inner {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 12px;
+  scrollbar-width: none;
+}
+.pro-videos-inner::-webkit-scrollbar { display: none; }
+
+.pro-video-item {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  position: relative;
+  min-width: 100%;
+  height: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+
+.pro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* small loader with smaller spinner */
+.video-loader-overlay-small {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255,255,255,0.6);
+  z-index: 5;
+}
+
+.spinner-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007bff;
+  animation: spin 1s linear infinite;
+}
+
+/* controls anchored near bottom-right */
+.pro-video-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+/* images row: 3 equal columns, images centered vertically & maintain aspect ratio */
+.pro-images-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.pro-image-item {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pro-image-centered {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* quote area - "More Quotes" button sits right below the quote and spans only the width needed */
+.quote-section-pro {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* section heading */
+.section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.quote-box-pro {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fff7ed 100%);
+  border-radius: 12px;
+  padding: 24px 26px;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+  width: 100%;
+}
+
+/* keep decorative mark and text layout from default quote */
+.quote-mark { font-size: 64px; color: rgba(0,0,0,0.08); position: absolute; left: 12px; top: 6px; font-family: Georgia, serif; }
+.quote-text { font-size: 18px; font-style: italic; line-height: 1.45; margin-left: 58px; color: #1f2937; }
+
+/* place More Quotes button directly under the quote box */
+.more-quotes-row {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+/* article styling: card with subtle border, padding and better typography */
+.article-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(16,24,40,0.04);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.article-text-full {
+  white-space: pre-wrap;
+  line-height: 1.75;
+  color: #222;
+  font-size: 15px;
+  margin-top: 0;
+}
+
+/* modal for "More Quotes" popup */
+/* Improved modal overlay & content */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 11, 17, 0.48);
+  z-index: 12000;
+  padding: 20px; /* breathing room on small screens */
+}
+
+/* Modal card */
+.modal-content {
+  width: min(850px, 96%);
+  max-height: 80vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(2,6,23,0.35);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(16,24,40,0.05);
+}
+
+/* Modal heading */
+.modal-content h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary, #111827);
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(16,24,40,0.04);
+}
+
+/* Quotes list wrapper (targets the first child div inside modal-content that you used inline) */
+.modal-content > div {
+  /* make it a scrollable area if content too tall */
+  display: grid;
+  gap: 12px;
+  padding: 12px 6px;
+  overflow: auto;
+  max-height: calc(80vh - 160px); /* leave room for header + footer */
+}
+
+/* Individual quote styling */
+.motivation-quote {
+  margin: 0;
+  background: linear-gradient(135deg, #fffaf6 0%, #fffefc 100%);
+  border-left: 4px solid rgba(0,0,0,0.06);
+  padding: 14px 16px;
+  border-radius: 8px;
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1.55;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+/* subtle hover lift to indicate interactivity */
+.motivation-quote:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(16,24,40,0.06);
+}
+
+/* Footer area containing the Close button */
+.modal-content > div + div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(16,24,40,0.03);
+}
+
+/* Secondary button style (if needed) — improves contrast and spacing */
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(16,24,40,0.08);
+  color: var(--color-text-primary, #111827);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 150ms ease, transform 120ms ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(16,24,40,0.03);
+  transform: translateY(-2px);
+}
+
+/* responsive tweaks */
+@media (max-width: 520px) {
+  .modal-content {
+    padding: 12px;
+  }
+  .motivation-quote {
+    font-size: 15px;
+    padding: 12px;
+  }
+  .modal-content > div {
+    max-height: calc(80vh - 140px);
+  }
+}
+
+/* keep buttons consistent */
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #005fcc);
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.28);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 14px rgba(0, 123, 255, 0.38);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.2);
+}
+
+/* small responsive tweaks */
+@media (max-width: 900px) {
+  .pro-images-row { grid-template-columns: 1fr 1fr 1fr; }
+  .pro-video-item { height: 320px; }
+  .pro-image-item { height: 260px; }
+}
+@media (max-width: 600px) {
+  .pro-images-row { grid-template-columns: 1fr; }
+  .pro-video-item { height: 220px; }
+  .quote-text { font-size: 16px; margin-left: 0; }
+  .quote-mark { display: none; }
+}

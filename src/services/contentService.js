@@ -588,3 +588,69 @@ export async function getDailyMotivation(userId) {
 
   return selection;
 }
+
+// ---------- add to contentService.js ----------
+function pickNUnique(arr, n) {
+  if (!Array.isArray(arr) || arr.length === 0) return [];
+  const copy = arr.slice();
+  const out = [];
+  while (out.length < n && copy.length) {
+    const idx = Math.floor(Math.random() * copy.length);
+    out.push(copy.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+/**
+ * getProSelection(userId)
+ * - returns 3 videos, 3 images, 1 quote, articles pool
+ * - persists under users/{uid}/dailyData.proSelection to avoid changing mid-day
+ */
+export async function getProSelection(userId) {
+  if (!userId) {
+    // non-persisted random pick
+    const vids = await listMotivationalVideos();
+    const imgs = await listMotivationalImages();
+    const articlesMap = await showOtherContent('article');
+    const quotesMap = await showOtherContent('quote');
+    const quoteEntries = quotesMap ? Object.entries(quotesMap) : [];
+
+    return {
+      date: new Date().toDateString(),
+      videos: pickNUnique(vids, 3),
+      images: pickNUnique(imgs, 3),
+      quote: quoteEntries.length ? { id: quoteEntries[0][0], actual_content: quoteEntries[0][1].actual_content } : null,
+      articlesMap // full map so UI can choose random articles locally
+    };
+  }
+
+  const dailyRef = ref(db, `users/${userId}/dailyData`);
+  const snap = await get(dailyRef);
+  const today = new Date().toDateString();
+  const prev = snap && snap.exists() ? snap.val() : {};
+
+  if (prev.proSelection && prev.proSelection.date === today) {
+    return prev.proSelection;
+  }
+
+  const [vids, imgs] = await Promise.all([listMotivationalVideos(), listMotivationalImages()]);
+  const articlesMap = await showOtherContent('article');
+  const quotesMap = await showOtherContent('quote');
+  const quoteEntries = quotesMap ? Object.entries(quotesMap) : [];
+
+  const sel = {
+    date: today,
+    videos: pickNUnique(vids, 3),
+    images: pickNUnique(imgs, 3),
+    quote: quoteEntries.length ? { id: quoteEntries[0][0], actual_content: quoteEntries[0][1].actual_content } : null,
+    articlesMap
+  };
+
+  try {
+    await updateDailyDataFields(userId, { proSelection: sel });
+  } catch (err) {
+    console.warn("getProSelection: failed to persist selection", err);
+  }
+
+  return sel;
+}
