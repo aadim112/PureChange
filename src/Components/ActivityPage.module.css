@@ -253,6 +253,59 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
+/* --- New Locking Styles --- */
+
+/* Relative container to hold image and absolute overlays */
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 150px;
+}
+
+/* The overlays (Active/Hover) */
+.lock-overlay-active,
+.lock-overlay-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; /* allow clicks to pass through to the card/button */
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+/* Default state: Overlay 1 is visible, Overlay 2 hidden */
+.lock-overlay-active {
+  opacity: 1;
+}
+.lock-overlay-hover {
+  opacity: 0;
+}
+
+/* Hover state: Overlay 1 hides, Overlay 2 shows */
+.content-card:hover .lock-overlay-active {
+  opacity: 0;
+}
+.content-card:hover .lock-overlay-hover {
+  opacity: 1;
+}
+
+/* Locked Button Styling (Grey Gradient) */
+.locked-btn {
+  background: linear-gradient(135deg, #9ca3af 0%, #4b5563 100%) !important;
+  box-shadow: none !important;
+}
+
+.locked-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.1);
+}
+
+/* -------------------------- */
+
 .card-image {
   width: 100%;
   height: 150px;
@@ -311,7 +364,7 @@
 }
 
 .explore-btn {
-  margin: 12px 16px 16px;
+  margin: 2px 16px 16px;
   padding: 8px 16px;
   border: none;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -810,6 +863,10 @@
   padding: 18px 22px;
   position: relative;
   border: 1px solid rgba(15,23,42,0.04);
+}
+
+.refer-popup::-webkit-scrollbar {
+  display: none;
 }
 
 .refer-header h3 {

@@ -8,13 +8,8 @@ import { getAuth } from "firebase/auth";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
 import Avatar from "./Avatar";
+import UpgradePopup from './UpgradePlanPopup';
 import { calculateConsistencyScore,getConsistencyWithDays } from "../services/consistencyService";
-
-const MyProfile = [
-  {label : "My Routine", variant : "secondary", route : "/routine"},
-  {label : "Activity", variant: "secondary", route : "/activity"},
-  {label : "My Page", variant: "primary", route : "/mypage"}
-]
 
 const StreakHolderBox = ({month = "Month", NoFapDays, TotalDays}) => {
     return(
@@ -97,6 +92,10 @@ export default function MyPage(){
         insights: ''
     });
     const [fullUserData, setFullUserData] = useState(null); // Store complete user data for consistency calc
+    const [upgradePopupData, setUpgradePopupData] = useState({
+        show: false,
+        requiredPlan: ''
+    });
 
     useEffect(()=>{
         fetchUserData();
@@ -213,9 +212,29 @@ export default function MyPage(){
         }
     };
 
+    const handleNavClick = (label, route) => {
+        const userType = userData.userType || 'Free'; 
+        
+        if (label === "My Routine" && userType === 'Free') {
+            setUpgradePopupData({ show: true, requiredPlan: 'Pro' });
+        } else {
+            navigate(route);
+        }
+    };
+
+    const navButtons = [
+      { 
+          label: "My Routine", 
+          variant: "secondary", 
+          action: () => handleNavClick("My Routine", "/routine") // Use action instead of route
+      },
+      { label: "Activity", variant: "secondary", route: "/activity" },
+      { label: "My Page", variant: "primary", route: "/mypage" }
+    ];
+
     return(
         <div>
-            <Navbar pageName="Profile" buttons={MyProfile} Icon={User}/>
+            <Navbar pageName="Profile" buttons={navButtons} Icon={User}/>
             <div className={styles["infoContainer"]}>
                 <div className={styles["profilepanelContainer"]}>
                     <div className={styles["profilepanel"]}>
@@ -309,6 +328,11 @@ export default function MyPage(){
                     </div>
                 </div>
             </div>
+            <UpgradePopup 
+                show={upgradePopupData.show} 
+                onClose={() => setUpgradePopupData({ ...upgradePopupData, show: false })} 
+                requiredPlan={upgradePopupData.requiredPlan} 
+            />
         </div>
     )
 }

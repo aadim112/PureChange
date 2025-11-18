@@ -8,6 +8,8 @@ import ImgGeneralContent from "../assets/ImgGeneralContent.png";
 import ImgProContent from "../assets/ImgProContent.png";
 import ImgEliteContent from "../assets/ImgEliteContent.png";
 import ImgDailyQuotes from "../assets/ImgDailyQuotes.png";
+import LockOverlay1 from "../assets/lockOverlay1.png";
+import LockOverlay2 from "../assets/lockOverlay2.png";
 import { useNavigate } from 'react-router-dom';
 import { ref, set, get, } from 'firebase/database';
 import { db } from '../firebase';
@@ -28,6 +30,7 @@ import {
   revokeReferralCode
 } from "../services/referalService";
 import referralRules from '../services/referalService';
+import UpgradePopup from './UpgradePlanPopup';
 
 function CardImage({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
@@ -347,6 +350,12 @@ export default function ActivityPage() {
   const [showReferPopup, setShowReferPopup] = useState(false);
   const [loadingRefer, setLoadingRefer] = useState(false);
   const [referralData, setReferralData] = useState(null); // { referral, joined, transactions, bank_details }
+  
+  // State for Upgrade Popup
+  const [upgradePopupData, setUpgradePopupData] = useState({
+    show: false,
+    requiredPlan: ''
+  });
 
   useEffect(() => {
     async function init() {
@@ -796,15 +805,57 @@ export default function ActivityPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // --- ACCESS CONTROL LOGIC ---
+  const userType = userData.UserType || 'Free'; // Default to Free just in case
+
+  // Determine which content is locked based on plan
+  const isProContentLocked = userType === 'Free';
+  const isEliteContentLocked = userType === 'Free' || userType === 'Pro';
+  const isQuoteLocked = userType === 'Free';
+
+  // Helper to open upgrade popup with correct plan name
+  const handleRestrictedClick = (requiredPlan) => {
+    setUpgradePopupData({ show: true, requiredPlan });
+  };
+
+  // Helper for Navbar Restricted Clicks
+  const handleNavClick = (label, defaultActionOrRoute, type = 'route') => {
+    // Restricted buttons for Free plan users
+    const restrictedForFree = ['Refer & Earn', 'Resist the Urge', 'Chat Room'];
+    
+    if (userType === 'Free' && restrictedForFree.includes(label)) {
+       handleRestrictedClick('Pro'); // Pro is required for these
+       return;
+    }
+
+    if (type === 'action') {
+       defaultActionOrRoute();
+    } else {
+       navigate(defaultActionOrRoute);
+    }
+ };
+
   return (
     <div className={styles["activity-page"]}>
       <Navbar
         pageName="Activity"
         Icon={Flame}
         buttons={[
-          { label: "Refer & Earn", variant: "secondary", action: handleOpenReferEarnPopup },
-          { label: "Resist the Urge", variant: "emergency", action: handleOpenCustomPopup },
-          { label: "Chat Room", variant: "secondary", route: "/chatroom" },
+          { 
+            label: "Refer & Earn", 
+            variant: "secondary", 
+            action: () => handleNavClick("Refer & Earn", handleOpenReferEarnPopup, 'action') 
+          },
+          { 
+            label: "Resist the Urge", 
+            variant: "emergency", 
+            action: () => handleNavClick("Resist the Urge", handleOpenCustomPopup, 'action') 
+          },
+          { 
+            label: "Chat Room", 
+            variant: "secondary", 
+            action: () => handleNavClick("Chat Room", "/chatroom", 'route')
+          },
           { label: "Ranking", variant: "secondary", route: "/leaderboard" },
           { label: "My Page", variant: "secondary", route: "/mypage" },
           { label: "Activity", variant: "primary", route: "/activity" },
@@ -895,33 +946,76 @@ export default function ActivityPage() {
         <div className={styles["content-section"]}>
           <h2>Content</h2>
           <div className={styles["content-grid"]}>
-            {/* General Content */}
+            {/* General Content - Open for everyone */}
             <div className={styles["content-card"]}>
-              <CardImage src={ImgGeneralContent} alt="General content" />
+              <div className={styles["image-container"]}>
+                <CardImage src={ImgGeneralContent} alt="General content" />
+              </div>
               <h4>General Content</h4>
               <p>Articles, tips, lessons</p>
-              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'default' } })}>Browse</button>
+              <button 
+                className={styles["explore-btn"]} 
+                onClick={() => navigate('/more-content', { 
+                  state: { variant: userType === 'Free' ? 'default' : 'pro' } 
+                })}
+              >
+                Browse
+              </button>
             </div>
 
-            {/* Pro Content */}
+            {/* Pro Content - Restricted for Free */}
             <div className={styles["content-card"]}>
-              <CardImage src={ImgProContent} alt="Pro content" />
+              <div className={styles["image-container"]}>
+                <CardImage src={ImgProContent} alt="Pro content" />
+                {isProContentLocked && (
+                  <>
+                    <img src={LockOverlay1} className={styles["lock-overlay-active"]} alt="Locked" />
+                    <img src={LockOverlay2} className={styles["lock-overlay-hover"]} alt="Unlock" />
+                  </>
+                )}
+              </div>
               <h4>Pro Content</h4>
               <p>Personalized routines, live videos</p>
-              <button className={styles["explore-btn"]} onClick={() => navigate('/routine')}>Explore</button>
+              <button 
+                className={`${styles["explore-btn"]} ${isProContentLocked ? styles["locked-btn"] : ""}`} 
+                onClick={() => isProContentLocked ? handleRestrictedClick('Pro') : navigate('/routine')}
+              >
+                Explore
+              </button>
             </div>
 
-            {/* Elite Content */}
+            {/* Elite Content - Restricted for Free & Pro */}
             <div className={styles["content-card"]}>
-              <CardImage src={ImgEliteContent} alt="Elite content" />
+              <div className={styles["image-container"]}>
+                <CardImage src={ImgEliteContent} alt="Elite content" />
+                {isEliteContentLocked && (
+                  <>
+                    <img src={LockOverlay1} className={styles["lock-overlay-active"]} alt="Locked" />
+                    <img src={LockOverlay2} className={styles["lock-overlay-hover"]} alt="Unlock" />
+                  </>
+                )}
+              </div>
               <h4>Elite Content</h4>
               <p>Personal calls, Creator videos</p>
-              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'elite' } })}>Explore</button>
+              <button 
+                className={`${styles["explore-btn"]} ${isEliteContentLocked ? styles["locked-btn"] : ""}`} 
+                onClick={() => isEliteContentLocked ? handleRestrictedClick('Elite') : navigate('/more-content', { state: { variant: 'elite' } })}
+              >
+                Explore
+              </button>
             </div>
 
-            {/* Daily Quote */}
+            {/* Daily Quote - Restricted for Free */}
             <div className={styles["content-card"]}>
-              <CardImage src={ImgDailyQuotes} alt="Daily quotes" />
+              <div className={styles["image-container"]}>
+                <CardImage src={ImgDailyQuotes} alt="Daily quotes" />
+                {isQuoteLocked && (
+                  <>
+                    <img src={LockOverlay1} className={styles["lock-overlay-active"]} alt="Locked" />
+                    <img src={LockOverlay2} className={styles["lock-overlay-hover"]} alt="Unlock" />
+                  </>
+                )}
+              </div>
               <h4>Daily Quote</h4>
               <p>
                 oh ! have a look : {" "}
@@ -933,11 +1027,23 @@ export default function ActivityPage() {
                   <span className={styles["activity-quote-fallback"]}>"No quote for today"</span>
                 )}
               </p>
-              <button className={styles["explore-btn"]} onClick={() => navigate('/more-content', { state: { variant: 'pro' } })}>More Quotes</button>
+              <button 
+                className={`${styles["explore-btn"]} ${isQuoteLocked ? styles["locked-btn"] : ""}`} 
+                onClick={() => isQuoteLocked ? handleRestrictedClick('Pro') : navigate('/more-content', { state: { variant: 'pro', openQuotes: true } })}
+              >
+                More Quotes
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Upgrade Popup */}
+      <UpgradePopup 
+        show={upgradePopupData.show} 
+        onClose={() => setUpgradePopupData({ ...upgradePopupData, show: false })} 
+        requiredPlan={upgradePopupData.requiredPlan} 
+      />
 
       {/* Fap Popup */}
       {showFapPopup && (
