@@ -10,62 +10,104 @@ import { ProcessHealth } from '../services/llmService';
 const QUESTIONS = [
   {
     id: 1,
-    question: "How often do you feel the urge to masturbate?",
+    question: "What made you join this platform today?",
     options: [
-      "Multiple times a day",
-      "Once a day",
-      "Few times a week",
-      "Once a week",
-      "Rarely"
+      "Quit masturbation",
+      "Reduce frequency",
+      "Improve focus",
+      "Improve confidence",
+      "Improve energy/health"
     ]
   },
   {
     id: 2,
-    question: "How long have you been trying to quit or reduce this habit?",
+    question: "How long have you been struggling with this habit?",
     options: [
       "Just started",
-      "Less than a month",
-      "1-3 months",
-      "3-6 months",
-      "More than 6 months"
+      "3-12 months",
+      "1-3 years",
+      "More than 3 years",
     ]
   },
   {
     id: 3,
-    question: "What triggers your urge the most?",
+    question: "3. What triggers you the most?",
     options: [
-      "Stress or anxiety",
       "Boredom",
-      "Social media/Internet",
-      "Being alone",
-      "Other"
+      "Stress",
+      "Loneliness",
+      "Late-night phone usage",
+      "Instagram/Reels",
+      "No routine / too much free time"
     ]
   },
   {
     id: 4,
-    question: "What is your primary motivation for change?",
+    question: "4. When do you experience the strongest urges?",
     options: [
-      "Improve mental health",
-      "Better relationships",
-      "Religious/Spiritual reasons",
-      "Increase productivity",
-      "Build self-discipline",
-      "Improve mental health",
-      "Better relationships",
-      "Religious/Spiritual reasons",
-      "Increase productivity",
-      "Build self-discipline"
+      "Early morning",
+      "Afternoon",
+      "Night",
+      "Late night",
     ]
   },
   {
     id: 5,
-    question: "How would you rate your current self-control?",
+    question: "5. How many hours do you sleep daily?",
     options: [
-      "Very low",
-      "Low",
-      "Moderate",
-      "Good",
-      "Excellent"
+      "Less than 6 hours",
+      "6-7 hours",
+      "7-8 hours",
+      "More than 8 hours",
+    ]
+  },
+  {
+    id: 6,
+    question : "6. How often do you exercise?",
+    options: [
+      "Daily",
+      "3-5 days/week",
+      "1-2 days/week",
+      "I don't exercise"
+    ]
+  },
+  {
+    id: 7,
+    question: "7. How would you rate your current lifestyle?",
+    options: [
+      "Healthy",
+      "Average",
+      "Poor / No discipline"
+    ]
+  },
+  {
+    id: 8,
+    question: "8. How serious are you about fixing this habit? (1-10)",
+    options: [
+      "1-3",
+      "4-6",
+      "7-8",
+      "9-10"
+    ]
+  },
+  {
+    id: 9,
+    question: "9. What type of support do you want from this platform?",
+    options: [
+      "Daily motivation",
+      "Science-based guidance",
+      "Routine + daily tasks",
+      "Community support",
+      "All of the above"
+    ]
+  },
+  {
+    id: 10,
+    question: "10. Do you want exclusive Food & Lifestyle Tips that reduce urges naturally?",
+    options: [
+      "Yes, definitely",
+      "Not right now",
+      "Maybe later"
     ]
   }
 ];

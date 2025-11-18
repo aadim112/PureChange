@@ -6,205 +6,221 @@
     align-items: center;
     background-color: #FBF8FF;
 }
-.profileContainer{
-    width: 100%;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    padding: 30px;
-    align-items: center;
-}
+
 .profilepanelContainer{
     display: flex;
     align-self: center;
     justify-content: center;
     width: 100%;
 }
+
 .profilepanel{
     width: 80%;
-    height: 150px;
     border-radius: 8px;
     box-shadow: 0px 2px 4px #00000040;
-    display: flex; 
-    align-items: center;
-    justify-content: space-evenly;
-    padding: 10px;
+    padding: 30px 20px;
     margin-top: 15px;
     background-color: white;
+    
+    /* Grid Layout */
+    display: grid;
+    grid-template-columns: auto auto 1fr 1fr 1fr;
+    grid-template-areas: "avatar info extra actionButtons actions";
+    gap: 30px;
+    align-items: center;
 }
+
 .profilePic{
-    width: clamp(100px, 100px, 100px);   /* minimum 80px, preferred 15vw, max 150px */
-    height: clamp(100px, 100px, 100px);
+    grid-area: avatar;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background-color: #F3EAFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 30px;
     color: #9240FF;
+    flex-shrink: 0;
 }
+
 .profilePic img{
-    width: clamp(100px, 100px, 100px);   /* minimum 80px, preferred 15vw, max 150px */
-    height: clamp(100px, 100px, 100px);
-    border-radius: 50%;
-}
-.OverviewInformation{
-    width: 200px;
+    width: 100px;
     height: 100px;
-    margin-left: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.OverviewInformation{
+    grid-area: info;
+    min-width: 200px;
     font-size: 14px;
-    justify-content: center;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    gap: 5px;
 }
+
 .seperator{
+    grid-area: separator;
     width: 1px;
     height: 100px;
     background-color: #9240FF;
+    justify-self: center;
 }
+
 .extraInformation{
-    width: 300px;
-    height: 100px;
-    margin-left: 10px;
+    grid-area: extra;
+    min-width: 250px;
     font-size: 12px;
-    justify-content: center;
     display: flex;
     flex-direction: column;
+    gap: 8px;
 }
+
 .userPlanSection{
-    width: 250px;
-    height: 100px;
-    margin-left: 1%;
+    grid-area: auto;
+    min-width: 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 10px;
     color: var(--color-text-primary);
     font-weight: 600;
     font-size: 16px;
 }
+
 .userPlan{
     font-size: 14px;
     font-weight: 500;
-    margin-top: 5px;
     color: var(--color-text-tertiary-dark);
 }
+
 .upgradeButton {
-  padding: 8px 14px;
-  background: linear-gradient(135deg, #9240FF 0%, #7c3aed 100%);
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(146, 64, 255, 0.3);
-  margin-top: 5px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #9240FF 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(146, 64, 255, 0.3);
 }
 
 .upgradeButton:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  box-shadow: 0 4px 12px rgba(146, 64, 255, 0.4);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    box-shadow: 0 4px 12px rgba(146, 64, 255, 0.4);
 }
 
 .upgradeButton:active {
-  box-shadow: 0 2px 6px rgba(146, 64, 255, 0.3);
+    box-shadow: 0 2px 6px rgba(146, 64, 255, 0.3);
 }
+
 .actionButtons{
-    width: auto;
-    height: 100px;
-    margin-left: 30px;
-    font-size: 14px;
-    justify-content: center;
+    grid-area: actions;
     display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: column;
-    cursor: pointer;
     gap: 10px;
 }
+
 .actionButtons button{
-    width:100px;
-    border:0px;
-    padding:8px;
-    border-radius:20px;
-    color:white;
-    font-weight:500;
-    cursor:pointer;
+    width: 100px;
+    border: 0;
+    padding: 8px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
+
+.actionButtons button:hover{
+    opacity: 0.9;
+}
+
 .OtherDetails{
     width: 80%;
     height: auto;
     display: flex;
-    align-items: self-start;
+    align-items: flex-start;
     justify-content: space-between;
     margin-top: 40px;
+    gap: 20px;
 }
+
 .DailyInformationContainer{
     width: 50%;
     height: auto;
 }
+
 .AnalyticsContainer{
     width: 50%;
     height: auto;
 }
+
 .streakHistory{
-    width: 95%;
+    width: 100%;
     height: auto;
     border-radius: 22px;
     box-shadow: 0px 2px 4px #00000040;
     background-color: white;
     padding: 15px;
 }
+
 .streakHistory h2{
     font-weight: 600;
     font-size: 18px;
 }
+
 .Achievements{
-    width: 95%;
+    width: 100%;
     height: auto;
     border-radius: 22px;
     box-shadow: 0px 2px 4px #00000040;
     margin-top: 15px;
     background-color: white;
     padding: 15px;
-    height: auto;
 }
+
 .Achievements h2{
     font-weight: 600;
     font-size: 18px;
 }
+
 .Analytics{
-    width: 100;
+    width: 100%;
     height: auto;
     border-radius: 22px;
     box-shadow: 0px 2px 4px #00000040;
     background-color: white;
     padding: 15px;
 }
+
 .Analytics h2{
     font-weight: 600;
     font-size: 18px;
 }
+
 .streakHolderContainer {
-  display: grid;
-  grid-template-columns: repeat(3, auto); /* 2 columns */
-  grid-template-rows: repeat(2, auto);    /* 3 rows */
-  column-gap: 5px;
-  row-gap: 5px;
-  margin-top: 10px;
-  margin-left: 10px;
-  overflow-x: scroll;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
 }
-.streakHolderContainer::-webkit-scrollbar{
-    display: none;
-}
+
 .streakHolder {
-  width: 170px;
-  height: 100px;
-  border: 1.5px solid #DFE6EE;
-  border-radius: 15px;
-  padding: 10px;
+    width: 100%;
+    min-height: 100px;
+    border: 1.5px solid #DFE6EE;
+    border-radius: 15px;
+    padding: 10px;
 }   
+
 .StreakHolderheader{
     width: 100%;
     height: auto;
@@ -213,197 +229,286 @@
     gap: 10px;
     font-weight: 600;
 }
+
 .StreakHolderInfo{
     font-size: 14px;
     margin-top: 10px;
     margin-left: 10px;
 }
+
 .AchievementHolder{
-    display: grid;
-    column-gap: 5px;
-    row-gap: 5px;
-    grid-template-columns: repeat(5, auto); /* 2 columns */
-    grid-template-rows: repeat(2, auto);    /* 3 rows */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
     margin-top: 10px;
-    margin-left: 10px;
-    overflow-x: scroll;
 }
-.AchievementHolder::-webkit-scrollbar{
-    display: none;
-}
+
 .badge{
-    margin-top: 10px;
-    width: 100px;
+    width: 100%;
     height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
+
+.badgeContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    align-items: center;
+    justify-items: center;
+}
+
+.badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.badgeImage {
+    width: 70px;
+    height: 70px;
+    transition: transform 0.25s ease;
+}
+
+.badgeImage:hover {
+    transform: scale(1.1);
+}
+
+.badgePlaceholder {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.badgeName {
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.noBadgeText {
+    font-size: 1rem;
+    color: #aaa;
+}
+
 .fitScoreContainer{
     width: 100%;
     height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 15px;
 }
+
 .fitScore{
     width: 85%;
-    height: 200px;
+    min-height: 200px;
     margin-top: 20px;
-    border: 1.5px solid #DFE6EE;
     border-radius: 18px;
     padding: 20px;
     display: flex;
     justify-content: space-between;
+    gap: 20px;
 }
+
 .fitPlot{
     width: 200px;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
 }
+
 .scoreGraph{
     width: 100px;
-    height: 150px;
+    height: 100px;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
+
 .fitSummary{
-    width: 200px;
+    flex: 1;
+    min-width: 200px;
     height: 100%;
-    background-color: #F3EAFF;
+    min-height: 150px;
     border-radius: 8px;
 }
 
 .circular-score {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.circle {
-  transform: rotate(-90deg);
-}
-
-.bg {
-  stroke: #e6e6e6;
-}
-
-.progress {
-  stroke: #9240FF;
-  transition: stroke-dashoffset 0.5s ease;
-}
-
-.text {
-  font-size: 10px;
-  fill: #333;
-  transform: rotate(90deg);
-}
-
-.badgeContainer {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
 }
 
-.badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+.circle {
+    transform: rotate(-90deg);
 }
 
-.badgeImage {
-  width: 70px;
-  height: 70px;
-  transition: transform 0.25s ease;
+.bg {
+    stroke: #e6e6e6;
 }
 
-.badgeImage:hover {
-  transform: scale(1.1);
+.progress {
+    stroke: #9240FF;
+    transition: stroke-dashoffset 0.5s ease;
 }
 
-.badgeName {
-  margin-top: 0.4rem;
-  font-size: 0.9rem;
-  color: #444;
+.text {
+    font-size: 10px;
+    fill: #333;
+    transform: rotate(90deg);
 }
 
-.noBadgeText {
-  font-size: 1rem;
-  color: #aaa;
-}
-
-@media screen and (max-width: 500px) {
+/* Tablet Responsive - 768px to 1024px */
+@media screen and (max-width: 1024px) {
     .profilepanel{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: auto;
-        padding: 20px;
+        grid-template-columns: auto 1fr;
+        grid-template-areas: 
+            "avatar info"
+            "extra extra"
+            "plan actions";
+        gap: 20px;
+        padding: 25px 20px;
     }
+    
     .seperator{
-        width: 80%;
-        height: 2px;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        width: 100%;
+        height: 1px;
     }
-    .OtherDetails{
-        display: block;
-    }
-    .profilePic{
-        margin-top: 10px;
-        margin-left: 0px;
-    }
-    .OverviewInformation{
-        margin-left: 0px;
-    }
+    
     .extraInformation{
-        margin-left: 0px;
-        padding-left: 30pxA;
+        min-width: auto;
     }
+    
     .userPlanSection{
-        margin-left: 0px;
+        min-width: auto;
     }
-    .DailyInformationContainer{
-        width: 100%;
-    }
-    .streakHistory{
-        width: auto;
-        height: auto;
-    }
-    .streakHolderContainer{
-        grid-template-columns: repeat(2, auto); /* 2 columns */
-        grid-template-rows: repeat(3, auto);    /* 3 rows */
-    }
+    
     .actionButtons{
-        display: flex;
         flex-direction: row;
-        margin-left: 0px;
-        height: 40px;
-        justify-content: left;
+        justify-content: center;
     }
-    .streakHolder{
-        width: 130px;
+    
+    .OtherDetails{
+        flex-direction: column;
+        gap: 20px;
     }
-    .Achievements{
-        width: 100%;
-        margin-top: 10px;
-    }
+    
+    .DailyInformationContainer,
     .AnalyticsContainer{
-        margin-top: 30px;
         width: 100%;
     }
-    .AchievementHolder{
-        grid-template-columns: repeat(2, auto); /* 2 columns */
-        grid-template-rows: repeat(2, auto);    /* 3 rows */
+}
+
+/* Mobile Responsive - Below 768px */
+@media screen and (max-width: 768px) {
+    .profilepanelContainer{
+        width: 95%;
     }
+    
+    .profilepanel{
+        width: 100%;
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "avatar info"
+            "extra"
+            "plan"
+            "actions";
+        gap: 15px;
+        padding: 20px 15px;
+        text-align: center;
+    }
+    
+    .profilePic{
+        justify-self: center;
+    }
+    
+    .OverviewInformation{
+        align-items: left;
+        text-align: left;
+        min-width: auto;
+        margin-right: 20px  ;
+    }
+    
+    .seperator{
+        display: none;
+    }
+    
+    .extraInformation{
+        align-items: flex-start;
+        text-align: left;
+        min-width: auto;
+    }
+    
+    .extraInformation span{
+        flex-wrap: wrap;
+    }
+    
+    .userPlanSection{
+        min-width: auto;
+    }
+    
+    .actionButtons{
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .OtherDetails{
+        width: 95%;
+        flex-direction: column;
+    }
+    
+    .DailyInformationContainer,
+    .AnalyticsContainer{
+        width: 100%;
+    }
+    
+    .streakHolderContainer{
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .AchievementHolder{
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+    }
+    
     .fitScore{
-        height: auto;
+        width: 95%;
         flex-direction: column;
         align-items: center;
     }
+    
+    .fitPlot{
+        width: 100%;
+    }
+    
     .fitSummary{
         width: 100%;
+        min-width: auto;
         height: 200px;
+    }
+}
+
+/* Small Mobile - Below 500px */
+@media screen and (max-width: 500px) {
+    .streakHolderContainer{
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    
+    .streakHolder{
+        min-height: 90px;
+    }
+    
+    .actionButtons button{
+        width: 90px;
+        font-size: 13px;
     }
 }
