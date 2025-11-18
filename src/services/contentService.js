@@ -10,29 +10,48 @@ export async function getDailyData(userId) {
 }
 
 export async function initDailyDataIfMissing(userId, defaultChecklist) {
-  if (!userId) return;
+  if (!userId) return {};
 
   const pathRef = ref(db, dailyPath(userId));
   const snap = await get(pathRef);
   const today = new Date().toDateString();
 
+  // If dailyData doesn't exist at all, create initial structure
   if (!snap.exists()) {
-    return;
+    const initialData = {
+      lastChecklistUpdateDate: today,
+      dailyChecklist: defaultChecklist,
+      lastDailyTaskIds: [],
+      fapLastAskedDate: null,
+      fapLastAskedTimeTag: null,
+      lastNFUpdateDate: null,
+      lastDTUpdateDate: null,
+      planExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toDateString()
+    };
+    
+    await set(pathRef, initialData);
+    console.log("✅ Created initial dailyData structure");
+    return initialData;
   }
 
   const data = snap.val();
 
+  // Check if it's a new day - if yes, update the checklist
   if (data.lastChecklistUpdateDate !== today) {
+    console.log("🔄 New day detected - updating checklist");
+    
     const updatedData = {
       ...data,
       lastChecklistUpdateDate: today,
-      dailyChecklist: defaultChecklist || data.dailyChecklist,
+      dailyChecklist: defaultChecklist, // Use the fresh checklist built for today
     };
 
     await update(pathRef, updatedData);
+    console.log("✅ Checklist updated for new day:", today);
     return updatedData;
   }
 
+  console.log("ℹ️ Same day - returning existing checklist");
   return data;
 }
 
@@ -70,13 +89,19 @@ export async function buildDailyChecklistForUser(userId) {
     const userSnap = await get(userRef);
     const userDaily = userSnap && userSnap.exists() ? userSnap.val() : {};
 
+    // Only return existing checklist if it's from today
     if (userDaily.lastChecklistUpdateDate === today && userDaily.dailyChecklist) {
+      console.log("ℹ️ Returning today's existing checklist");
       return userDaily.dailyChecklist;
     }
 
+    console.log("🔨 Building fresh checklist for today");
+
+    // Fetch the pool of available tasks
     const poolRef = ref(db, tasksPoolRefPath);
     const poolSnap = await get(poolRef);
     const pool = [];
+    
     if (poolSnap && poolSnap.exists()) {
       const raw = poolSnap.val();
       Object.entries(raw).forEach(([id, obj]) => {
@@ -91,80 +116,75 @@ export async function buildDailyChecklistForUser(userId) {
       });
     }
 
-    const findByPrefix = (prefixList) => {
+    // Get previously used task IDs to avoid immediate repetition
+    const prevIds = Array.isArray(userDaily.lastDailyTaskIds) ? userDaily.lastDailyTaskIds : [];
+
+    // Helper to find tasks by prefix, avoiding previous IDs if possible
+    const findByPrefix = (prefixList, avoidIds = []) => {
       if (!pool.length) return null;
       const lowered = prefixList.map(p => String(p).toLowerCase());
-      const found = pool.find(p => p.prefix && lowered.includes(p.prefix.toLowerCase()));
+      
+      // First try: match prefix AND avoid previous IDs
+      let found = pool.find(p => 
+        p.prefix && 
+        lowered.includes(p.prefix.toLowerCase()) &&
+        !avoidIds.includes(p.id)
+      );
+      
+      // If no new task found, allow repeating but still match prefix
+      if (!found) {
+        found = pool.find(p => p.prefix && lowered.includes(p.prefix.toLowerCase()));
+      }
+      
       return found || null;
     };
 
-    const yogaPrefixes = [
-      "Yoga", "yoga", "YOGA",
-      "Yoga ", " Yoga",
-      "Yoga-", "Yoga_",
-      "Yoga Routine", "YogaRoutine", "Yoga_Routine"
-    ];
+    const yogaPrefixes = ["Yoga", "yoga", "YOGA", "Yoga Routine", "YogaRoutine"];
+    const waterPrefixes = ["Water", "water", "Drink Water", "Water Intake"];
+    const morningPrefixes = ["Morning Routine", "Morning", "Exercise", "Morning Exercise"];
+    const daytimePrefixes = ["Daytime Routine", "Daytime", "Routine", "Daily Routine"];
+    const wakeupPrefixes = ["Wakeup", "Wake Up", "Wakeup Time", "Wake Time"];
 
-    const waterPrefixes = [
-      "Water", "water", "WATER",
-      "Water ", " Water",
-      "Water-", "Water_",
-      "Drink Water", "drink water",
-      "Water Intake", "WaterIntake"
-    ];
-
-    const morningPrefixes = [
-      "Morning Routine", "morning routine", "MORNING ROUTINE",
-      "Morning", "morning",
-      "MorningRoutine", "Morning_Routine",
-      "Exercise", "exercise",
-      "Morning Exercise", "MorningExercise"
-    ];
-
-    const daytimePrefixes = [
-      "Daytime Routine", "daytime routine", "DAYTIME ROUTINE",
-      "Daytime", "daytime",
-      "Routine", "routine",
-      "DaytimeRoutine", "Daytime_Routine",
-      "Daily Routine", "daily routine"
-    ];
-
-    const wakeupPrefixes = [
-      "Wakeup", "wakeup", "WAKEUP",
-      "Wake Up", "wake up", "WAKE UP",
-      "Wakeup Time", "WakeUpTime", "Wakeup_Time",
-      "Wake Time", "wake time"
-    ];
-
-    const prevIds = Array.isArray(userDaily.lastDailyTaskIds) ? userDaily.lastDailyTaskIds : [];
-
+    // Create dummy entries if needed
     const ensureCandidateFor = async (prefixVariants, dummyPrefixLabel) => {
-      const cand = pool.find(p => p.prefix && prefixVariants.some(pref => p.prefix.toLowerCase() === String(pref).toLowerCase()));
+      const cand = findByPrefix(prefixVariants, prevIds);
       if (cand) return cand;
+      
+      // Create dummy if no candidate exists
       const dummyContent = `${prefixVariants[0]}: ${dummyPrefixLabel}`;
       try {
         const newRef = push(ref(db, tasksPoolRefPath));
         await set(newRef, { actual_content: dummyContent });
         const newId = newRef.key;
-        const created = { id: newId, rawText: dummyContent, prefix: prefixVariants[0], textAfter: dummyPrefixLabel };
+        const created = { 
+          id: newId, 
+          rawText: dummyContent, 
+          prefix: prefixVariants[0], 
+          textAfter: dummyPrefixLabel 
+        };
         pool.push(created);
+        console.log(`✅ Created dummy task: ${prefixVariants[0]}`);
         return created;
       } catch (err) {
-        console.warn("buildDailyChecklistForUser: failed creating dummy entry", err);
+        console.warn("Failed creating dummy entry", err);
         return null;
       }
     };
 
-    const yogaCandidate = await ensureCandidateFor(["Yoga"], "Dummy Yoga.");
-    const waterCandidate = await ensureCandidateFor(["Water"], "Dummy Water.");
-    const morningCandidate = await ensureCandidateFor(["Morning Routine", "Morning"], "Dummy Morning Routine.");
-    const daytimeCandidate = await ensureCandidateFor(["Daytime Routine", "Daytime", "Routine"], "Dummy Daytime Routine.");
-    const wakeupCandidate = await ensureCandidateFor(["Wakeup", "Wake Up", "Wakeup Time"], "Dummy Wakeup Time.");
+    // Find or create candidates for each category
+    const yogaCandidate = await ensureCandidateFor(yogaPrefixes, "Complete your yoga session");
+    const waterCandidate = await ensureCandidateFor(waterPrefixes, "Drink 8 glasses of water");
+    const morningCandidate = await ensureCandidateFor(morningPrefixes, "Complete morning exercise");
+    const daytimeCandidate = await ensureCandidateFor(daytimePrefixes, "Follow your daily routine");
+    const wakeupCandidate = await ensureCandidateFor(wakeupPrefixes, "Wake up at scheduled time");
 
+    // Fallback to dummy if any candidate is missing
     if (!yogaCandidate || !waterCandidate || !morningCandidate || !daytimeCandidate || !wakeupCandidate) {
+      console.warn("⚠️ Some candidates missing, using dummy checklist");
       return dummyChecklist;
     }
 
+    // Build the fresh checklist for today
     const checklist = {
       yoga: [false, yogaCandidate.textAfter],
       drinkWater: [false, waterCandidate.textAfter],
@@ -173,16 +193,24 @@ export async function buildDailyChecklistForUser(userId) {
       wakeupTime: [false, wakeupCandidate.textAfter]
     };
 
+    // Persist the new checklist with today's date
     const toPersist = {
       lastChecklistUpdateDate: today,
-      lastDailyTaskIds: [yogaCandidate.id, waterCandidate.id, morningCandidate.id, daytimeCandidate.id, wakeupCandidate.id],
+      lastDailyTaskIds: [
+        yogaCandidate.id, 
+        waterCandidate.id, 
+        morningCandidate.id, 
+        daytimeCandidate.id, 
+        wakeupCandidate.id
+      ],
       dailyChecklist: checklist
     };
 
     try {
       await update(userRef, toPersist);
+      console.log("✅ Fresh checklist persisted for:", today);
     } catch (err) {
-      console.warn("buildDailyChecklistForUser: failed to persist user dailyData", err);
+      console.warn("Failed to persist checklist", err);
     }
 
     return checklist;
@@ -191,6 +219,8 @@ export async function buildDailyChecklistForUser(userId) {
     return dummyChecklist;
   }
 }
+
+// ... rest of your existing functions remain unchanged ...
 
 export async function getUserVerseState(userId) {
   const snap = await get(ref(db, dailyPath(userId)));
