@@ -33,7 +33,7 @@ const referralRules = [
     title: "Payment",
     short: "Payout to your bank/UPI",
     details:
-      "Earnings are paid directly to your bank account or UPI within 48 hours after the referred user’s successful purchase."
+      "Earnings are paid directly to your bank account or UPI within 48 hours after the referred user's successful purchase."
   },
   {
     id: "payoutDetails",
@@ -54,7 +54,7 @@ const referralRules = [
     title: "Important Notes",
     short: "Revoking deletes a code",
     details:
-      "Revoking a code permanently deletes it. Referrals after a code’s expiry or after revocation do not count. " +
+      "Revoking a code permanently deletes it. Referrals after a code's expiry or after revocation do not count. " +
       "Only purchases made after joining with your code qualify."
   }
 ];
@@ -149,12 +149,37 @@ export async function fetchReferralInfo(userId) {
   const userVal = userSnap && userSnap.exists() ? userSnap.val() : {};
 
   const referral = userVal.referral || null;
-  let joined = [];
-  if (referral && referral.code) {
+  
+  // Keep joined as an object (not array)
+  let joined = {};
+  
+  // First try to get joined from the user's own node (your current structure)
+  if (userVal.joined && typeof userVal.joined === 'object') {
+    const j = userVal.joined;
+    // Ensure joined is a clean object with only uid -> name mappings
+    Object.entries(j).forEach(([uid, value]) => {
+      if (typeof value === 'string') {
+        joined[uid] = value;
+      } else if (value && typeof value === 'object' && value.name) {
+        // If stored as {name: "Name"}, extract just the name
+        joined[uid] = value.name;
+      }
+    });
+  }
+  // Fallback: try to get from content/referrals if code exists
+  else if (referral && referral.code) {
     const joinedSnap = await get(ref(db, `content/referrals/${referral.code}/joined`));
     if (joinedSnap && joinedSnap.exists()) {
       const j = joinedSnap.val();
-      joined = Object.entries(j).map(([uid, data]) => ({ uid, ...data }));
+      if (j && typeof j === 'object') {
+        Object.entries(j).forEach(([uid, value]) => {
+          if (typeof value === 'string') {
+            joined[uid] = value;
+          } else if (value && typeof value === 'object' && value.name) {
+            joined[uid] = value.name;
+          }
+        });
+      }
     }
   }
 
@@ -168,7 +193,13 @@ export async function fetchReferralInfo(userId) {
 
   const bank_details = (userVal.bank_details) ? userVal.bank_details : null;
 
-  return { referral, joined, transactions, bank_details, basicUser: { Name: userVal.Name, UserName: userVal.UserName } };
+  return { 
+    referral, 
+    joined, // Now returns object instead of array
+    transactions, 
+    bank_details, 
+    basicUser: { Name: userVal.Name, UserName: userVal.UserName } 
+  };
 }
 
 /**

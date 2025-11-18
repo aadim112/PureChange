@@ -1,16 +1,23 @@
+// Load environment variables from .env when present
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
 const app = express();
 
 // More permissive CORS for production
+// Configure CORS: allow the frontend origin in development and respect FRONTEND_URL in production.
+const allowedOrigin = process.env.NODE_ENV === 'production'
+  ? (process.env.FRONTEND_URL || '*')
+  : 'http://localhost:5000';
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL || '*'] 
-    : '*',
-  credentials: true,
+  origin: allowedOrigin,
+  // This API doesn't rely on cookies; disable credentials to avoid wildcard-origin conflicts.
+  credentials: false,
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200,
 }));
 
 app.use(express.json());
@@ -35,6 +42,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+
+
 // Create order endpoint
 app.post("/api/create-order", async (req, res) => {
   try {
@@ -50,6 +59,7 @@ app.post("/api/create-order", async (req, res) => {
         hasSecret: !!process.env.RAZORPAY_SECRET
       });
     }
+  
 
     // Import Razorpay
     const Razorpay = require('razorpay');
@@ -92,9 +102,10 @@ app.post("/api/create-order", async (req, res) => {
   }
 });
 
-// Catch-all for API routes
-app.all('/api/*', (req, res) => {
-  res.status(404).json({ 
+// Catch-all for API routes (compatible with path-to-regexp v6+)
+// Generic 404 for any /api/* routes not handled above
+app.use('/api', (req, res) => {
+  res.status(404).json({
     error: 'API endpoint not found',
     path: req.path,
     method: req.method
