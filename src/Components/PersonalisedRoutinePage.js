@@ -23,6 +23,7 @@ export default function PersonalisedRoutinePage() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [dailyData, setDailyData] = useState(null); // holds persisted per-day choices
   const [error, setError] = useState(null);
+  const weekDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
   const todayName = useMemo(() => dayjs().format('dddd'), []); // e.g., "Monday"
   const todayDateKey = useMemo(() => dayjs().format('YYYY-MM-DD'), []);
@@ -304,7 +305,7 @@ export default function PersonalisedRoutinePage() {
                 <thead>
                   <tr>
                     <th>Time</th>
-                    {Object.keys(weeklyRoutine.week || {}).map(day => <th key={day}>{day}</th>)}
+                    {weekDays.map(day => <th key={day}>{day}</th>)}
                   </tr>
                 </thead>
                 <tbody>
@@ -312,8 +313,8 @@ export default function PersonalisedRoutinePage() {
                   {generateTimeRows(weeklyRoutine.week).map((timeRow, rIdx) => (
                     <tr key={rIdx}>
                       <td className={styles["time-col"]}>{timeRow}</td>
-                      {Object.keys(weeklyRoutine.week || {}).map(day => {
-                        const item = (weeklyRoutine.week[day] || []).find(s => s.time === timeRow);
+                      {weekDays.map(day => {
+                        const item = (weeklyRoutine.week && weeklyRoutine.week[day]) ? (weeklyRoutine.week[day].find(s => s.time === timeRow)) : null;
                         return <td key={day + '-' + timeRow}>{item ? item.activity : ''}</td>;
                       })}
                     </tr>
@@ -329,12 +330,17 @@ export default function PersonalisedRoutinePage() {
                   <tr><th>Day</th><th>Diet Plan</th></tr>
                 </thead>
                 <tbody>
-                  {Object.entries(weeklyRoutine.weeklyDiet || {}).map(([day, diet]) => (
-                    <tr key={day}>
-                      <td>{day}</td>
-                      <td>{diet}</td>
-                    </tr>
-                  ))}
+                  {weekDays.map((day) => {
+                    const diet = (weeklyRoutine.weeklyDiet && weeklyRoutine.weeklyDiet[day]) ? weeklyRoutine.weeklyDiet[day] : '';
+                    return (
+                      <tr key={day}>
+                        <td>{day}</td>
+                        <td className={styles['diet-td']}>
+                          {diet} 
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -349,17 +355,53 @@ export default function PersonalisedRoutinePage() {
 }
 
 /* Helper: from week object produce a sorted array of unique times across days */
+/* Helper: from week object produce a sorted array of unique times across days
+   — sorts by actual time of day (minutes), supports "hh:mm AM/PM" formats */
 function generateTimeRows(weekObj = {}) {
-  const times = new Set();
+  const timesMap = new Map(); // preserve one canonical string per time (first-seen)
   Object.values(weekObj).forEach(dayArr => {
     if (Array.isArray(dayArr)) {
       dayArr.forEach(slot => {
-        if (slot && slot.time) times.add(slot.time);
+        if (slot && slot.time) {
+          const t = String(slot.time).trim();
+          // normalize multiple whitespace
+          const norm = t.replace(/\s+/g, ' ');
+          // If not already present, store it
+          if (!timesMap.has(norm)) timesMap.set(norm, norm);
+        }
       });
     }
   });
-  // sort times in HH:mm format
-  const arr = Array.from(times);
-  arr.sort((a, b) => a.localeCompare(b, undefined, { numeric: false, sensitivity: 'base' }));
-  return arr;
+
+  // parse "hh:mm AM/PM" to minutes since midnight
+  function parseToMinutes(t) {
+    if (!t || typeof t !== 'string') return Number.POSITIVE_INFINITY;
+    const s = t.trim().toUpperCase();
+    // Try to match patterns like "06:30 AM", "6:30 AM", "12:00 PM"
+    const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) {
+      // try fallback: "HH:MM" 24h format
+      const m2 = s.match(/^(\d{1,2}):(\d{2})$/);
+      if (!m2) return Number.POSITIVE_INFINITY;
+      const hh = parseInt(m2[1], 10);
+      const mm = parseInt(m2[2], 10);
+      return hh * 60 + mm;
+    }
+    let hh = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    const ampm = m[3];
+    if (ampm === 'AM') {
+      if (hh === 12) hh = 0;
+    } else { // PM
+      if (hh !== 12) hh = hh + 12;
+    }
+    return hh * 60 + mm;
+  }
+
+  // Build array of { timeString, minutes } and sort by minutes
+  const arr = Array.from(timesMap.values()).map(ts => ({ time: ts, minutes: parseToMinutes(ts) }));
+  arr.sort((a, b) => a.minutes - b.minutes || a.time.localeCompare(b.time));
+
+  // return sorted time strings
+  return arr.map(x => x.time);
 }

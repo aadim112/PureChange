@@ -142,6 +142,10 @@
   padding: 20px;
 }
 
+.modal-content::-webkit-scrollbar {
+  display: none;
+}
+
 .modal-content {
   width: min(1000px, 98%);
   max-height: 90vh;
