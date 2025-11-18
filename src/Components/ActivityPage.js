@@ -145,7 +145,7 @@ const ReferralPopup = memo(function ReferralPopup({
   if (!show) return null;
 
   const referral = referralData?.referral || null;
-  const joined = referralData?.joined || [];
+  const joined = referralData?.joined || {};
   const transactions = referralData?.transactions || [];
 
   return (
@@ -187,36 +187,7 @@ const ReferralPopup = memo(function ReferralPopup({
                 </ol>
               </div>
 
-              <div className={styles["refer-section"]}>
-                <label className={styles["label"]}>Your Referral Code</label>
-                {referral && referral.code ? (
-                  <div className={styles["code-row"]}>
-                    <div className={styles["code-box"]}>{referral.code}</div>
-                    <div className={styles["code-meta"]}>
-                      <small>Expires: {referral.expiresAt ? new Date(referral.expiresAt).toLocaleString() : referral.expiresAtStr}</small>
-                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <button className={styles["btn-secondary"]} 
-                          onClick={() => {
-                            setShowBankForm(true);
-                            setTimeout(() => firstInputRef.current?.focus(), 80);
-                          }}>
-                          Change Account Details
-                        </button>
-
-                        <button className={styles["btn-danger"]} onClick={revokeCode}>Revoke</button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <button className={styles["btn-primary"]} onClick={handleGenerate} disabled={creatingCode}>
-                      {creatingCode ? "Creating…" : "Generate Code (48h)"}
-                    </button>
-                    <button className={styles["btn-secondary"]} onClick={onClose}>Close</button>
-                  </div>
-                )}
-                {errorMsg && <div className={styles["error"]}>{errorMsg}</div>}
-              </div>
+            
 
               {showBankForm && (
                 <div className={styles["refer-section"]}>
@@ -296,12 +267,15 @@ const ReferralPopup = memo(function ReferralPopup({
 
               <div className={styles["refer-section"]}>
                 <label className={styles["label"]}>People joined with your code</label>
-                {(!referralData || !referralData.joined || referralData.joined.length === 0) ? (
+                {(!joined || Object.keys(joined).length === 0) ? (
                   <p className={styles["small-muted"]}>No one has joined via your code yet.</p>
                 ) : (
                   <ul className={styles["joined-list"]}>
-                    {referralData.joined.map((j, idx) => (
-                      <li key={j.uid || idx}><strong>{j.userName || j.uid}</strong> <small className={styles["small-muted"]}> — {j.when}</small></li>
+                    {Object.entries(joined).map(([uid, name]) => (
+                      <li key={uid}>
+                        <strong>{name}</strong>
+                        <small className={styles["small-muted"]}> — {uid}</small>
+                      </li>
                     ))}
                   </ul>
                 )}

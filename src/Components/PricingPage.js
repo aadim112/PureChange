@@ -91,7 +91,8 @@ export default function PricingPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/create-order", {
+      // Use a relative path so the app can work in production; in development we use the proxy in package.json
+      const response = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),
