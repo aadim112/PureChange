@@ -147,8 +147,9 @@ export default function PricingPage() {
     {
       name: 'Pro',
       description: 'For creators ramping up their content production',
-      price: isAnnual ? 11 : 499,
-      oldPrice: isAnnual ? 22 : null,
+      price: isAnnual ? 5988 : 499,
+      oldPrice: isAnnual ? 6500 : 600,
+      referalCut : 20,
       popular: true,
       discount: isAnnual ? 'FIRST MONTH 50% OFF' : null,
       features: [
@@ -166,7 +167,9 @@ export default function PricingPage() {
     {
       name: 'Elite',
       description: 'For professionals seeking premium guidance and support',
-      price: isAnnual ? 99 : 799,
+      price: isAnnual ? 9588 : 799,
+      referalCut : 25,
+      oldPrice: isAnnual ? 10000 : 850,
       popular: false,
       features: [
         'Everything in Pro, plus',

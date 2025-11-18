@@ -190,8 +190,37 @@ const ReferralPopup = memo(function ReferralPopup({
                 </ol>
               </div>
 
-            
+              <div className={styles["refer-section"]}>
+                <label className={styles["label"]}>Your Referral Code</label>
+                {referral && referral.code ? (
+                  <div className={styles["code-row"]}>
+                    <div className={styles["code-box"]}>{referral.code}</div>
+                    <div className={styles["code-meta"]}>
+                      <small>Expires: {referral.expiresAt ? new Date(referral.expiresAt).toLocaleString() : referral.expiresAtStr}</small>
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button className={styles["btn-secondary"]} 
+                          onClick={() => {
+                            setShowBankForm(true);
+                            setTimeout(() => firstInputRef.current?.focus(), 80);
+                          }}>
+                          Change Account Details
+                        </button>
 
+                        <button className={styles["btn-danger"]} onClick={revokeCode}>Revoke</button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <button className={styles["btn-primary"]} onClick={handleGenerate} disabled={creatingCode}>
+                      {creatingCode ? "Creating…" : "Generate Code (48h)"}
+                    </button>
+                    <button className={styles["btn-secondary"]} onClick={onClose}>Close</button>
+                  </div>
+                )}
+                {errorMsg && <div className={styles["error"]}>{errorMsg}</div>}
+              </div>
+              
               {showBankForm && (
                 <div className={styles["refer-section"]}>
                   <label className={styles["label"]}>Payout Details</label>
