@@ -203,6 +203,85 @@ export default function PersonalisedRoutinePage() {
   const openFullWeekPopup = () => setPopupOpen(true);
   const closeFullWeekPopup = () => setPopupOpen(false);
 
+  // Determine whether regeneration is allowed (createdAt older than 7 days)
+  const canRegenerate = useMemo(() => {
+    try {
+      const createdAt = weeklyRoutine && weeklyRoutine.meta && weeklyRoutine.meta.createdAt;
+      if (!createdAt) return true; // if no creation timestamp, allow
+      const daysPassed = dayjs().diff(dayjs(createdAt), 'day');
+      return daysPassed >= 7;
+    } catch (e) {
+      return true;
+    }
+  }, [weeklyRoutine]);
+
+  // Days remaining until regen is allowed (for tooltip)
+  const daysUntilRegenerate = useMemo(() => {
+    try {
+      const createdAt = weeklyRoutine && weeklyRoutine.meta && weeklyRoutine.meta.createdAt;
+      if (!createdAt) return 0;
+      const daysPassed = dayjs().diff(dayjs(createdAt), 'day');
+      return Math.max(0, 7 - daysPassed);
+    } catch (e) {
+      return 0;
+    }
+  }, [weeklyRoutine]);
+
+  // Regenerate schedule handler
+  const regenerateSchedule = async () => {
+    // safety: don't run if not allowed
+    if (!canRegenerate) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build payload for generator from available userProfile (fallback to empty obj)
+      const payload = {
+        age: (userProfile && (userProfile.age || userProfile.Age)) || null,
+        gender: (userProfile && (userProfile.gender || userProfile.Gender)) || null,
+        goal: (userProfile && (userProfile.goal || userProfile.Goal)) || null,
+        healthScore: (userProfile && (userProfile.healthScore || userProfile.HealthScore)) || null,
+        height: (userProfile && (userProfile.height || userProfile.Height)) || null,
+        weight: (userProfile && (userProfile.weight || userProfile.Weight)) || null,
+        hobby: (userProfile && (userProfile.hobby || userProfile.Hobby)) || null,
+        religion: (userProfile && (userProfile.religion || userProfile.Religion)) || null,
+        dietPreference: (userProfile && (userProfile.dietPreference || userProfile.DietPreference)) || null
+      };
+
+      // Call generator
+      const generated = await generateWeeklyRoutine(payload);
+      if (!generated || !generated.week) {
+        throw new Error('Generator returned invalid routine.');
+      }
+
+      // Compose routine object with new meta.createdAt
+      const newRoutineObj = {
+        ...generated,
+        meta: { createdAt: new Date().toISOString() }
+      };
+
+      // Persist: to RTDB if uid present; otherwise localStorage
+      if (uid) {
+        await set(dbRef(db, `users/${uid}/personalizedRoutine`), newRoutineObj);
+      } else {
+        localStorage.setItem('personalizedRoutine', JSON.stringify(newRoutineObj));
+      }
+
+      // Update state and today's schedule/diet/advantages
+      setWeeklyRoutine(newRoutineObj);
+      setAdvantages(newRoutineObj.advantages || null);
+      setTodaySchedule(newRoutineObj.week && newRoutineObj.week[todayName] ? newRoutineObj.week[todayName] : null);
+      setTodayDiet(newRoutineObj.weeklyDiet ? newRoutineObj.weeklyDiet[todayName] : null);
+
+    } catch (err) {
+      console.error('Failed to regenerate routine:', err);
+      setError('Failed to regenerate schedule. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles["personalised-routine-page"]}>
@@ -284,8 +363,27 @@ export default function PersonalisedRoutinePage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <button className={styles["btn-primary"]} onClick={openFullWeekPopup}>View Full Week Schedule</button>
+          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 12 }}>
+            {/* Regenerate button on left */}
+            <button
+              className={styles["btn-secondary"]}
+              onClick={regenerateSchedule}
+              disabled={!canRegenerate || loading}
+              title={!canRegenerate ? `You can regenerate after ${daysUntilRegenerate} day(s)` : 'Regenerate schedule now'}
+              style={{ minWidth: 160 }}
+            >
+              {canRegenerate ? 'Regenerate Schedule' : `Regenerate (${daysUntilRegenerate}d)` }
+            </button>
+
+            {/* View Full Week Schedule on right */}
+            <button
+              className={styles["btn-primary"]}
+              onClick={openFullWeekPopup}
+              disabled={loading}
+              style={{ minWidth: 200 }}
+            >
+              View Full Week Schedule
+            </button>
           </div>
         </div>
       </div>
