@@ -19,7 +19,7 @@
 .content-card {
   background: white;
   border-radius: 12px;
-  padding: 40px;
+  padding: 28px;
   box-shadow: var(--shadow-base);
 }
 
@@ -28,54 +28,163 @@
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
-.cards{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+/* Today's schedule block */
+.today-block {
+  margin-bottom: 18px;
+}
+
+.today-heading {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--color-text-primary);
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-item {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff, #fbfbff);
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+}
+
+.slot-time {
+  min-width: 78px;
+  color: var(--color-text-tertiary);
+  font-weight: 700;
+}
+
+.slot-activity {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Info cards row (motivation, diet) */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 12px;
 }
 
 .info-card {
   background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%);
-  height : 200px;
   border-radius: 12px;
-  padding: 32px;
-  text-align: center;
-  margin-bottom: 30px;
+  padding: 18px;
+  text-align: left;
+  min-height: 120px;
 }
 
-.info-content {
+.info-content { display: flex; flex-direction: column; gap: 8px; }
+.info-label { font-weight: 700; color: #222; }
+.info-text { color: #333; }
+
+/* Tips row */
+.tips-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tip-card {
+  background: linear-gradient(180deg, #fff, #fcfcff);
+  border-radius: 12px;
+  padding: 14px;
+  flex: 1;
+  box-shadow: 0 8px 22px rgba(16,24,40,0.04);
+}
+
+.tip-heading { font-weight: 700; margin-bottom: 6px; }
+.tip-body { color: #333; }
+
+.tip-pre {
+  white-space: pre-wrap;   /* PRESERVE new lines AND wrap */
+  word-break: break-word;
+  font-family: inherit;    /* prevent monospace */
+  margin: 0;
+  padding: 0;
+}
+
+/* primary button */
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #005fcc);
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0,123,255,0.18);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,123,255,0.2); }
+
+/* modal for full week */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 11, 17, 0.48);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 12000;
+  padding: 20px;
+}
+
+.modal-content {
+  width: min(1000px, 98%);
+  max-height: 90vh;
+  overflow: auto;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(2,6,23,0.25);
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  color: var(--color-text-tertiary);
+}
+
+.modal-header { display:flex; justify-content:space-between; align-items:center; }
+.modal-close {
+  border:none; background:transparent; cursor:pointer; font-weight:700; color:#444;
+}
+
+/* week chart table */
+.week-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
   font-size: 14px;
 }
-
-.info-label {
-  font-weight: var(--font-weight-medium);
+.week-table th, .week-table td {
+  padding: 10px 8px;
+  border: 1px solid rgba(16,24,40,0.04);
+  text-align: left;
 }
+.time-col { width: 110px; font-weight:700; color:var(--color-text-tertiary); background: #fafafa; }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .content-card {
-    padding: 24px;
-  }
+/* weekly diet table */
+.diet-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.diet-table th, .diet-table td { padding: 8px 10px; border: 1px solid rgba(16,24,40,0.04); text-align:left; }
+
+/* error banner */
+.error-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fee2e2; color:#7f1d1d; padding:8px 12px; border-radius:8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+
+/* responsive */
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr; }
+  .tips-row { flex-direction: column; }
+  .slot-time { min-width: 70px; }
+  .content-card { padding: 18px; }
 }
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 20px 12px;
-  }
-
-  .cards{
-    grid-template-columns: 1fr;
-    gap: 0px;
-  }
-
-  .content-title {
-    font-size: 14px;
-  }
-} 
