@@ -98,6 +98,7 @@ export default function ContentPage() {
   const [explanation, setExplaition] = useState('<Explaination>');
   const [question, setQuestion] = useState('<Question>');
   const [loading, setLoading] = useState(false);
+  const [userType, setUserType] = useState('');
 
   useEffect(() => {  
     fetchUserReligion();
@@ -111,7 +112,6 @@ export default function ContentPage() {
   
   const fetchUserReligion = async () => {
     try {
-      setLoading(true);
       const userId = localStorage.getItem('userId');
       setUserId(userId);
 
@@ -126,12 +126,10 @@ export default function ContentPage() {
       if (snapshot.exists()) {
         const data = snapshot.val();
         setReligion(data.Religion || '');
+        setUserType(data.UserType || 'Free');
       }
     } catch (error) {
         console.error('Error fetching user data:', error);
-    }
-    finally{
-      setLoading(false);
     }
   };
 
@@ -209,7 +207,13 @@ export default function ContentPage() {
           {/* More Content Button */}
           <div className={styles["more-content-btn"]}>
             <Button
-              onClick={() => navigate('/more-content')}
+              onClick={() => {
+                if (userType === 'Pro' || userType === 'Elite') {
+                  navigate('/more-content', { state: { variant: 'pro' } });
+                } else {
+                  navigate('/more-content', { state: { variant: 'default' } });
+                }
+              }}
               variant="primary"
               className={styles["more-content"]}
             >

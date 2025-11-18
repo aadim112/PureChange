@@ -8,6 +8,7 @@ import { ref as dbRef, get, set, update } from 'firebase/database';
 import { generateWeeklyRoutine } from '../services/llmService'; // new helper in llmService
 import { showOtherContent } from '../services/contentService'; // to fetch tips
 import dayjs from 'dayjs';
+import UpgradePopup from './UpgradePlanPopup';
 
 export default function PersonalisedRoutinePage() {
   const navigate = useNavigate();
@@ -23,6 +24,13 @@ export default function PersonalisedRoutinePage() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [dailyData, setDailyData] = useState(null); // holds persisted per-day choices
   const [error, setError] = useState(null);
+  
+  // Upgrade Popup State
+  const [upgradePopupData, setUpgradePopupData] = useState({
+    show: false,
+    requiredPlan: ''
+  });
+
   const weekDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
   const todayName = useMemo(() => dayjs().format('dddd'), []); // e.g., "Monday"
@@ -116,8 +124,8 @@ export default function PersonalisedRoutinePage() {
         setTodaySchedule(daySchedule);
         setTodayDiet(routineObj.weeklyDiet ? routineObj.weeklyDiet[todayName] : null);
 
-        // Daily tips logic: fetch tips maps and persist today's picks under users/{uid}/dailyRoutineData
-        const dailyRef = dbRef(db, `users/${uid}/dailyRoutineData`);
+        // Daily tips logic: fetch tips maps and persist today's picks under users/{uid}/dailyData/dailyRoutineData
+        const dailyRef = dbRef(db, `users/${uid}/dailyData/dailyRoutineData`);
         const dailySnap = await get(dailyRef);
         const prevDaily = dailySnap && dailySnap.exists() ? dailySnap.val() : {};
 
@@ -154,7 +162,7 @@ export default function PersonalisedRoutinePage() {
             foodTip: fPick
           };
 
-          await update(dbRef(db, `users/${uid}/dailyRoutineData`), newDaily);
+          await update(dbRef(db, `users/${uid}/dailyData/dailyRoutineData`), newDaily);
           setDailyData(newDaily);
           setHealthTip(hPick);
           setFoodTip(fPick);
@@ -226,6 +234,29 @@ export default function PersonalisedRoutinePage() {
       return 0;
     }
   }, [weeklyRoutine]);
+
+  // Access Control Handlers
+  const handleRegenerateClick = () => {
+    const userType = userProfile?.UserType || userProfile?.userType || 'Free';
+    
+    if (userType !== 'Elite') {
+      setUpgradePopupData({ show: true, requiredPlan: 'Elite' });
+      return;
+    }
+    
+    regenerateSchedule();
+  };
+
+  const handleFullWeekClick = () => {
+    const userType = userProfile?.UserType || userProfile?.userType || 'Free';
+    
+    if (userType !== 'Elite') {
+      setUpgradePopupData({ show: true, requiredPlan: 'Elite' });
+      return;
+    }
+
+    openFullWeekPopup();
+  };
 
   // Regenerate schedule handler
   const regenerateSchedule = async () => {
@@ -367,8 +398,8 @@ export default function PersonalisedRoutinePage() {
             {/* Regenerate button on left */}
             <button
               className={styles["btn-secondary"]}
-              onClick={regenerateSchedule}
-              disabled={!canRegenerate || loading}
+              onClick={handleRegenerateClick}
+              disabled={loading}
               title={!canRegenerate ? `You can regenerate after ${daysUntilRegenerate} day(s)` : 'Regenerate schedule now'}
               style={{ minWidth: 160 }}
             >
@@ -378,7 +409,7 @@ export default function PersonalisedRoutinePage() {
             {/* View Full Week Schedule on right */}
             <button
               className={styles["btn-primary"]}
-              onClick={openFullWeekPopup}
+              onClick={handleFullWeekClick}
               disabled={loading}
               style={{ minWidth: 200 }}
             >
@@ -448,6 +479,13 @@ export default function PersonalisedRoutinePage() {
       )}
 
       {error && <div className={styles["error-banner"]}>{error}</div>}
+
+      {/* Upgrade Popup */}
+      <UpgradePopup 
+        show={upgradePopupData.show} 
+        onClose={() => setUpgradePopupData({ ...upgradePopupData, show: false })} 
+        requiredPlan={upgradePopupData.requiredPlan} 
+      />
     </div>
   );
 }

@@ -221,6 +221,7 @@ function DefaultVariant() {
 function ProVariant() {
   const [selection, setSelection] = useState(null);
   const [userId, setUserId] = useState(null);
+  const location = useLocation();
 
   // current video index
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -492,6 +493,13 @@ function ProVariant() {
     setMoreQuotesList(pick);
     setQuotesModalOpen(true);
   };
+
+  useEffect(() => {
+    if (location.state && location.state.openQuotes) {
+      window.history.replaceState({ ...location.state, openQuotes: false }, '');
+      handleShowMoreQuotes();
+    }
+  }, []);
 
   // More article -> pick another random one from selection.articlesMap
   const handleMoreArticle = () => {
