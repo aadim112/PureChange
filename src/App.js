@@ -32,6 +32,7 @@ import { Scale } from 'lucide-react';
 import streak from './assets/Streak.jpg'
 import positiveContent from './assets/positiveContent.jpg'
 import checklist from './assets/checklist.jpg'
+import MyProfileImage from './assets/mypage.png'
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -46,6 +47,7 @@ function App() {
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
   const [pendingUserData, setPendingUserData] = useState(null);
+  const [show, setShow] = useState(false);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,7 +56,24 @@ function App() {
     if (location.pathname === "/") {
       localStorage.removeItem("isAdminLoggedIn");
     }
+    scheduleNextPopup();
   }, [location]);
+
+  const scheduleNextPopup = () => {
+    const randomTime = Math.floor(Math.random() * (300000 - 180000)) + 180000;
+    setTimeout(triggerPopup, randomTime);
+  };
+
+  const triggerPopup = () => {
+    setShow(true);
+
+    setTimeout(() => {
+      setShow(false);
+      scheduleNextPopup();    // After hiding, schedule next popup
+    }, 3000);
+  };
+
+
 
   // // Timer effect for verification email resend
   // useEffect(() => {
@@ -465,7 +484,6 @@ const order = await response.json();
           <header>
             <div className={styles["logo"]}>Pure Change</div>
             <div className={styles["options"]}>
-              <button className={styles["homebutton"]} onClick={() => navigate('/admin')}>Admin</button>
               <button className={styles["startbutton"]} onClick={() => {
                 setShowAuth(true);
                 setShowEmailVerification(false);
@@ -741,26 +759,7 @@ const order = await response.json();
                 <p>Everything you need to stay consistent and motivated</p>
               </div>
               <div className={styles['SkeletonInformationSection']}>
-                <div className={styles['SkeletonPart1']}>
-                  <div className={styles['InnerSkeletonheading']}>
-                    <i class="fa-solid fa-user" style={{color:"#6852F2"}}></i>
-                    <p>My Profile</p>
-                  </div>
-                  <div className={styles['BoxContainer']}>
-                    <div className={styles["grid"]}>
-                        <div className={styles["box"]}></div>
-                        <div className={styles["box"]}></div>
-                    </div>
-                    <div className={styles["row-2"]}>
-                        <div className={styles["box"]}></div>
-                        <div className={styles["box"]}></div>
-                        <div class="box"></div>
-                    </div>
-                    <div className={styles["row-3"]}>
-                        <div className={styles["box"]}></div>
-                        <div className={styles["box"]}></div>
-                    </div>
-                  </div>
+                <div className={styles['SkeletonPart1']} style={{backgroundImage:`url(${MyProfileImage})`,width:'100%',height:'100%',backgroundSize:'contain',backgroundRepeat:'no-repeat'}}>
                 </div>
                 <div className={styles['SkeletonPart2']}>
                   <div className={styles['SkeletonHeading']}>
@@ -825,6 +824,29 @@ const order = await response.json();
               </div>
             </div>
           </div>
+          <div className={`${styles.popup} ${show ? styles.show : ""}`}>🔔 One New Person Registered</div>
+          <br></br>
+          <footer className={styles['footer']}>
+            <div className={styles['footerContainer']}>
+                <div className={styles['footerColumns']}>
+                    {/* Contact Column */}
+                    <div className={styles['footerColumn']}>
+                        <h3>Contact</h3>
+                        <ul>
+                            <li><a href="mailto:info@example.com">Email Us</a></li>
+                            <li><a href="tel:+1234567890">Call Us</a></li>
+                            <li><a href="#">Support Center</a></li>
+                            <li><a href="#">Find a Location</a></li>
+                            <li onClick={() =>{navigate('/admin')}}>Admin</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className={styles['footerBottom']}>
+                    <p>&copy; 2025 Pure Change. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
         </div>
       } />
       <Route path='/mypage' element={<MyPage/>} />

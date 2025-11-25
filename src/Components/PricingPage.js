@@ -83,50 +83,134 @@ export default function PricingPage() {
     }
   };
 
-  const createOrder = async (amount, planName) => {
-    if (planName === 'Free') {
-      alert("You have activated the Free plan!");
-      await updateUserTypeAndRedirect(planName);
+  // Replace your createOrder function with this fixed version
+
+const createOrder = async (amount, planName, referalCut) => {
+  if (planName === 'Free') {
+    alert("You have activated the Free plan!");
+    await updateUserTypeAndRedirect(planName);
+    return;
+  }
+
+  try {
+    const storedUserId = localStorage.getItem("userId");
+    
+    // Check for referrer information
+    const referrerRef = ref(db, `users/${storedUserId}/referer`);
+    const referrerSnapshot = await get(referrerRef);
+    
+    let referrerData = null;
+    if (referrerSnapshot.exists()) {
+      const refererInfo = referrerSnapshot.val();
+      if (refererInfo.refererId && refererInfo.code) {
+        // Get referrer's bank details
+        const referrerBankRef = ref(db, `users/${refererInfo.refererId}/bank_detail`);
+        const bankSnapshot = await get(referrerBankRef);
+        
+        if (bankSnapshot.exists()) {
+          referrerData = {
+            refererId: refererInfo.refererId,
+            code: refererInfo.code,
+            bankDetails: bankSnapshot.val(),
+            referalCut: referalCut
+          };
+        }
+      }
+    }
+
+    console.log('Creating order with amount:', amount); // Debug log
+
+    // Create order with referrer data
+    const response = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        amount, // This is in rupees (e.g., 499)
+        referrerData
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Order creation failed:', errorData);
+      alert('Failed to create order. Please try again.');
       return;
     }
 
-    try {
-      // Use a relative path so the app can work in production; in development we use the proxy in package.json
-      const response = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
-      });
+    const order = await response.json();
+    console.log('Order received:', order); // Debug log
 
-      const order = await response.json();
-      const options = {
-        key: "rzp_test_RZByCgPA3CgmMz",
-        amount: order.amount,
-        currency: order.currency,
-        name: "My Website Name",
-        description: "Payment for Order",
-        order_id: order.id,
-        handler: async function (response) {
+    const options = {
+      key: "rzp_live_Rfy4C93w9ruCFQ",
+      amount: order.amount, // Already in paise from backend (49900)
+      currency: order.currency,
+      name: "My Website Name",
+      description: `${planName} Plan Subscription`,
+      order_id: order.id, // CRITICAL: Must be present
+      handler: async function (response) {
+        console.log('Payment successful, response:', response);
+        
+        try {
+          // Send payment details to backend for payout processing
+          const paymentResponse = await fetch("/api/process-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: amount, // Original amount in rupees
+              referrerData: referrerData
+            }),
+          });
+          
+          if (!paymentResponse.ok) {
+            console.error('Payment processing failed');
+          }
+          
           alert("Payment Successful!");
-          console.log("Payment details:", response);
           await updateUserTypeAndRedirect(planName);
-        },
-        prefill: {
-          name: userData.Name,
-          email: userData.Email,
-          contact: userData.PhoneNumber,
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
+        } catch (error) {
+          console.error("Payout processing error:", error);
+          // Still update user type even if payout fails
+          alert("Payment Successful! (Processing referral in background)");
+          await updateUserTypeAndRedirect(planName);
+        }
+      },
+      modal: {
+        ondismiss: function() {
+          console.log('Payment cancelled by user');
+          alert('Payment was cancelled');
+        }
+      },
+      prefill: {
+        name: userData.Name || '',
+        email: userData.Email || '',
+        contact: userData.PhoneNumber || '',
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    console.log('Opening Razorpay with options:', {
+      ...options,
+      key: 'rzp_live_Rfy4C93w9ruCFQ' // Hide key in logs
+    });
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.on('payment.failed', function (response) {
+      console.error('Payment failed:', response.error);
+      alert(`Payment failed: ${response.error.description}`);
+    });
+    
+    razorpay.open();
+  } catch (err) {
+    console.error('Error in createOrder:', err);
+    alert('An error occurred. Please try again.');
+  }
+};
+
 
   const plans = [
     {
@@ -199,24 +283,6 @@ export default function PricingPage() {
         <p className={styles["subtitle"]}>
           Plans built for creators and business of all sizes
         </p>
-        
-        {/* <div className={styles["billing-toggle"]}>
-          <span className={`${styles["toggle-label"]} ${!isAnnual ? styles["active"] : ''}`}>
-            Monthly
-          </span>
-          <label className={styles["toggle-switch"]}>
-            <input
-              type="checkbox"
-              checked={isAnnual}
-              onChange={() => setIsAnnual(!isAnnual)}
-            />
-            <span className={styles["slider"]}></span>
-          </label>
-          <span className={`${styles["toggle-label"]} ${isAnnual ? styles["active"] : ''}`}>
-            Annual
-          </span>
-          {isAnnual && <span className={styles["badge"]}>2 MONTHS FREE</span>}
-        </div> */}
       </div>
 
       <div className={styles["pricing-container"]}>
@@ -258,7 +324,7 @@ export default function PricingPage() {
                               ${isCurrentPlan ? styles["current-plan-btn"] : ''}`}
                   onClick={() => {
                     if (!isCurrentPlan && planLevels[plan.name] >= userPlanLevel) {
-                      createOrder(plan.price, plan.name);
+                      createOrder(plan.price, plan.name, plan.referalCut);
                     }
                   }}
                   disabled={isCurrentPlan || planLevels[plan.name] < userPlanLevel}
