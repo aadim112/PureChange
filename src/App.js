@@ -33,6 +33,7 @@ import streak from './assets/Streak.jpg'
 import positiveContent from './assets/positiveContent.jpg'
 import checklist from './assets/checklist.jpg'
 import MyProfileImage from './assets/mypage.png'
+import logo from './assets/logo.png'
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -479,10 +480,12 @@ const order = await response.json();
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
             <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
-            <p>Offer Information will be over here</p>
+            <p>Get 50% Off On Every Plan</p>
           </div>
           <header>
-            <div className={styles["logo"]}>Pure Change</div>
+            <div className={styles["logo"]}>
+              <img src={logo}></img>
+            </div>
             <div className={styles["options"]}>
               <button className={styles["startbutton"]} onClick={() => {
                 setShowAuth(true);
@@ -765,15 +768,11 @@ const order = await response.json();
                   <div className={styles['SkeletonHeading']}>
                     <p style={{fontWeight:'bold'}}>Why It Works?</p>
                   </div>
-                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
-
-                  </div>
-                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
-
-                  </div>
-                  <div style={{backgroundColor:'#d6d0ff',width:'100%',height:'80px',borderRadius:'10px',marginTop:'20px'}}>
-
-                  </div>
+                  <p style={{fontSize:'24px',fontWeight:'bold'}}>More than 200 people have benefited.</p>
+                  <br></br>
+                  <p style={{fontSize:'24px',fontWeight:'bold'}}>Our Tracking keeps track of your everyday routine.</p>
+                  <br></br>
+                  <p style={{fontSize:'24px',fontWeight:'bold'}}>Personalised routine keeps you in control.</p>
                 </div>
               </div>
           </div>

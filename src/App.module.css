@@ -39,14 +39,15 @@ header {
   text-align: center;
 }
 
-.logo {
+.logo{
   width: auto;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 18px;
+  height: auto;
+}
+.logo img {
+  width: 150px;
+  margin-top: 20px;
+  height: auto;
+  object-fit: contain;
 }
 
 .options {
@@ -706,9 +707,9 @@ header {
     padding: 15px 20px;
   }
 
-  .logo {
+  /* .logo {
     font-size: 16px;
-  }
+  } */
 
   .homebutton {
     display: none;
@@ -823,6 +824,7 @@ header {
     font-size: 30px;
   }
   .ReferalProgramContainer{
+    padding: 0px 20px;
     display: block;
   }
   .ReferalProgram{
