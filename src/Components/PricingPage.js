@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import styles from './PricingPage.module.css';
-import { ref, set, get } from 'firebase/database';
+import { ref, get,set } from 'firebase/database';
 import { db } from '../firebase';
 import { ReactComponent as CreditIcon } from '../assets/Pricing.svg';
 
@@ -85,131 +85,122 @@ export default function PricingPage() {
 
   // Replace your createOrder function with this fixed version
 
-const createOrder = async (amount, planName, referalCut) => {
-  if (planName === 'Free') {
-    alert("You have activated the Free plan!");
-    await updateUserTypeAndRedirect(planName);
-    return;
-  }
-
-  try {
-    const storedUserId = localStorage.getItem("userId");
-    
-    // Check for referrer information
-    const referrerRef = ref(db, `users/${storedUserId}/referer`);
-    const referrerSnapshot = await get(referrerRef);
-    
-    let referrerData = null;
-    if (referrerSnapshot.exists()) {
-      const refererInfo = referrerSnapshot.val();
-      if (refererInfo.refererId && refererInfo.code) {
-        // Get referrer's bank details
-        const referrerBankRef = ref(db, `users/${refererInfo.refererId}/bank_detail`);
-        const bankSnapshot = await get(referrerBankRef);
-        
-        if (bankSnapshot.exists()) {
-          referrerData = {
-            refererId: refererInfo.refererId,
-            code: refererInfo.code,
-            bankDetails: bankSnapshot.val(),
-            referalCut: referalCut
-          };
-        }
-      }
-    }
-
-    console.log('Creating order with amount:', amount); // Debug log
-
-    // Create order with referrer data
-    const response = await fetch("/api/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        amount, // This is in rupees (e.g., 499)
-        referrerData
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Order creation failed:', errorData);
-      alert('Failed to create order. Please try again.');
+  const createOrder = async (amount, planName, referalCut) => {
+    if (planName === 'Free') {
+      alert("You have activated the Free plan!");
+      await updateUserTypeAndRedirect(planName);
       return;
     }
-
-    const order = await response.json();
-    console.log('Order received:', order); // Debug log
-
-    const options = {
-      key: "rzp_live_Rfy4C93w9ruCFQ",
-      amount: order.amount, // Already in paise from backend (49900)
-      currency: order.currency,
-      name: "My Website Name",
-      description: `${planName} Plan Subscription`,
-      order_id: order.id, // CRITICAL: Must be present
-      handler: async function (response) {
-        console.log('Payment successful, response:', response);
+  
+    try {
+      const storedUserId = localStorage.getItem("userId");
+      
+      // Only fetch the referer CODE from current user's data
+      let refererCode = null;
+      try {
+        const referrerRef = ref(db, `users/${storedUserId}/referer`);
+        const referrerSnapshot = await get(referrerRef);
         
-        try {
-          // Send payment details to backend for payout processing
-          const paymentResponse = await fetch("/api/process-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: amount, // Original amount in rupees
-              referrerData: referrerData
-            }),
-          });
+        if (referrerSnapshot.exists()) {
+          const refererInfo = referrerSnapshot.val();
+          refererCode = refererInfo.code;
+        }
+      } catch (referrerError) {
+        console.warn('Could not fetch referrer code:', referrerError);
+      }
+  
+      console.log('Creating order with amount:', amount);
+  
+      // Send only the referer code - backend will look up details
+      const response = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          amount,
+          userId: storedUserId,
+          refererCode: refererCode,
+          referalCut: referalCut
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Order creation failed:', errorData);
+        alert('Failed to create order. Please try again.');
+        return;
+      }
+  
+      const order = await response.json();
+      console.log('Order received:', order);
+  
+      const options = {
+        key: "rzp_test_RlAY857iZXseGR",
+        amount: order.amount,
+        currency: order.currency,
+        name: "My Website Name",
+        description: `${planName} Plan Subscription`,
+        order_id: order.id,
+        handler: async function (response) {
+          console.log('Payment successful, response:', response);
           
-          if (!paymentResponse.ok) {
-            console.error('Payment processing failed');
+          try {
+            const paymentResponse = await fetch("/api/process-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: amount,
+                planName,
+                userId: storedUserId,
+                userName: userData?.Name || '',
+                refererCode: refererCode,
+                referalCut: referalCut
+              }),
+            });
+            
+            if (!paymentResponse.ok) {
+              console.error('Payment processing failed');
+              return;
+            }
+            
+            alert("Payment Successful!");
+            await updateUserTypeAndRedirect(planName);
+          } catch (error) {
+            console.error("Payout processing error:", error);
+            alert("Payment Successful! (Processing referral in background)");
+            await updateUserTypeAndRedirect(planName);
           }
-          
-          alert("Payment Successful!");
-          await updateUserTypeAndRedirect(planName);
-        } catch (error) {
-          console.error("Payout processing error:", error);
-          // Still update user type even if payout fails
-          alert("Payment Successful! (Processing referral in background)");
-          await updateUserTypeAndRedirect(planName);
-        }
-      },
-      modal: {
-        ondismiss: function() {
-          console.log('Payment cancelled by user');
-          alert('Payment was cancelled');
-        }
-      },
-      prefill: {
-        name: userData.Name || '',
-        email: userData.Email || '',
-        contact: userData.PhoneNumber || '',
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    console.log('Opening Razorpay with options:', {
-      ...options,
-      key: 'rzp_live_Rfy4C93w9ruCFQ' // Hide key in logs
-    });
-
-    const razorpay = new window.Razorpay(options);
-    razorpay.on('payment.failed', function (response) {
-      console.error('Payment failed:', response.error);
-      alert(`Payment failed: ${response.error.description}`);
-    });
-    
-    razorpay.open();
-  } catch (err) {
-    console.error('Error in createOrder:', err);
-    alert('An error occurred. Please try again.');
-  }
-};
+        },
+        modal: {
+          ondismiss: function() {
+            console.log('Payment cancelled by user');
+            alert('Payment was cancelled');
+          }
+        },
+        prefill: {
+          name: userData.Name || '',
+          email: userData.Email || '',
+          contact: userData.PhoneNumber || '',
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+  
+      const razorpay = new window.Razorpay(options);
+      razorpay.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        alert(`Payment failed: ${response.error.description}`);
+      });
+      
+      razorpay.open();
+    } catch (err) {
+      console.error('Error in createOrder:', err);
+      alert('An error occurred. Please try again.');
+    }
+  };
 
 
   const plans = [

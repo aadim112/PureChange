@@ -582,6 +582,155 @@
   background-color: #45a049;
 }
 
+.referral-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.referral-helper {
+  color: rgba(15, 23, 42, 0.6);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.referral-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.referral-filter-btn {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: white;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  color: rgba(15, 23, 42, 0.8);
+  transition: all 0.2s ease;
+}
+
+.referral-filter-btn:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.referral-filter-btn.active {
+  background: #0ea5e9;
+  color: white;
+  border-color: #0ea5e9;
+}
+
+.referral-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.referral-card {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.referral-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.referral-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.95);
+  margin-bottom: 4px;
+}
+
+.referral-status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #92400e;
+}
+
+.status-paid {
+  background: rgba(16, 185, 129, 0.18);
+  color: #065f46;
+}
+
+.referral-details,
+.referral-meta {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(15, 23, 42, 0.8);
+}
+
+.referral-bank {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.5);
+  font-size: 14px;
+}
+
+.referral-missing {
+  color: #b91c1c;
+  margin-top: 4px;
+}
+
+.referral-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.referral-paid-btn {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.referral-paid-btn:hover {
+  background: #0284c7;
+}
+
+.referral-paid-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.referral-empty {
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  border-radius: 12px;
+  color: rgba(15, 23, 42, 0.65);
+  font-weight: 500;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

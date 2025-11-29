@@ -19,6 +19,7 @@
     "emoji-picker-react": "^4.15.0",
     "express": "^5.1.0",
     "firebase": "^12.4.0",
+    "firebase-admin": "^13.6.0",
     "font-awesome": "^4.7.0",
     "lucide-react": "^0.545.0",
     "razorpay": "^2.9.6",

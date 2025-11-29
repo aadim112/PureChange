@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save } from 'lucide-react';
 import { addVerse, getVersesByReligion, addOtherContent, showOtherContent, removeOtherContent } from "../services/contentService";
@@ -7,6 +7,8 @@ import { processVerse } from "../services/llmService";
 import Navbar from "./Navbar";
 import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
+import { ref, onValue, update, get } from 'firebase/database';
+import { db } from '../firebase';
 
 export default function AdminControlPage() {
   const [viewMode, setViewMode] = useState('addVerse');
@@ -22,6 +24,10 @@ export default function AdminControlPage() {
   const [uploadProgress, setUploadProgress] = useState({});
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadedVideos, setUploadedVideos] = useState([]);
+  const [referralPayouts, setReferralPayouts] = useState([]);
+  const [referralFilter, setReferralFilter] = useState('pending');
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralUpdatingId, setReferralUpdatingId] = useState(null);
 
   const religions = [
     { value: 'hinduism', label: 'Hinduism', contentLabel: 'Add Shlok' },
@@ -46,6 +52,96 @@ export default function AdminControlPage() {
     { value: 'health-tips', label: 'Health Tips', contentLabel: 'Add Health Tips' },
     { value: 'food-tips', label: 'Food Tips', contentLabel: 'Add Food Tips' }
   ];
+
+  const filteredReferralPayouts = referralPayouts.filter((payout) => {
+    if (referralFilter === 'all') return true;
+    return (payout.status || 'pending') === referralFilter;
+  });
+
+  const formatAmount = (val) => {
+    const num = Number(val);
+    if (Number.isNaN(num)) return '--';
+    return num.toFixed(2);
+  };
+
+  useEffect(() => {
+    if (viewMode !== 'referralPays') return undefined;
+    setReferralLoading(true);
+    const payoutsRef = ref(db, 'admin/referralPayouts');
+    const unsubscribe = onValue(
+      payoutsRef,
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          setReferralPayouts([]);
+          setReferralLoading(false);
+          return;
+        }
+        const data = snapshot.val() || {};
+        const parsed = Object.entries(data).map(([id, value]) => ({
+          id,
+          ...(value || {})
+        }));
+        parsed.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+        setReferralPayouts(parsed);
+        setReferralLoading(false);
+      },
+      (error) => {
+        console.error("Failed to fetch referral payouts:", error);
+        setReferralLoading(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [viewMode]);
+
+  const handleReferralStatusChange = async (payoutId, currentStatus, refererId) => {
+    if (!payoutId) return;
+    try {
+      setReferralUpdatingId(payoutId);
+      const nextStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+      const paidAt = nextStatus === 'paid' ? new Date().toISOString() : null;
+      
+      // Update admin payout record
+      const payload = {
+        status: nextStatus,
+        paidAt: paidAt
+      };
+      await update(ref(db, `admin/referralPayouts/${payoutId}`), payload);
+      
+      // Also update referrer's transaction status if refererId is provided
+      if (refererId && nextStatus === 'paid') {
+        try {
+          // Find and update the transaction in referrer's transactions
+          const referrerTxRef = ref(db, `users/${refererId}/transactions`);
+          const referrerTxSnap = await get(referrerTxRef);
+          
+          if (referrerTxSnap.exists()) {
+            const transactions = referrerTxSnap.val();
+            const transactionEntries = Object.entries(transactions);
+            
+            // Find transaction with matching payoutId (stored as txid)
+            for (const [txKey, txData] of transactionEntries) {
+              if (txData && txData.txid === payoutId) {
+                await update(ref(db, `users/${refererId}/transactions/${txKey}`), {
+                  status: 'paid',
+                  paidAt: paidAt
+                });
+                console.log('✅ Updated referrer transaction status:', refererId, txKey);
+                break;
+              }
+            }
+          }
+        } catch (txUpdateError) {
+          console.error("Failed to update referrer transaction:", txUpdateError);
+          // Don't fail the whole operation if referrer tx update fails
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update referral payout status:", error);
+      alert("Unable to update referral payout status. Please retry.");
+    } finally {
+      setReferralUpdatingId(null);
+    }
+  };
 
 
   const getContentLabel = () => {
@@ -401,6 +497,12 @@ export default function AdminControlPage() {
             onClick={() => setViewMode('background-effects')}
           >
             Background Images and Video Effects
+          </button>
+          <button
+            className={`${styles['mode-btn']} ${viewMode === 'referralPays' ? styles.active : ''}`}
+            onClick={() => setViewMode('referralPays')}
+          >
+            Referral Pays
           </button>
         </div>
         <div className={styles['admin-card']}>
@@ -763,6 +865,129 @@ export default function AdminControlPage() {
             )}
           </div>
         )}
+          {viewMode === 'referralPays' && (
+            <>
+              <div className={styles['admin-card-header']}>
+                <h2 className={styles['admin-card-title']}>Referral Pays</h2>
+                <p className={styles['referral-helper']}>
+                  Track referral payouts and mark them as paid after processing transfers.
+                </p>
+              </div>
+              <div className={styles['referral-section']}>
+                <div className={styles['referral-filters']}>
+                  {['pending', 'paid', 'all'].map((filter) => (
+                    <button
+                      key={filter}
+                      className={`${styles['referral-filter-btn']} ${referralFilter === filter ? styles['active'] : ''}`}
+                      onClick={() => setReferralFilter(filter)}
+                    >
+                      {filter === 'pending'
+                        ? 'Pending'
+                        : filter === 'paid'
+                        ? 'Paid'
+                        : 'All'}
+                    </button>
+                  ))}
+                </div>
+
+                {referralLoading ? (
+                  <div className={styles['referral-empty']}>Loading referral payouts…</div>
+                ) : filteredReferralPayouts.length === 0 ? (
+                  <div className={styles['referral-empty']}>
+                    {referralFilter === 'pending'
+                      ? 'No pending referral payouts.'
+                      : 'No referral payouts found for this filter.'}
+                  </div>
+                ) : (
+                  <div className={styles['referral-list']}>
+                    {filteredReferralPayouts.map((payout) => (
+                      <div key={payout.id} className={styles['referral-card']}>
+                        <div className={styles['referral-card-header']}>
+                          <div>
+                            <p className={styles['referral-card-title']}>
+                              {payout.refererName || 'Unknown Referrer'}
+                            </p>
+                            <small>Referrer ID: {payout.refererId || '—'}</small>
+                            <br />
+                            <small>Referral Code: {payout.refererCode || '—'}</small>
+                          </div>
+                          <span
+                            className={`${styles['referral-status-badge']} ${
+                              (payout.status || 'pending') === 'paid'
+                                ? styles['status-paid']
+                                : styles['status-pending']
+                            }`}
+                          >
+                            {(payout.status || 'pending').toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className={styles['referral-details']}>
+                          <span><strong>Plan:</strong> {payout.planName || '—'}</span>
+                          <span><strong>Total Paid:</strong> ₹{formatAmount(payout.totalAmount)}</span>
+                          <span>
+                            <strong>Referral Cut:</strong> ₹{formatAmount(payout.referralCutAmount)} ({payout.referralCutPercent || 0}%)
+                          </span>
+                          <span>
+                            <strong>Referred User:</strong> {payout.referredUserName || '—'} ({payout.referredUserId || '—'})
+                          </span>
+                        </div>
+
+                        <div className={styles['referral-bank']}>
+                          <div>
+                            <strong>Bank Details:</strong>
+                            {payout.bankDetails ? (
+                              payout.bankDetails.type === 'upi' ? (
+                                <p>UPI: {payout.bankDetails.upiId || '—'}</p>
+                              ) : (
+                                <>
+                                  <p>Account: {payout.bankDetails.accountNumber || '—'}</p>
+                                  <p>Name: {payout.bankDetails.name || '—'}</p>
+                                  <p>IFSC: {payout.bankDetails.ifsc || '—'}</p>
+                                </>
+                              )
+                            ) : (
+                              <p className={styles['referral-missing']}>Bank details not provided</p>
+                            )}
+                          </div>
+                          <div>
+                            <strong>Contact:</strong>
+                            <p>{payout.refererContact || '—'}</p>
+                          </div>
+                        </div>
+
+                        <div className={styles['referral-meta']}>
+                          <span><strong>Payment ID:</strong> {payout.paymentId || '—'}</span>
+                          <span><strong>Order ID:</strong> {payout.orderId || '—'}</span>
+                          <span>
+                            <strong>Raised:</strong>{' '}
+                            {payout.createdAt
+                              ? new Date(payout.createdAt).toLocaleString()
+                              : '—'}
+                          </span>
+                          {payout.paidAt && (
+                            <span>
+                              <strong>Paid:</strong> {new Date(payout.paidAt).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className={styles['referral-actions']}>
+                          <button
+                            className={styles['referral-paid-btn']}
+                            onClick={() => handleReferralStatusChange(payout.id, payout.status || 'pending', payout.refererId)}
+                            disabled={referralUpdatingId === payout.id}
+                          >
+                            {payout.status === 'paid' ? 'Mark Pending' : 'Mark Paid'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Preview Section */}
