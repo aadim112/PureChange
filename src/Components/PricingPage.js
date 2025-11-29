@@ -134,7 +134,7 @@ export default function PricingPage() {
       console.log('Order received:', order);
   
       const options = {
-        key: "rzp_test_RlAY857iZXseGR",
+        key: "rzp_live_Rfy4C93w9ruCFQ",
         amount: order.amount,
         currency: order.currency,
         name: "My Website Name",
@@ -222,7 +222,7 @@ export default function PricingPage() {
     {
       name: 'Pro',
       description: 'For creators ramping up their content production',
-      price: isAnnual ? 5988 : 499,
+      price: isAnnual ? 5988 : 10,
       oldPrice: isAnnual ? 6500 : 600,
       referalCut : 20,
       popular: true,
@@ -242,7 +242,7 @@ export default function PricingPage() {
     {
       name: 'Elite',
       description: 'For professionals seeking premium guidance and support',
-      price: isAnnual ? 9588 : 799,
+      price: isAnnual ? 9588 : 20,
       referalCut : 25,
       oldPrice: isAnnual ? 10000 : 850,
       popular: false,
