@@ -9,7 +9,8 @@ import { db } from "../firebase";
 import { ref, get } from "firebase/database";
 import Avatar from "./Avatar";
 import UpgradePopup from './UpgradePlanPopup';
-import { calculateConsistencyScore,getConsistencyWithDays } from "../services/consistencyService";
+import { calculateConsistencyScore, getConsistencyWithDays } from "../services/consistencyService";
+import { getUserBadges, autoAwardBadges, BADGE_TYPES } from "../services/badgeService";
 
 const StreakHolderBox = ({month = "Month", NoFapDays, TotalDays}) => {
     return(
@@ -25,7 +26,7 @@ const StreakHolderBox = ({month = "Month", NoFapDays, TotalDays}) => {
     )
 }
 
-const AchievementsBadges = ({ names = [] }) => {
+const AchievementsBadges = ({ badges = [] }) => {
   const [failedImages, setFailedImages] = useState(new Set());
 
   const handleImageError = (name) => {
@@ -34,11 +35,17 @@ const AchievementsBadges = ({ names = [] }) => {
 
   return (
     <div className={styles["badgeContainer"]}>
-      {names.length > 0 ? (
-        names.map((name, index) => (
-          <div key={index} className={styles["badge"]}>
+      {badges.length > 0 ? (
+        badges.map((name, index) => (
+          <div key={index} className={styles["badge"]} title={name}>
             {!failedImages.has(name) ? (
-              <img src={`/achivement/${name}.svg`} alt={name} className={styles["badgeImage"]} onError={() => handleImageError(name)} /> ) : (
+              <img 
+                src={`/achivement/${name}.svg`} 
+                alt={name} 
+                className={styles["badgeImage"]} 
+                onError={() => handleImageError(name)} 
+              /> 
+            ) : (
               <div className={styles["badgePlaceholder"]}>🏆</div>
             )}
           </div>
@@ -59,7 +66,7 @@ const CircularScoreBar = ({value}) => {
     return (
         <div className="circular-score">
             <svg className={styles["circle"]} width="80" height="80">
-                <circle className={styles["bg"]} cx="40"cy="40" r={radius} strokeWidth="10" fill="none"/>
+                <circle className={styles["bg"]} cx="40" cy="40" r={radius} strokeWidth="10" fill="none"/>
                 <circle className={styles["progress"]} cx="40" cy="40" r={radius} strokeWidth="10" fill="none" strokeDasharray={circumference} strokeDashoffset={offset}/>
                 <text x="50%" y="50%" textAnchor="middle" dy=".3em" className={styles["text"]}> {normalizedValue}%</text>
             </svg>
@@ -82,8 +89,8 @@ export default function MyPage(){
         City: '',
         Hobby: '',
         UserName: '',
-        HealthScore : '',
-        userType : '',
+        HealthScore: '',
+        userType: '',
     });
     const [monthlyStreaks, setMonthlyStreaks] = useState([]);
     const [consistencyData, setConsistencyData] = useState({
@@ -91,16 +98,18 @@ export default function MyPage(){
         daysAnalyzed: 80,
         insights: ''
     });
-    const [fullUserData, setFullUserData] = useState(null); // Store complete user data for consistency calc
+    const [fullUserData, setFullUserData] = useState(null);
     const [upgradePopupData, setUpgradePopupData] = useState({
         show: false,
         requiredPlan: ''
     });
+    const [userBadges, setUserBadges] = useState([]);
+    const [isLoadingBadges, setIsLoadingBadges] = useState(true);
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchUserData();
         fetchMonthlyStreaks();
-    },[]);
+    }, []);
 
     const fetchUserData = async () => {
         try {
@@ -132,8 +141,8 @@ export default function MyPage(){
                     City: data.City || '',
                     Hobby: data.Hobby || '',
                     UserName: data.UserName || '',
-                    HealthScore : data.HealthScore || '',
-                    userType : data.UserType || '',
+                    HealthScore: data.HealthScore || '',
+                    userType: data.UserType || '',
                 };
                 setUserData(formattedData);
                 
@@ -146,10 +155,45 @@ export default function MyPage(){
                     breakdown: consistency.breakdown
                 });
                 
+                // Fetch and auto-award badges
+                await fetchAndAwardBadges(userId, data);
+                
                 console.log('Consistency Score:', consistency);
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
+        }
+    };
+
+    const fetchAndAwardBadges = async (userId, userData) => {
+        try {
+            setIsLoadingBadges(true);
+            
+            // First, auto-award badges based on achievements
+            const awardResult = await autoAwardBadges(userId, userData);
+            
+            if (awardResult.awarded.length > 0) {
+                console.log('New badges awarded:', awardResult.awarded);
+                // You could show a toast notification here
+                // showToast(`Congratulations! You earned ${awardResult.awarded.length} new badge(s)!`);
+            }
+            
+            // Then fetch all badges
+            const badgeResult = await getUserBadges(userId);
+            
+            if (badgeResult.success) {
+                setUserBadges(badgeResult.badges);
+                console.log('User badges:', badgeResult.badges);
+            } else {
+                console.error('Failed to fetch badges');
+                setUserBadges([]);
+            }
+            
+        } catch (error) {
+            console.error('Error fetching badges:', error);
+            setUserBadges([]);
+        } finally {
+            setIsLoadingBadges(false);
         }
     };
 
@@ -223,13 +267,13 @@ export default function MyPage(){
     };
 
     const navButtons = [
-      { 
-          label: "My Routine", 
-          variant: "secondary", 
-          action: () => handleNavClick("My Routine", "/routine") // Use action instead of route
-      },
-      { label: "Activity", variant: "secondary", route: "/activity" },
-      { label: "My Page", variant: "primary", route: "/mypage" }
+        { 
+            label: "My Routine", 
+            variant: "secondary", 
+            action: () => handleNavClick("My Routine", "/routine")
+        },
+        { label: "Activity", variant: "secondary", route: "/activity" },
+        { label: "My Page", variant: "primary", route: "/mypage" }
     ];
 
     return(
@@ -240,27 +284,51 @@ export default function MyPage(){
                     <div className={styles["profilepanel"]}>
                         <Avatar initials={getInitials()} size="medium"/>
                         <div className={styles["OverviewInformation"]}>
-                            <h2 style={{fontWeight: "600",fontSize:'26px'}}>{userData.Name}</h2>
+                            <h2 style={{fontWeight: "600", fontSize:'26px'}}>{userData.Name}</h2>
                             <p style={{fontWeight: "500", fontSize:'12px'}}>{userData.UserName}</p>
                             <p style={{fontWeight: "400", fontSize:'12px'}}>{userData.Bio}</p>
                         </div>
 
                         <div className={styles["extraInformation"]}>
-                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Email: </p><p>{userData.Email}</p></span>
-                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Phone No: </p><p>{userData.PhoneNumber}</p></span>
-                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Religion: </p><p>{userData.Religion}</p></span>
-                            <span style={{display:'flex',gap:'5px'}}><p style={{marginLeft:'20px',fontWeight:'600'}}>Gender: </p><p>{userData.Gender}</p></span>
+                            <span style={{display:'flex', gap:'5px'}}>
+                                <p style={{marginLeft:'20px', fontWeight:'600'}}>Email: </p>
+                                <p>{userData.Email}</p>
+                            </span>
+                            <span style={{display:'flex', gap:'5px'}}>
+                                <p style={{marginLeft:'20px', fontWeight:'600'}}>Phone No: </p>
+                                <p>{userData.PhoneNumber}</p>
+                            </span>
+                            <span style={{display:'flex', gap:'5px'}}>
+                                <p style={{marginLeft:'20px', fontWeight:'600'}}>Religion: </p>
+                                <p>{userData.Religion}</p>
+                            </span>
+                            <span style={{display:'flex', gap:'5px'}}>
+                                <p style={{marginLeft:'20px', fontWeight:'600'}}>Gender: </p>
+                                <p>{userData.Gender}</p>
+                            </span>
                         </div>
 
                         <div className={styles["userPlanSection"]}>
                             <p>User Plan</p>
                             <div className={styles["userPlan"]}>{userData.userType}</div>
-                            <button className={styles["upgradeButton"]} onClick={()=>{navigate('/pricing')}}>Upgrade Plan</button>
+                            <button className={styles["upgradeButton"]} onClick={() => {navigate('/pricing')}}>
+                                Upgrade Plan
+                            </button>
                         </div>
 
                         <div className={styles["actionButtons"]}>
-                            <button style={{backgroundColor:'#6E57FF'}} onClick={()=>{navigate('/edit-profile')}}>Edit Profile</button>
-                            <button style={{backgroundColor:'red'}} onClick={handleLogout}>Logout</button>
+                            <button 
+                                style={{backgroundColor:'#6E57FF'}} 
+                                onClick={() => {navigate('/edit-profile')}}
+                            >
+                                Edit Profile
+                            </button>
+                            <button 
+                                style={{backgroundColor:'red'}} 
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -279,15 +347,33 @@ export default function MyPage(){
                                         />
                                     ))
                                 ) : (
-                                    <p style={{color: 'grey', padding: '20px'}}>No streak data available</p>
+                                    <p style={{color: 'grey', padding: '20px'}}>
+                                        No streak data available
+                                    </p>
                                 )}
                             </div>
                         </div>
                         <div className={styles["Achievements"]}>
                             <h2>Achievements</h2>
                             <div className={styles["AchievementHolder"]}>
-                                <AchievementsBadges names={["bronze", "finisher", "firstlogin","gold","premium"]} />
+                                {isLoadingBadges ? (
+                                    <p style={{color: 'grey', padding: '20px'}}>
+                                        Loading badges...
+                                    </p>
+                                ) : (
+                                    <AchievementsBadges badges={userBadges} />
+                                )}
                             </div>
+                            {!isLoadingBadges && userBadges.length > 0 && (
+                                <p style={{
+                                    fontSize: '12px', 
+                                    color: 'grey', 
+                                    textAlign: 'center', 
+                                    marginTop: '10px'
+                                }}>
+                                    {userBadges.length} badge{userBadges.length !== 1 ? 's' : ''} earned
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className={styles["AnalyticsContainer"]}>
@@ -296,28 +382,51 @@ export default function MyPage(){
                             <div className={styles["fitScoreContainer"]}>
                                 <div className={styles["fitScore"]}>
                                     <div className={styles["fitPlot"]}>
-                                        <p style={{fontWeight:'500',fontSize:'15px'}}>Fitness Score</p>
+                                        <p style={{fontWeight:'500', fontSize:'15px'}}>
+                                            Fitness Score
+                                        </p>
                                         <div className={styles["scoreGraph"]}>
                                             <CircularScoreBar value={userData.HealthScore}/>
                                         </div>
-                                        <p style={{color:'grey',fontWeight:'500',fontSize:'15px',width:'80%',textAlign:'center'}}>Good! {userData.HealthScore}% Fit</p>
+                                        <p style={{
+                                            color:'grey',
+                                            fontWeight:'500',
+                                            fontSize:'15px',
+                                            width:'80%',
+                                            textAlign:'center'
+                                        }}>
+                                            Good! {userData.HealthScore}% Fit
+                                        </p>
                                     </div>
                                     <div className={styles["fitSummary"]}></div>
                                 </div>
 
                                 <div className={styles["fitScore"]}>
                                     <div className={styles["fitPlot"]}>
-                                        <p style={{fontWeight:'500',fontSize:'15px'}}>Consistency Score</p>
+                                        <p style={{fontWeight:'500', fontSize:'15px'}}>
+                                            Consistency Score
+                                        </p>
                                         <div className={styles["scoreGraph"]}>
                                             <CircularScoreBar value={consistencyData.score}/>
                                         </div>
-                                        <p style={{color:'grey',textAlign:'center',fontWeight:'500',fontSize:'15px',width:'80%'}}>
+                                        <p style={{
+                                            color:'grey',
+                                            textAlign:'center',
+                                            fontWeight:'500',
+                                            fontSize:'15px',
+                                            width:'80%'
+                                        }}>
                                             {consistencyData.score}% Consistent last {consistencyData.daysAnalyzed} days
                                         </p>
                                     </div>
                                     <div className={styles["fitSummary"]}>
                                         {consistencyData.insights && (
-                                            <p style={{fontSize:'12px', color:'grey', padding:'10px', textAlign:'center'}}>
+                                            <p style={{
+                                                fontSize:'12px', 
+                                                color:'grey', 
+                                                padding:'10px', 
+                                                textAlign:'center'
+                                            }}>
                                                 {consistencyData.insights}
                                             </p>
                                         )}
