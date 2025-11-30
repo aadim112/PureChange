@@ -1,3 +1,4 @@
+// AdminControlPage.js (updated)
 import React, { useState, useEffect } from 'react';
 import styles from './AdminControlPage.module.css';
 import { Plus, Trash2, Save } from 'lucide-react';
@@ -28,6 +29,18 @@ export default function AdminControlPage() {
   const [referralFilter, setReferralFilter] = useState('pending');
   const [referralLoading, setReferralLoading] = useState(false);
   const [referralUpdatingId, setReferralUpdatingId] = useState(null);
+
+  // --- New state for Add Custom Content section ---
+  const [customItems, setCustomItems] = useState([{
+    id: 1,
+    actual_content: '',
+    translation_english: '',
+    translation_hindi: '',
+    question: '',
+    motivation: ''
+  }]);
+  const [nextCustomId, setNextCustomId] = useState(2);
+  // ------------------------------------------------
 
   const religions = [
     { value: 'hinduism', label: 'Hinduism', contentLabel: 'Add Shlok' },
@@ -159,6 +172,16 @@ export default function AdminControlPage() {
     // Reset content items when religion changes
     setContentItems([{ id: 1, text: '' }]);
     setNextId(2);
+    // Also reset custom items when religion changes
+    setCustomItems([{
+      id: 1,
+      actual_content: '',
+      translation_english: '',
+      translation_hindi: '',
+      question: '',
+      motivation: ''
+    }]);
+    setNextCustomId(2);
   };
 
   const handleContentTypeChange = (contType) => {
@@ -185,6 +208,78 @@ export default function AdminControlPage() {
       setContentItems(contentItems.filter(item => item.id !== id));
     }
   };
+
+  // ---- New handlers for custom content ----
+  const addCustomItem = () => {
+    setCustomItems([...customItems, {
+      id: nextCustomId,
+      actual_content: '',
+      translation_english: '',
+      translation_hindi: '',
+      question: '',
+      motivation: ''
+    }]);
+    setNextCustomId(nextCustomId + 1);
+  };
+
+  const removeCustomItem = (id) => {
+    if (customItems.length > 1) {
+      setCustomItems(customItems.filter(item => item.id !== id));
+    }
+  };
+
+  const handleCustomChange = (id, field, value) => {
+    setCustomItems(customItems.map(it => it.id === id ? { ...it, [field]: value } : it));
+  };
+
+  const handleSaveCustomContent = async () => {
+    if (!selectedReligion) {
+      alert("Please select a religion");
+      return;
+    }
+
+    const validItems = customItems.filter(item => String(item.actual_content || '').trim() !== "");
+    if (validItems.length === 0) {
+      alert("Please add at least one custom content item (Actual Content required)");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      for (const item of validItems) {
+        // Directly save using the same addVerse function (same serial naming)
+        const result = await addVerse(
+          selectedReligion,
+          item.actual_content,
+          item.question || '',
+          item.translation_english || '',
+          item.translation_hindi || '',
+          item.motivation || ''
+        );
+        if (!result.success) {
+          throw new Error("Failed saving one of the custom items");
+        }
+      }
+
+      alert("✅ Custom content saved successfully!");
+      // reset custom items
+      setCustomItems([{
+        id: 1,
+        actual_content: '',
+        translation_english: '',
+        translation_hindi: '',
+        question: '',
+        motivation: ''
+      }]);
+      setNextCustomId(2);
+    } catch (err) {
+      console.error("Error saving custom content:", err);
+      alert("Error saving custom content. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  // -----------------------------------------
 
   const handleSave = async () => {
     if (!selectedReligion) {
@@ -948,7 +1043,7 @@ export default function AdminControlPage() {
                               )
                             ) : (
                               <p className={styles['referral-missing']}>Bank details not provided</p>
-                            )}
+                            )} 
                           </div>
                           <div>
                             <strong>Contact:</strong>
@@ -1030,6 +1125,112 @@ export default function AdminControlPage() {
             </div>
           </div>
         )}
+
+        {/* --- New: Add Custom Content (below Preview) --- */}
+        {viewMode === 'addVerse' && selectedReligion && (
+          <div className={styles['preview-card']}>
+            <div className={styles['preview-header']}>
+              <h3 className={styles['preview-title']}>Add Custom Content</h3>
+            </div>
+
+            <div className={styles['preview-content']}>
+              <p className={styles['preview-religion']}>
+                <strong>Religion:</strong> {religions.find(r => r.value === selectedReligion)?.label}
+              </p>
+
+              <div className={styles['content-items-list']}>
+                {customItems.map((it, idx) => (
+                  <div key={it.id} className={styles['content-item']}>
+                    <div className={styles['content-item-header']}>
+                      <span className={styles['content-number']}>#{idx + 1}</span>
+                      {customItems.length > 1 && (
+                        <button
+                          className={styles['remove-btn']}
+                          onClick={() => removeCustomItem(it.id)}
+                          title="Remove this item"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
+
+                    <label className={styles['section-label']}>Actual Content</label>
+                    <textarea
+                      className={styles['content-textarea']}
+                      placeholder="Actual Content (required)"
+                      value={it.actual_content}
+                      onChange={(e) => handleCustomChange(it.id, 'actual_content', e.target.value)}
+                      rows={3}
+                    />
+
+                    <label className={styles['section-label']}>English Translation</label>
+                    <textarea
+                      className={styles['content-textarea']}
+                      placeholder="English Translation"
+                      value={it.translation_english}
+                      onChange={(e) => handleCustomChange(it.id, 'translation_english', e.target.value)}
+                      rows={2}
+                    />
+
+                    <label className={styles['section-label']}>Hindi Translation</label>
+                    <textarea
+                      className={styles['content-textarea']}
+                      placeholder="Hindi Translation"
+                      value={it.translation_hindi}
+                      onChange={(e) => handleCustomChange(it.id, 'translation_hindi', e.target.value)}
+                      rows={2}
+                    />
+
+                    <label className={styles['section-label']}>Engaging Question</label>
+                    <textarea
+                      className={styles['content-textarea']}
+                      placeholder="Engaging Question"
+                      value={it.question}
+                      onChange={(e) => handleCustomChange(it.id, 'question', e.target.value)}
+                      rows={2}
+                    />
+
+                    <label className={styles['section-label']}>Motivation / Explanation</label>
+                    <textarea
+                      className={styles['content-textarea']}
+                      placeholder="Motivation / Explanation"
+                      value={it.motivation}
+                      onChange={(e) => handleCustomChange(it.id, 'motivation', e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                ))}
+
+                <button className={styles['add-more-btn']} onClick={addCustomItem}>
+                  <Plus size={18} />
+                  <span>Add More</span>
+                </button>
+              </div>
+
+              <div className={styles['action-buttons']} style={{ marginTop: 12 }}>
+                <button className={styles['cancel-btn']} onClick={() => {
+                  // reset custom area
+                  setCustomItems([{
+                    id: 1,
+                    actual_content: '',
+                    translation_english: '',
+                    translation_hindi: '',
+                    question: '',
+                    motivation: ''
+                  }]);
+                  setNextCustomId(2);
+                }}>
+                  Cancel
+                </button>
+                <button className={styles['save-btn']} onClick={handleSaveCustomContent}>
+                  <Save size={18} />
+                  <span>Save Custom Content</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ----------------------------------------------- */}
 
         {/* Content Display Section */}
         {viewMode === 'otherContent' && selectedContentType && (
