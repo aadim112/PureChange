@@ -10,6 +10,7 @@ import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
 import { ref, onValue, update, get } from 'firebase/database';
 import { db } from '../firebase';
+import { forceUpdateRanks, forceMonthlyPromotion } from '../services/schedulerService';
 
 export default function AdminControlPage() {
   const [viewMode, setViewMode] = useState('addVerse');
@@ -29,6 +30,9 @@ export default function AdminControlPage() {
   const [referralFilter, setReferralFilter] = useState('pending');
   const [referralLoading, setReferralLoading] = useState(false);
   const [referralUpdatingId, setReferralUpdatingId] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [promoting, setPromoting] = useState(false);
+  const [rankingMessage, setRankingMessage] = useState('');
 
   // --- New state for Add Custom Content section ---
   const [customItems, setCustomItems] = useState([{
@@ -105,6 +109,55 @@ export default function AdminControlPage() {
     );
     return () => unsubscribe();
   }, [viewMode]);
+
+  const handleForceUpdate = async () => {
+    if (!window.confirm('Are you sure you want to force update all ranks?')) {
+      return;
+    }
+
+    setUpdating(true);
+    setRankingMessage('');
+
+    try {
+      const result = await forceUpdateRanks();
+      if (result.success) {
+        setRankingMessage('✅ All ranks updated successfully!');
+      } else {
+        setRankingMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setRankingMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleForcePromotion = async () => {
+    if (!window.confirm('Are you sure you want to force monthly promotions? This will promote top 10 users from each league!')) {
+      return;
+    }
+
+    setPromoting(true);
+    setRankingMessage('');
+
+    try {
+      const result = await forceMonthlyPromotion();
+      if (result.success) {
+        const { Warrior = [], Elite = [] } = result.results || {};
+        setRankingMessage(
+          `✅ Monthly promotions completed!\n` +
+          `Warrior → Elite: ${Warrior.length} users promoted\n` +
+          `Elite → Conqueror: ${Elite.length} users promoted`
+        );
+      } else {
+        setRankingMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setRankingMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setPromoting(false);
+    }
+  };
 
   const handleReferralStatusChange = async (payoutId, currentStatus, refererId) => {
     if (!payoutId) return;
@@ -588,10 +641,10 @@ export default function AdminControlPage() {
             Motivational Videos
           </button>
           <button
-            className={`${styles['mode-btn']} ${viewMode === 'background-effects' ? styles.active : ''}`}
-            onClick={() => setViewMode('background-effects')}
+            className={`${styles['mode-btn']} ${viewMode === 'ranking-controls' ? styles.active : ''}`}
+            onClick={() => setViewMode('ranking-controls')}
           >
-            Background Images and Video Effects
+            Ranking Controls
           </button>
           <button
             className={`${styles['mode-btn']} ${viewMode === 'referralPays' ? styles.active : ''}`}
@@ -915,7 +968,7 @@ export default function AdminControlPage() {
           </div>
         )}
         {/* Add Motivational Videos */}
-          {viewMode === 'motivational_videos' && (
+        {viewMode === 'motivational_videos' && (
           <div className={styles['motivational-section']}>
             <h2 className={styles['admin-card-title']}>Upload Motivational Videos</h2>
             
@@ -960,6 +1013,56 @@ export default function AdminControlPage() {
             )}
           </div>
         )}
+        {/* Ranking Controls Section */}
+        {viewMode === 'ranking-controls' && (
+          <div className={styles['admin-section']}>
+            <h2>🏆 Ranking System Controls</h2>
+            
+            <div className={styles['control-group']}>
+              <h3>Daily Rank Update</h3>
+              <p>Update all users' league ranks based on current scores. This normally runs automatically once per day.</p>
+              <button 
+                onClick={handleForceUpdate}
+                disabled={updating}
+                className={styles['admin-button']}
+              >
+                {updating ? 'Updating...' : 'Force Update Ranks'}
+              </button>
+            </div>
+
+            <div className={styles['control-group']}>
+              <h3>Monthly League Promotion</h3>
+              <p>Promote top 10 users from each league to the next tier. This normally runs automatically at month end.</p>
+              <button 
+                onClick={handleForcePromotion}
+                disabled={promoting}
+                className={styles['admin-button']}
+                style={{ backgroundColor: '#f59e0b' }}
+              >
+                {promoting ? 'Promoting...' : 'Force Monthly Promotion'}
+              </button>
+            </div>
+
+            {rankingMessage && (
+              <div className={styles['message-box']}>
+                <pre>{rankingMessage}</pre>
+              </div>
+            )}
+
+            <div className={styles['info-box']}>
+              <h4>ℹ️ How the Ranking System Works:</h4>
+              <ul>
+                <li><strong>Leagues:</strong> Warrior → Elite → Conqueror</li>
+                <li><strong>Score Calculation:</strong> Based on 8 parameters (NFStreak, NFBStreak, NFCMStreak, DTStreak, DTBStreak, DTCMStreak, HealthScore, ConsistencyScore)</li>
+                <li><strong>Page Activity:</strong> Users gain/lose points based on time spent on different pages</li>
+                <li><strong>Daily Update:</strong> League ranks are recalculated daily at midnight</li>
+                <li><strong>Monthly Promotion:</strong> Top 10 users from each league get promoted on the last day of each month</li>
+                <li><strong>Global Rank:</strong> Calculated across all leagues (Conqueror → Elite → Warrior)</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      
           {viewMode === 'referralPays' && (
             <>
               <div className={styles['admin-card-header']}>
