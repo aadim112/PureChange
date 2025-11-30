@@ -14,7 +14,7 @@ export const PROMOTION_COUNT = 10;
 export const PAGE_POINTS = {
   '/activity': 0.5, // +0.5 per minute
   '/content': 0.3,  
-  '/leaderboard': 0.2, 
+  '/leaderboard': -0.01, 
   '/more-content': 0.4, 
   '/routine': 0.3,
   '/chatroom': 0.2,  
@@ -441,5 +441,36 @@ export async function getUserRankingData(userId) {
   } catch (error) {
     console.error("❌ Error getting user ranking data:", error);
     throw error;
+  }
+}
+
+export async function updateAllUserScores() {
+  try {
+    console.log("🔄 Updating all user scores...");
+    
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    
+    if (!snapshot.exists()) return;
+
+    let count = 0;
+    const promises = [];
+    
+    snapshot.forEach((childSnapshot) => {
+      const userId = childSnapshot.key;
+      const userData = childSnapshot.val();
+      
+      // Skip if user doesn't have ranking initialized
+      if (userData.ranking) {
+        promises.push(updateUserScore(userId, userData));
+        count++;
+      }
+    });
+    
+    await Promise.all(promises);
+    console.log(`✅ Updated scores for ${count} users`);
+    
+  } catch (error) {
+    console.error("❌ Error updating user scores:", error);
   }
 }

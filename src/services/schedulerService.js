@@ -1,6 +1,6 @@
 import { ref, get, set } from 'firebase/database';
 import { db } from '../firebase';
-import { updateAllLeagueRanks, promoteUsers } from './rankingService';
+import { updateAllLeagueRanks, promoteUsers, updateAllUserScores } from './rankingService';
 
 /**
  * Check and run daily rank update
@@ -14,19 +14,22 @@ export async function checkAndRunDailyUpdate() {
     const today = new Date().toDateString();
     const lastUpdate = snapshot.exists() ? snapshot.val() : null;
 
-    // If already updated today, skip
     if (lastUpdate === today) {
       console.log("✅ Daily rank update already completed today");
       return;
     }
 
-    console.log("🔄 Running daily rank update...");
+    console.log("🔄 Running daily updates...");
+    
+    // FIRST: Update all scores
+    await updateAllUserScores();
+    
+    // THEN: Update ranks based on new scores
     await updateAllLeagueRanks();
     
-    // Update last run timestamp
     await set(schedulerRef, today);
     
-    console.log("✅ Daily rank update completed");
+    console.log("✅ Daily updates completed");
   } catch (error) {
     console.error("❌ Error in daily update:", error);
   }

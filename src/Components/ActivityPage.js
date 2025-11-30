@@ -11,7 +11,7 @@ import ImgDailyQuotes from "../assets/ImgDailyQuotes.png";
 import LockOverlay1 from "../assets/lockOverlay1.png";
 import LockOverlay2 from "../assets/lockOverlay2.png";
 import { useNavigate } from 'react-router-dom';
-import { ref, set, get, } from 'firebase/database';
+import { ref, set, get,update } from 'firebase/database';
 import { db } from '../firebase';
 import {
   initDailyDataIfMissing,
@@ -31,6 +31,7 @@ import {
 } from "../services/referalService";
 import referralRules from '../services/referalService';
 import UpgradePopup from './UpgradePlanPopup';
+import { updateUserScore } from '../services/rankingService';
 
 function CardImage({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
@@ -572,6 +573,27 @@ export default function ActivityPage() {
   const handleOpenCustomPopup = async () => {
     setShowCustomPopup(true);
     setLoadingEmergency(true);
+
+    // Deduct points for clicking "Resist the Urge"
+    try {
+      const rankingRef = ref(db, `users/${userId}/ranking`);
+      const snapshot = await get(rankingRef);
+      
+      if (snapshot.exists()) {
+        const currentRanking = snapshot.val();
+        const pointsToDeduct = 2; // Deduct 2 points per click
+        const newScore = Math.max(0, currentRanking.score - pointsToDeduct);
+        
+        await update(rankingRef, {
+          score: newScore,
+          lastScoreUpdate: new Date().toISOString()
+        });
+        
+        console.log(`⚠️ Deducted ${pointsToDeduct} points for emergency help (${currentRanking.score} → ${newScore})`);
+      }
+    } catch (error) {
+      console.error("Failed to deduct points:", error);
+    }
 
     try {
       const motivation = await generateEmergencyMotivation(

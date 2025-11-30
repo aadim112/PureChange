@@ -1015,50 +1015,199 @@ export default function AdminControlPage() {
         )}
         {/* Ranking Controls Section */}
         {viewMode === 'ranking-controls' && (
-          <div className={styles['admin-section']}>
-            <h2>🏆 Ranking System Controls</h2>
+          <div className={styles['ranking-controls-container']}>
+            {/* Warning Banner */}
+            <div className={styles['warning-banner']}>
+              <div className={styles['warning-icon']}>⚠️</div>
+              <div className={styles['warning-content']}>
+                <h3 className={styles['warning-title']}>⚠️ Handle With Care</h3>
+                <p className={styles['warning-text']}>
+                  These controls affect all users' rankings and league promotions. 
+                  Use manual triggers only for testing or emergency fixes. 
+                  The system automatically runs daily updates and monthly promotions.
+                </p>
+              </div>
+            </div>
+
+            <h2 className={styles['section-main-title']}>🏆 Ranking System Controls</h2>
             
-            <div className={styles['control-group']}>
-              <h3>Daily Rank Update</h3>
-              <p>Update all users' league ranks based on current scores. This normally runs automatically once per day.</p>
-              <button 
-                onClick={handleForceUpdate}
-                disabled={updating}
-                className={styles['admin-button']}
-              >
-                {updating ? 'Updating...' : 'Force Update Ranks'}
-              </button>
+            {/* Daily Rank Update Card */}
+            <div className={styles['control-card']}>
+              <div className={styles['control-card-header']}>
+                <div className={styles['control-icon']}>📊</div>
+                <div>
+                  <h3 className={styles['control-card-title']}>Daily Rank Update</h3>
+                  <p className={styles['control-card-subtitle']}>
+                    Recalculates league and global ranks for all users
+                  </p>
+                </div>
+              </div>
+              
+              <div className={styles['control-card-body']}>
+                <p className={styles['control-description']}>
+                  Update all users' league ranks based on current scores. This normally runs 
+                  automatically once per day at midnight. Use manual trigger only if the 
+                  automatic update failed or for testing purposes.
+                </p>
+                
+                <div className={styles['control-details']}>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Frequency:</span>
+                    <span className={styles['detail-value']}>Automatic (Daily)</span>
+                  </div>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Affects:</span>
+                    <span className={styles['detail-value']}>All Users</span>
+                  </div>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Duration:</span>
+                    <span className={styles['detail-value']}>~5-10 seconds</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles['control-card-footer']}>
+                <button 
+                  onClick={handleForceUpdate}
+                  disabled={updating}
+                  className={styles['control-button-primary']}
+                >
+                  {updating ? (
+                    <>
+                      <span className={styles['button-spinner']}></span>
+                      Updating Ranks...
+                    </>
+                  ) : (
+                    <>
+                      <span>🔄</span>
+                      Force Update Ranks
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className={styles['control-group']}>
-              <h3>Monthly League Promotion</h3>
-              <p>Promote top 10 users from each league to the next tier. This normally runs automatically at month end.</p>
-              <button 
-                onClick={handleForcePromotion}
-                disabled={promoting}
-                className={styles['admin-button']}
-                style={{ backgroundColor: '#f59e0b' }}
-              >
-                {promoting ? 'Promoting...' : 'Force Monthly Promotion'}
-              </button>
+            {/* Monthly Promotion Card */}
+            <div className={styles['control-card']}>
+              <div className={styles['control-card-header']}>
+                <div className={styles['control-icon']}>🎖️</div>
+                <div>
+                  <h3 className={styles['control-card-title']}>Monthly League Promotion</h3>
+                  <p className={styles['control-card-subtitle']}>
+                    Promotes top 10 users from each league to the next tier
+                  </p>
+                </div>
+              </div>
+              
+              <div className={styles['control-card-body']}>
+                <p className={styles['control-description']}>
+                  Promote top 10 users from Warrior → Elite and Elite → Conqueror. 
+                  This normally runs automatically on the last day of each month. 
+                  <strong className={styles['warning-inline']}> Use with extreme caution!</strong> 
+                  Promotions are permanent and cannot be reversed.
+                </p>
+                
+                <div className={styles['control-details']}>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Frequency:</span>
+                    <span className={styles['detail-value']}>Automatic (Monthly)</span>
+                  </div>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Affects:</span>
+                    <span className={styles['detail-value']}>Top 10 per League</span>
+                  </div>
+                  <div className={styles['detail-item']}>
+                    <span className={styles['detail-label']}>Reversible:</span>
+                    <span className={styles['detail-value-warning']}>❌ No</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles['control-card-footer']}>
+                <button 
+                  onClick={handleForcePromotion}
+                  disabled={promoting}
+                  className={styles['control-button-warning']}
+                >
+                  {promoting ? (
+                    <>
+                      <span className={styles['button-spinner']}></span>
+                      Promoting Users...
+                    </>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      Force Monthly Promotion
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
+            {/* Result Message */}
             {rankingMessage && (
-              <div className={styles['message-box']}>
-                <pre>{rankingMessage}</pre>
+              <div className={styles['result-message']}>
+                <pre className={styles['result-text']}>{rankingMessage}</pre>
               </div>
             )}
 
-            <div className={styles['info-box']}>
-              <h4>ℹ️ How the Ranking System Works:</h4>
-              <ul>
-                <li><strong>Leagues:</strong> Warrior → Elite → Conqueror</li>
-                <li><strong>Score Calculation:</strong> Based on 8 parameters (NFStreak, NFBStreak, NFCMStreak, DTStreak, DTBStreak, DTCMStreak, HealthScore, ConsistencyScore)</li>
-                <li><strong>Page Activity:</strong> Users gain/lose points based on time spent on different pages</li>
-                <li><strong>Daily Update:</strong> League ranks are recalculated daily at midnight</li>
-                <li><strong>Monthly Promotion:</strong> Top 10 users from each league get promoted on the last day of each month</li>
-                <li><strong>Global Rank:</strong> Calculated across all leagues (Conqueror → Elite → Warrior)</li>
-              </ul>
+            {/* System Information */}
+            <div className={styles['info-panel']}>
+              <div className={styles['info-panel-header']}>
+                <span className={styles['info-icon']}>ℹ️</span>
+                <h4 className={styles['info-title']}>How the Ranking System Works</h4>
+              </div>
+              
+              <div className={styles['info-grid']}>
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>🎯 League Structure</h5>
+                  <p className={styles['info-card-text']}>
+                    Warrior → Elite → Conqueror
+                    <br />
+                    All users start in Warrior. No demotions occur.
+                  </p>
+                </div>
+
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>📈 Score Calculation</h5>
+                  <p className={styles['info-card-text']}>
+                    Based on 8 parameters: NFStreak, NFBStreak, NFCMStreak, 
+                    DTStreak, DTBStreak, DTCMStreak, HealthScore, ConsistencyScore
+                  </p>
+                </div>
+
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>⏱️ Page Activity</h5>
+                  <p className={styles['info-card-text']}>
+                    Users gain/lose points based on time spent on pages. 
+                    Activity pages add points, pricing pages deduct points.
+                  </p>
+                </div>
+
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>🔄 Daily Update</h5>
+                  <p className={styles['info-card-text']}>
+                    League ranks recalculated daily at midnight. 
+                    Runs automatically via scheduler service.
+                  </p>
+                </div>
+
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>🏆 Monthly Promotion</h5>
+                  <p className={styles['info-card-text']}>
+                    Top 10 users promoted on last day of month. 
+                    Promotions are permanent and cannot be undone.
+                  </p>
+                </div>
+
+                <div className={styles['info-card']}>
+                  <h5 className={styles['info-card-title']}>🌐 Global Rank</h5>
+                  <p className={styles['info-card-text']}>
+                    Calculated across all leagues: Conqueror → Elite → Warrior. 
+                    Lower number = higher position.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
