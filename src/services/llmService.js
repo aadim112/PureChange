@@ -1,6 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = "AIzaSyCecoJ6SFIB-9kOfuJNdJDI4qTJ5dFgSIs";
+// Get API key from environment variable
+const apiKey = process.env.REACT_APP_GOOGLE_GENERATIVE_AI_API_KEY;
+
+if (!apiKey) {
+  console.error("❌ REACT_APP_GOOGLE_GENERATIVE_AI_API_KEY is not set in environment variables");
+  throw new Error("Google Generative AI API key is missing. Please set REACT_APP_GOOGLE_GENERATIVE_AI_API_KEY in your .env file");
+}
+
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 

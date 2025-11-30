@@ -480,7 +480,7 @@ const order = await response.json();
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
             <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
-            <p>Get 50% Off On Every Plan</p>
+            <p>Get ₹1199 plan for ₹799</p>
           </div>
           <header>
             <div className={styles["logo"]}>
