@@ -10,7 +10,7 @@ import { ReactComponent as Controls } from "../assets/SettingsSlider.svg"
 import clsx from 'clsx';
 import { ref, onValue, update, get } from 'firebase/database';
 import { db } from '../firebase';
-import { forceUpdateRanks, forceMonthlyPromotion } from '../services/schedulerService';
+import { forceUpdateRanks, forceMonthlyPromotion, checkCloudFunctionsStatus  } from '../services/schedulerService';
 
 export default function AdminControlPage() {
   const [viewMode, setViewMode] = useState('addVerse');
@@ -33,6 +33,8 @@ export default function AdminControlPage() {
   const [updating, setUpdating] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [rankingMessage, setRankingMessage] = useState('');
+  const [cloudStatus, setCloudStatus] = useState(null);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   // --- New state for Add Custom Content section ---
   const [customItems, setCustomItems] = useState([{
@@ -109,6 +111,25 @@ export default function AdminControlPage() {
     );
     return () => unsubscribe();
   }, [viewMode]);
+
+  useEffect(() => {
+    if (viewMode === 'ranking-controls') {
+      checkStatus();
+    }
+  }, [viewMode]);
+
+  const checkStatus = async () => {
+    setCheckingStatus(true);
+    try {
+      const status = await checkCloudFunctionsStatus();
+      setCloudStatus(status);
+    } catch (error) {
+      console.error("Failed to check cloud function status:", error);
+      setCloudStatus({ allDeployed: false, error: error.message });
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const handleForceUpdate = async () => {
     if (!window.confirm('Are you sure you want to force update all ranks?')) {
@@ -1024,12 +1045,71 @@ export default function AdminControlPage() {
                 <p className={styles['warning-text']}>
                   These controls affect all users' rankings and league promotions. 
                   Use manual triggers only for testing or emergency fixes. 
-                  The system automatically runs daily updates and monthly promotions.
+                  The system automatically runs daily updates and monthly promotions via Cloud Functions.
                 </p>
               </div>
             </div>
 
             <h2 className={styles['section-main-title']}>🏆 Ranking System Controls</h2>
+
+            {/* Cloud Functions Status */}
+            <div className={styles['status-card']}>
+              <div className={styles['status-header']}>
+                <h3 className={styles['status-title']}>☁️ Cloud Functions Status</h3>
+                <button 
+                  onClick={checkStatus}
+                  disabled={checkingStatus}
+                  className={styles['refresh-btn']}
+                >
+                  {checkingStatus ? '🔄 Checking...' : '🔄 Refresh'}
+                </button>
+              </div>
+              
+              {cloudStatus ? (
+                <div className={styles['status-grid']}>
+                  <div className={styles['status-item']}>
+                    <span className={styles['status-label']}>Daily Update Function:</span>
+                    <span className={cloudStatus.dailyUpdateDeployed 
+                      ? styles['status-active'] 
+                      : styles['status-inactive']}>
+                      {cloudStatus.dailyUpdateDeployed ? '✅ Active' : '❌ Not Deployed'}
+                    </span>
+                  </div>
+                  <div className={styles['status-item']}>
+                    <span className={styles['status-label']}>Monthly Promotion Function:</span>
+                    <span className={cloudStatus.monthlyPromotionDeployed 
+                      ? styles['status-active'] 
+                      : styles['status-inactive']}>
+                      {cloudStatus.monthlyPromotionDeployed ? '✅ Active' : '❌ Not Deployed'}
+                    </span>
+                  </div>
+                  <div className={styles['status-item']}>
+                    <span className={styles['status-label']}>Automation Status:</span>
+                    <span className={cloudStatus.allDeployed 
+                      ? styles['status-automated'] 
+                      : styles['status-manual']}>
+                      {cloudStatus.allDeployed 
+                        ? '🤖 Fully Automated' 
+                        : '⚠️ Manual Mode (Deploy Cloud Functions)'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles['status-loading']}>Loading status...</div>
+              )}
+              
+              {!cloudStatus?.allDeployed && (
+                <div className={styles['deployment-notice']}>
+                  <p>⚠️ <strong>Cloud Functions not fully deployed.</strong></p>
+                  <p>To enable automatic daily updates and monthly promotions:</p>
+                  <ol>
+                    <li>Run: <code>firebase deploy --only functions</code></li>
+                    <li>Check deployment in Firebase Console → Functions</li>
+                    <li>Refresh this status</li>
+                  </ol>
+                </div>
+              )}
+            </div>
             
             {/* Daily Rank Update Card */}
             <div className={styles['control-card']}>
@@ -1045,15 +1125,25 @@ export default function AdminControlPage() {
               
               <div className={styles['control-card-body']}>
                 <p className={styles['control-description']}>
-                  Update all users' league ranks based on current scores. This normally runs 
-                  automatically once per day at midnight. Use manual trigger only if the 
-                  automatic update failed or for testing purposes.
+                  {cloudStatus?.dailyUpdateDeployed ? (
+                    <>
+                      <strong>🤖 Automated:</strong> Runs automatically every day at midnight UTC via Cloud Functions. 
+                      Use manual trigger only for testing or emergency fixes.
+                    </>
+                  ) : (
+                    <>
+                      <strong>⚠️ Manual Mode:</strong> Cloud Functions not deployed. Updates must be triggered manually. 
+                      Deploy Cloud Functions to enable automatic daily updates.
+                    </>
+                  )}
                 </p>
                 
                 <div className={styles['control-details']}>
                   <div className={styles['detail-item']}>
                     <span className={styles['detail-label']}>Frequency:</span>
-                    <span className={styles['detail-value']}>Automatic (Daily)</span>
+                    <span className={styles['detail-value']}>
+                      {cloudStatus?.dailyUpdateDeployed ? 'Automatic (Daily)' : 'Manual Only'}
+                    </span>
                   </div>
                   <div className={styles['detail-item']}>
                     <span className={styles['detail-label']}>Affects:</span>
@@ -1101,16 +1191,26 @@ export default function AdminControlPage() {
               
               <div className={styles['control-card-body']}>
                 <p className={styles['control-description']}>
-                  Promote top 10 users from Warrior → Elite and Elite → Conqueror. 
-                  This normally runs automatically on the last day of each month. 
-                  <strong className={styles['warning-inline']}> Use with extreme caution!</strong> 
-                  Promotions are permanent and cannot be reversed.
+                  {cloudStatus?.monthlyPromotionDeployed ? (
+                    <>
+                      <strong>🤖 Automated:</strong> Runs automatically on the last day of every month at 11:59 PM UTC. 
+                      <strong className={styles['warning-inline']}> Use manual trigger with extreme caution!</strong> 
+                      Promotions are permanent and cannot be reversed.
+                    </>
+                  ) : (
+                    <>
+                      <strong>⚠️ Manual Mode:</strong> Cloud Functions not deployed. Promotions must be triggered manually. 
+                      Deploy Cloud Functions to enable automatic monthly promotions.
+                    </>
+                  )}
                 </p>
                 
                 <div className={styles['control-details']}>
                   <div className={styles['detail-item']}>
                     <span className={styles['detail-label']}>Frequency:</span>
-                    <span className={styles['detail-value']}>Automatic (Monthly)</span>
+                    <span className={styles['detail-value']}>
+                      {cloudStatus?.monthlyPromotionDeployed ? 'Automatic (Monthly)' : 'Manual Only'}
+                    </span>
                   </div>
                   <div className={styles['detail-item']}>
                     <span className={styles['detail-label']}>Affects:</span>
@@ -1187,16 +1287,18 @@ export default function AdminControlPage() {
                 <div className={styles['info-card']}>
                   <h5 className={styles['info-card-title']}>🔄 Daily Update</h5>
                   <p className={styles['info-card-text']}>
-                    League ranks recalculated daily at midnight. 
-                    Runs automatically via scheduler service.
+                    {cloudStatus?.dailyUpdateDeployed 
+                      ? 'Runs automatically every day at midnight UTC via Cloud Functions.'
+                      : 'Deploy Cloud Functions to enable automatic daily updates.'}
                   </p>
                 </div>
 
                 <div className={styles['info-card']}>
                   <h5 className={styles['info-card-title']}>🏆 Monthly Promotion</h5>
                   <p className={styles['info-card-text']}>
-                    Top 10 users promoted on last day of month. 
-                    Promotions are permanent and cannot be undone.
+                    {cloudStatus?.monthlyPromotionDeployed 
+                      ? 'Runs automatically on last day of month via Cloud Functions. Permanent and irreversible.'
+                      : 'Deploy Cloud Functions to enable automatic monthly promotions.'}
                   </p>
                 </div>
 

@@ -1,6 +1,35 @@
 import { ref, get, set } from 'firebase/database';
 import { db } from '../firebase';
 import { updateAllLeagueRanks, promoteUsers, updateAllUserScores } from './rankingService';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+// Initialize functions
+const functions = getFunctions();
+
+// Manual trigger from admin panel
+export async function manualTriggerDailyUpdate() {
+  try {
+    const triggerUpdate = httpsCallable(functions, 'triggerDailyUpdate');
+    const result = await triggerUpdate();
+    console.log('Manual update result:', result.data);
+    return result.data;
+  } catch (error) {
+    console.error('Manual trigger failed:', error);
+    throw error;
+  }
+}
+
+export async function manualTriggerMonthlyPromotion() {
+  try {
+    const triggerPromotion = httpsCallable(functions, 'triggerMonthlyPromotion');
+    const result = await triggerPromotion();
+    console.log('Manual promotion result:', result.data);
+    return result.data;
+  } catch (error) {
+    console.error('Manual trigger failed:', error);
+    throw error;
+  }
+}
 
 /**
  * Check and run daily rank update
@@ -105,39 +134,96 @@ function getCurrentMonthKey() {
 }
 
 /**
- * Manual trigger for admin - force daily update
+ * Manual trigger for cloud function - force daily update
  */
 export async function forceUpdateRanks() {
   try {
-    console.log("🔄 Force updating all ranks...");
-    await updateAllLeagueRanks();
+    console.log("🔄 Triggering cloud function for daily update...");
     
-    const schedulerRef = ref(db, 'scheduler/lastDailyUpdate');
-    await set(schedulerRef, new Date().toDateString());
+    const triggerUpdate = httpsCallable(functions, 'triggerDailyUpdate');
+    const result = await triggerUpdate();
     
-    console.log("✅ Force update completed");
-    return { success: true };
+    console.log("✅ Cloud function completed:", result.data);
+    return result.data;
   } catch (error) {
-    console.error("❌ Error in force update:", error);
+    console.error("❌ Cloud function failed:", error);
+    
+    // Fallback to local function if cloud function not deployed yet
+    if (error.code === 'functions/not-found') {
+      console.log("⚠️ Cloud function not found, using local fallback...");
+      try {
+        await updateAllLeagueRanks();
+        const schedulerRef = ref(db, 'scheduler/lastDailyUpdate');
+        await set(schedulerRef, new Date().toDateString());
+        return { success: true, message: "Local update completed (Cloud function not deployed)" };
+      } catch (localError) {
+        return { success: false, error: localError.message };
+      }
+    }
+    
     return { success: false, error: error.message };
   }
 }
 
 /**
- * Manual trigger for admin - force monthly promotion
+ * Manual trigger for cloud function - force monthly promotion
  */
 export async function forceMonthlyPromotion() {
   try {
-    console.log("🏆 Force running monthly promotions...");
-    const results = await promoteUsers();
+    console.log("🏆 Triggering cloud function for monthly promotion...");
     
-    const schedulerRef = ref(db, 'scheduler/lastMonthlyPromotion');
-    await set(schedulerRef, getCurrentMonthKey());
+    const triggerPromotion = httpsCallable(functions, 'triggerMonthlyPromotion');
+    const result = await triggerPromotion();
     
-    console.log("✅ Force promotion completed:", results);
-    return { success: true, results };
+    console.log("✅ Cloud function completed:", result.data);
+    return result.data;
   } catch (error) {
-    console.error("❌ Error in force promotion:", error);
+    console.error("❌ Cloud function failed:", error);
+    
+    // Fallback to local function if cloud function not deployed yet
+    if (error.code === 'functions/not-found') {
+      console.log("⚠️ Cloud function not found, using local fallback...");
+      try {
+        const results = await promoteUsers();
+        const schedulerRef = ref(db, 'scheduler/lastMonthlyPromotion');
+        await set(schedulerRef, getCurrentMonthKey());
+        return { success: true, results, message: "Local promotion completed (Cloud function not deployed)" };
+      } catch (localError) {
+        return { success: false, error: localError.message };
+      }
+    }
+    
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Check cloud function deployment status
+ */
+export async function checkCloudFunctionsStatus() {
+  try {
+    const functions = getFunctions();
+    
+    // Try to call a lightweight check
+    const dailyExists = await httpsCallable(functions, 'triggerDailyUpdate')()
+      .then(() => true)
+      .catch((error) => error.code !== 'functions/not-found');
+    
+    const monthlyExists = await httpsCallable(functions, 'triggerMonthlyPromotion')()
+      .then(() => true)
+      .catch((error) => error.code !== 'functions/not-found');
+    
+    return {
+      dailyUpdateDeployed: dailyExists,
+      monthlyPromotionDeployed: monthlyExists,
+      allDeployed: dailyExists && monthlyExists
+    };
+  } catch (error) {
+    return {
+      dailyUpdateDeployed: false,
+      monthlyPromotionDeployed: false,
+      allDeployed: false,
+      error: error.message
+    };
   }
 }
