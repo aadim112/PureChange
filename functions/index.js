@@ -511,13 +511,28 @@ exports.monthlyPromotion = onSchedule(
 exports.triggerDailyUpdate = onCall(
     {maxInstances: 1},
     async (request) => {
-      // Verify authentication
+      // Check if user is authenticated
       if (!request.auth) {
         throw new HttpsError(
             "unauthenticated",
             "User must be authenticated to trigger updates",
         );
       }
+
+      // Optional: Check if user is admin
+      // Uncomment and modify this section if you want admin-only access
+      /*
+      const userRef = db.ref(`users/${request.auth.uid}`);
+      const userSnapshot = await userRef.once("value");
+      const userData = userSnapshot.val();
+
+      if (!userData || userData.role !== "admin") {
+        throw new HttpsError(
+            "permission-denied",
+            "Only admins can trigger manual updates",
+        );
+      }
+      */
 
       try {
         console.log("🔄 Manual daily update triggered by:", request.auth.uid);
@@ -542,13 +557,28 @@ exports.triggerDailyUpdate = onCall(
 exports.triggerMonthlyPromotion = onCall(
     {maxInstances: 1},
     async (request) => {
-      // Verify authentication
+      // Check if user is authenticated
       if (!request.auth) {
         throw new HttpsError(
             "unauthenticated",
             "User must be authenticated to trigger promotions",
         );
       }
+
+      // Optional: Check if user is admin
+      // Uncomment and modify this section if you want admin-only access
+      /*
+      const userRef = db.ref(`users/${request.auth.uid}`);
+      const userSnapshot = await userRef.once("value");
+      const userData = userSnapshot.val();
+
+      if (!userData || userData.role !== "admin") {
+        throw new HttpsError(
+            "permission-denied",
+            "Only admins can trigger manual promotions",
+        );
+      }
+      */
 
       try {
         console.log(

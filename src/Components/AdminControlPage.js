@@ -122,6 +122,7 @@ export default function AdminControlPage() {
     setCheckingStatus(true);
     try {
       const status = await checkCloudFunctionsStatus();
+      console.log("Cloud function status:", status);
       setCloudStatus(status);
     } catch (error) {
       console.error("Failed to check cloud function status:", error);
