@@ -61,7 +61,7 @@ function App() {
   }, [location]);
 
   const scheduleNextPopup = () => {
-    const randomTime = Math.floor(Math.random() * (300000 - 180000)) + 180000;
+    const randomTime = Math.floor(Math.random() * (10000 - 5000)) + 5000;
     setTimeout(triggerPopup, randomTime);
   };
 
@@ -480,7 +480,7 @@ const order = await response.json();
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
             <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
-            <p>Get ₹1199 plan for ₹799</p>
+            <p>Get ₹799 plan for ₹499</p>
           </div>
           <header>
             <div className={styles["logo"]}>
