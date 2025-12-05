@@ -18,6 +18,7 @@ import MoreContentPage from './Components/MoreContentPage';
 import PersonalisedRoutinePage from './Components/PersonalisedRoutinePage';
 import AdminLogin from './Components/AdminLogin';
 import AdminControlPage from './Components/AdminControlPage';
+import UserIcon from './assets/User.svg';
 import PricingPage from './Components/PricingPage';
 import GoalSetup from './Components/GoalSetup';
 import ChatRoomPage from './Components/ChatRoomPage';
@@ -236,7 +237,7 @@ function App() {
       setShowAuth(false); // Close the auth modal
       setUser(auth.currentUser);
 
-      console.log("✅ User registered and stored in database:", uid);
+      console.log("? User registered and stored in database:", uid);
       
       // Navigate to profile-setup AFTER all state updates
       setTimeout(() => {
@@ -244,7 +245,7 @@ function App() {
       }, 100);
       
     } catch (error) {
-      console.error("❌ Error completing sign up:", error);
+      console.error("? Error completing sign up:", error);
       setError("Failed to complete registration. Please try again.");
     }
   };
@@ -299,7 +300,7 @@ function App() {
           navigate('/profile-setup');
         }
 
-        console.log("✅ User signed in:", uid);
+        console.log("? User signed in:", uid);
       } else {
         await set(userRef, {
           Name: "",
@@ -338,7 +339,7 @@ function App() {
         localStorage.setItem('signupMethod', 'google');
 
         navigate('/profile-setup');
-        console.log("✅ New user registered and stored in database:", uid);
+        console.log("? New user registered and stored in database:", uid);
       }
 
       console.log('User: ', result.user);
@@ -385,7 +386,7 @@ function App() {
       setError('');
 
     } catch (error) {
-      console.error("❌ Error while signing up:", error);
+      console.error("? Error while signing up:", error);
 
       if (error.code === "auth/email-already-in-use") {
         setError("Email is already registered");
@@ -459,14 +460,14 @@ const createOrder = async (amount) => {
 
 const order = await response.json();
   const options = {
-    key: "rzp_test_RZByCgPA3CgmMz", // ✅ Use your Razorpay *public* key here (not secret)
+    key: "rzp_test_RZByCgPA3CgmMz", // ? Use your Razorpay *public* key here (not secret)
     amount: order.amount,
     currency: order.currency,
     name: "My Website Name",
     description: "Payment for Order",
-    order_id: order.id, // ✅ order id from backend
+    order_id: order.id, // ? order id from backend
     handler: function (response) {
-      // ✅ This runs after successful payment
+      // ? This runs after successful payment
       alert("Payment Successful!");
       console.log("Payment details:", response);
       // You can send this response to your backend for verification
@@ -495,7 +496,7 @@ const order = await response.json();
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
             <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
-            <p>Get ₹799 plan for ₹499</p>
+            <p>Get ?799 plan for ?499</p>
           </div>
           <header>
             <div className={styles["logo"]}>
@@ -521,7 +522,7 @@ const order = await response.json();
                   setShowEmailVerification(false);
                   setError('');
                 }}>
-                  ×
+                  �
                 </button>
                 <div className={styles["card-content"]}>
                   {showEmailVerification ? (
@@ -838,7 +839,10 @@ const order = await response.json();
               </div>
             </div>
           </div>
-          <div className={`${styles.popup} ${show ? styles.show : ""}`}>{popupMessage}</div>
+          <div className={`${styles.popup} ${show ? styles.show : ""}`}>
+            <img src={UserIcon} alt="User" className={styles.popupImage} />
+            <span>{popupMessage}</span>
+          </div>
           <br></br>
           <footer className={styles['footer']}>
             <div className={styles['footerContainer']}>
