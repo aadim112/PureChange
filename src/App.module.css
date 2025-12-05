@@ -585,23 +585,36 @@ header {
 
 .popup {
   position: fixed;
-  top: 40px;
-  left: 20px;
-  background: #333;
-  padding: 12px 18px;
-  border-radius: 8px;
-  color: #fff;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  text-align: center;
+  background: white;
+  padding: 14px 20px;
+  border-radius: 10px;
+  color: black;
   z-index: 9999;
-
+  width: auto;
+  max-width: 400px;
+  min-width: 280px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   opacity: 0;
-  transform: translateY(20px);
   pointer-events: none;
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .show {
   opacity: 1;
-  transform: translateY(0px);
+  transform: translateX(-50%) translateY(0px);
 }
 .footer {
     background-color: rgba(234, 234, 234, 0.395);

@@ -49,6 +49,12 @@ function App() {
   const [isVerificationSent, setIsVerificationSent] = useState(false);
   const [pendingUserData, setPendingUserData] = useState(null);
   const [show, setShow] = useState(false);
+  const popupMessages = [
+    "One person purchased Elite Plan",
+    "One person purchased Pro Plan",
+    "One new person registered"
+  ];
+  const [popupMessage, setPopupMessage] = useState(popupMessages[0]);
   const [verificationTimer, setVerificationTimer] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,6 +72,15 @@ function App() {
   };
 
   const triggerPopup = () => {
+    setPopupMessage((prev) => {
+      if (popupMessages.length <= 1) return popupMessages[0];
+      let next = popupMessages[Math.floor(Math.random() * popupMessages.length)];
+      // Avoid repeating the same message twice in a row
+      while (next === prev) {
+        next = popupMessages[Math.floor(Math.random() * popupMessages.length)];
+      }
+      return next;
+    });
     setShow(true);
 
     setTimeout(() => {
@@ -823,7 +838,7 @@ const order = await response.json();
               </div>
             </div>
           </div>
-          <div className={`${styles.popup} ${show ? styles.show : ""}`}>🔔 One New Person Registered</div>
+          <div className={`${styles.popup} ${show ? styles.show : ""}`}>{popupMessage}</div>
           <br></br>
           <footer className={styles['footer']}>
             <div className={styles['footerContainer']}>
