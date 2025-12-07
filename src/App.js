@@ -496,7 +496,7 @@ const order = await response.json();
         <div className={styles["App"]}>
           <div className={styles["Offers"]}>
             <i className="fa-solid fa-fire fa-lg" style={{color:'#8274ddff'}}></i> 
-            <p>Get ?799 plan for ?499</p>
+            <p>Get ₹799 plan for ₹499</p>
           </div>
           <header>
             <div className={styles["logo"]}>
@@ -522,7 +522,7 @@ const order = await response.json();
                   setShowEmailVerification(false);
                   setError('');
                 }}>
-                  �
+                  ×
                 </button>
                 <div className={styles["card-content"]}>
                   {showEmailVerification ? (
